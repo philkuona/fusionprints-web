@@ -17,7 +17,7 @@ genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.0-flash-preview-image-generation",
+    model="gemini-3-pro-image",
     contents=YOUR_PROMPT,
     config={"response_modalities": ["IMAGE", "TEXT"]}
 )
@@ -105,7 +105,7 @@ Examples: card-prints-4x6.jpg, card-wall-16x20.jpg, card-finish-guide.jpg, about
 <div className="relative h-64 w-full overflow-hidden rounded-xl">
   <Image
     src="/images/card-prints-4x6.jpg"
-    alt="A young South Asian couple laughing while looking at printed wedding photos spread on a table"
+    alt="A young couple laughing while looking at printed photos spread on a table"
     fill
     className="object-cover"
   />
