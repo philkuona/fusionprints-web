@@ -1,0 +1,124 @@
+# FusionPrints Web — Full Roadmap Beyond 2.0.7
+
+This file exists so Claude Code knows the full project scope beyond the current task.
+Do not start any phase without explicit instruction from the founder.
+Each phase gets a full drill-down at its own kickoff — this is name-level only.
+
+---
+
+## CURRENT STATUS
+Phase 2.0 — complete except 2.0.7 (in progress)
+Next up after 2.0.7 sign-off: Phase 2.1
+
+---
+
+## Phase 2.1 — Upload & Library (Month 2)
+
+| # | Deliverable | Gate |
+|---|---|---|
+| 2.1.1 | Drag-and-drop multi-file upload UI | Founder uploads 5 files at once; all appear |
+| 2.1.2 | B2 storage, user-scoped key structure | Files land in B2 under the user's namespace |
+| 2.1.3 | "My Photos" library page (grid, select, delete) | Founder deletes one, it's gone on refresh |
+| 2.1.4 | Resolution detection + low-res warning | Upload a tiny image; warning fires before size selection |
+| 2.1.5 | EXIF orientation handling | Sideways phone photo displays upright |
+| 2.1.6 | 90-day expiry cron | Cron logs a dry-run deletion list on server |
+
+Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
+Dependency: B2 capacity check before starting.
+
+---
+
+## Phase 2.2 — Editor (Month 3) — RISKY, BIGGEST UNKNOWN
+
+| # | Deliverable | Gate |
+|---|---|---|
+| 2.2.1 | Konva editor scaffold in a print-size frame | Editor opens with an image loaded |
+| 2.2.2 | Per-size aspect-ratio crop (locked to chosen print) | 8×10 crop cannot produce non-8×10 output |
+| 2.2.3 | Rotate / flip | Visual check |
+| 2.2.4 | Brightness/contrast/saturation/exposure sliders, live preview | Slider updates preview < 100ms on test phone |
+| 2.2.5 | Auto-enhance toggle + B&W/sepia/vintage filters | Each filter visibly correct |
+| 2.2.6 | Edit JSON payload structure designed + serialised | Payload validates against Zod schema |
+| 2.2.7 | Sharp server-side applier (payload → print-ready file) | Web edit → server applies → output matches preview |
+| GATE | Editor UX review | If UX weak on mid-range phone → switch to Pintura |
+
+Primary: Konva.js. Fallback: Pintura (decision gate at end of 2.2).
+Risk: performance on mid-range Android phones in Zimbabwe.
+
+---
+
+## Phase 2.3 — Cart & Checkout (Month 4)
+
+| # | Deliverable | Gate |
+|---|---|---|
+| 2.3.1 | Cart UI, per-item preview, mixed sizes | Two different sizes coexist in cart |
+| 2.3.2 | Address selection (delivery or collection per order) | Switching mode updates totals |
+| 2.3.3 | Stripe: server-side payment intents + webhooks | Test-mode payment completes, webhook marks order paid |
+| 2.3.4 | EcoCash integration (shared module with WA channel) | Sandbox payment confirms |
+| 2.3.5 | Order creation in shared orders table, channel:'web' | Order appears in DB and reaches print_jobs |
+| 2.3.6 | Order tracking page (status parity with WhatsApp) | Status changes on server reflect on page |
+
+Dependencies:
+- Stripe account approval (apply EARLY — Zim-linked entity can take weeks)
+- EcoCash API spec + credentials (founder obtains)
+- Backend: add channel column to orders table (Drizzle migration)
+- Backend: print agent must apply edit_payload via Sharp before printing
+
+---
+
+## Phase 2.4 — Polish & Launch (Month 5)
+
+| # | Deliverable | Gate |
+|---|---|---|
+| 2.4.1 | SEO meta, sitemap, OG images, structured data | Lighthouse SEO ≥ 95 |
+| 2.4.2 | Performance: lazy loading, code splitting | Lighthouse perf ≥ 85 on mobile |
+| 2.4.3 | Mobile responsiveness across ALL flows | Every flow usable at 360px |
+| 2.4.4 | Cross-browser test | Chrome/Safari/Firefox + Android Chrome pass |
+| 2.4.5 | Beta with 10–20 waitlist customers | Beta cohort completes a real order |
+| 2.4.6 | Soft launch + marketing push | Landing page replaced by web app |
+
+OG images: generated via Gemini (sole image source rule applies).
+Hosting at launch: Hetzner VPS alongside backend. Move to Vercel post-launch.
+
+---
+
+## Phase 2.5+ — Post-launch
+
+- Tier 2 editor: text overlays, borders, collages
+- Photo book builder
+- Photo card templates (birthday, wedding, graduation, newborn)
+- Google Photos / Dropbox / iCloud import
+- React Native app (≈70% code reuse from web)
+
+---
+
+## Architecture reference
+
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js 16, TypeScript strict, Tailwind 4 |
+| Client state | Zustand (cart + editor) |
+| Server data | TanStack Query |
+| Image editor | Konva.js → Pintura fallback |
+| Server image processing | Sharp |
+| Backend | Fastify + Drizzle + Postgres 16 (~/dev/fusionprints) |
+| Storage | Backblaze B2 |
+| Email | Resend |
+| Payments | Stripe + EcoCash |
+| Hosting (launch) | Hetzner VPS (178.104.67.122) |
+| Hosting (post-launch) | Vercel |
+
+---
+
+## Non-negotiables (apply to every phase)
+
+1. "Hold the moment." — sacred. Always Fraunces. Always Malachite.
+2. Sunlit palette is exact — hex values never approximate.
+3. Mpix is the quality benchmark.
+4. Wall art (11×14, 12×18, 16×20) is the product moat — always prominent.
+5. Web does not replace WhatsApp — equal channels.
+6. Account-required — no guest checkout.
+7. Mobile-first — design and test mobile before desktop.
+8. Gemini is the sole image source — no stock photos, no placeholders.
+9. No location references in copy.
+10. No printer names in customer-facing copy.
+11. No Innovative Fusions / GIZMO Tech Store on customer pages.
