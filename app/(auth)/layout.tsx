@@ -10,15 +10,47 @@ const COLLAGE = [
   { src: "/images/auth-collage-4.jpg", alt: "A child holding up a framed photograph, laughing" },
 ];
 
-const PROMISES = ["Printed in-house", "Colour corrected by hand", "Ready in 24 hours"];
+const iconProps = {
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.7,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
 
-function CheckIcon() {
+function HomeIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-malachite">
-      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg {...iconProps}>
+      <path d="M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5" />
     </svg>
   );
 }
+function EyeIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="2.6" />
+    </svg>
+  );
+}
+function ClockIcon() {
+  return (
+    <svg {...iconProps}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  );
+}
+
+const PROMISES = [
+  { title: "Printed in-house", desc: "Every order printed on our own equipment — never outsourced.", Icon: HomeIcon },
+  { title: "Colour corrected by hand", desc: "A real person reviews every photo before it prints.", Icon: EyeIcon },
+  { title: "Ready in 24 hours", desc: "For collection or delivery to your door.", Icon: ClockIcon },
+];
 
 /**
  * Full-bleed split-screen auth chrome. The global header/footer are hidden on
@@ -50,16 +82,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           ))}
         </div>
 
-        {/* Promises appended to the foot */}
+        {/* Promises appended to the foot — Mpix-style benefit list */}
         <div className="px-9 pb-10 pt-7 xl:px-11">
-          <h2 className="font-fraunces text-3xl font-bold leading-tight text-malachite xl:text-4xl">
-            Hold the moment.
-          </h2>
-          <ul className="mt-5 grid gap-2.5">
+          <ul className="grid gap-5">
             {PROMISES.map((p) => (
-              <li key={p} className="flex items-center gap-2.5 text-sm text-cream/85">
-                <CheckIcon />
-                {p}
+              <li key={p.title} className="flex gap-3.5">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-malachite/15 text-malachite">
+                  <p.Icon />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-cream">{p.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-cream/55">{p.desc}</p>
+                </div>
               </li>
             ))}
           </ul>
