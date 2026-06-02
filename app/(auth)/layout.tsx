@@ -10,46 +10,10 @@ const COLLAGE = [
   { src: "/images/auth-collage-4.jpg", alt: "A child holding up a framed photograph, laughing" },
 ];
 
-const iconProps = {
-  width: 18,
-  height: 18,
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.7,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
-  "aria-hidden": true,
-};
-
-function HomeIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5" />
-    </svg>
-  );
-}
-function EyeIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="2.6" />
-    </svg>
-  );
-}
-function ClockIcon() {
-  return (
-    <svg {...iconProps}>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 7.5V12l3 2" />
-    </svg>
-  );
-}
-
 const PROMISES = [
-  { title: "Printed in-house", desc: "Every order printed on our own equipment — never outsourced.", Icon: HomeIcon },
-  { title: "Colour corrected by hand", desc: "A real person reviews every photo before it prints.", Icon: EyeIcon },
-  { title: "Ready in 24 hours", desc: "For collection or delivery to your door.", Icon: ClockIcon },
+  { title: "Printed in-house", desc: "On our own equipment, never outsourced." },
+  { title: "Checked by hand", desc: "Colour-corrected before it ever prints." },
+  { title: "Ready in 24 hours", desc: "For collection or delivery." },
 ];
 
 /**
@@ -82,21 +46,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           ))}
         </div>
 
-        {/* Promises appended to the foot — Mpix-style benefit list */}
-        <div className="px-9 pb-10 pt-7 xl:px-11">
-          <ul className="grid gap-5">
+        {/* Promises appended to the foot — Mpix-style row with dividers */}
+        <div className="border-t border-cream/10 px-6 py-7">
+          <div className="grid grid-cols-3 divide-x divide-cream/10 text-center">
             {PROMISES.map((p) => (
-              <li key={p.title} className="flex gap-3.5">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-malachite/15 text-malachite">
-                  <p.Icon />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-cream">{p.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-cream/55">{p.desc}</p>
-                </div>
-              </li>
+              <div key={p.title} className="px-3">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-wide text-cream">
+                  {p.title}
+                </p>
+                <p className="mx-auto mt-1.5 max-w-[18ch] text-[11px] leading-snug text-cream/55">
+                  {p.desc}
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </aside>
 
