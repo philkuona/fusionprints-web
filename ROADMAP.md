@@ -84,7 +84,24 @@ Hosting at launch: Hetzner VPS alongside backend. Move to Vercel post-launch.
 
 ---
 
-## Phase 2.5+ — Post-launch
+## Phase 2.5 — Copy & Promises Refinement (final full-site pass)
+
+A dedicated pass — done near the end, once the flows exist — to lock the brand promises and refine every piece of customer-facing copy across the whole site. Reference Mpix / Nations Photo Lab for tone and structure only, never copy. "Hold the moment." stays sacred.
+
+| # | Deliverable | Gate |
+|---|---|---|
+| 2.5.1 | Rewrite the brand promises (promise strip, value props, "What we promise") into one consistent, compelling voice | Founder signs off on the final promise set |
+| 2.5.2 | Full copy audit of every customer-facing surface (home, how-it-works, about, product pages, auth, account, emails) | No banned terms; voice consistent across all pages |
+| 2.5.3 | Microcopy pass — buttons, form labels, errors, empty states, confirmations | Every CTA and message reads in-voice |
+| 2.5.4 | SEO / meta + OG copy finalised (titles, descriptions, share text) | Per-page titles and descriptions set |
+| 2.5.5 | Terminology + consistency lock (sizes, finishes, product names, "Hold the moment." usage) | One glossary; no contradictions site-wide |
+
+Hard bans enforced (see WEB-SESSION-BRIEFING.md): no location references, no printer names, no Innovative Fusions / GIZMO, no discount language.
+Timing note: the headline promises ideally land before the 2.4 soft launch — 2.5.1 can pull forward if needed; the full audit stays last.
+
+---
+
+## Phase 2.6+ — Post-launch
 
 - Tier 2 editor: text overlays, borders, collages
 - Photo book builder
