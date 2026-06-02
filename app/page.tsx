@@ -6,96 +6,132 @@ import { Container } from "@/components/ui/container";
 export const metadata: Metadata = {
   title: "FusionPrints — Hold the moment.",
   description:
-    "Premium photo prints, wall art, photo books and cards — printed in-house. Order on WhatsApp or design it yourself on the web.",
+    "Premium photo prints and wall art, printed in-house. Order on WhatsApp or design it yourself on the web.",
   openGraph: {
     title: "FusionPrints — Hold the moment.",
-    description: "Premium photo prints, wall art, photo books and cards — printed in-house.",
+    description: "Premium photo prints and wall art, printed in-house.",
   },
 };
 
 const WA = "https://wa.me/263781387466";
 
-function CheckIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-malachite">
-      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+/* ── Icons ─────────────────────────────────────────────────────────── */
 
 function ArrowIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 transition-transform duration-200 group-hover:translate-x-1">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className="shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+    >
       <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-/* ── Data ──────────────────────────────────────────────────────────── */
+/* ── Collection data ───────────────────────────────────────────────── */
 
-type Product = {
-  title: string;
+type Card = {
+  size: string;
+  dims: string;
   img: string;
   alt: string;
   href: string;
-  soon?: boolean;
 };
 
-const PRODUCTS: Product[] = [
-  { title: "Photo prints", img: "/images/v2/print-1.jpg", alt: "A hand holding a printed photo", href: "/prints" },
-  { title: "Wall art", img: "/images/v2/wall-feature.jpg", alt: "A person holding a large canvas print", href: "/prints#wall-art" },
-  { title: "Photo books", img: "/images/v2/book-1.jpg", alt: "An open photo book", href: "/prints", soon: true },
-  { title: "Albums", img: "/images/v2/book-3.jpg", alt: "A leather keepsake album in hand", href: "/prints", soon: true },
-  { title: "Photo cards", img: "/images/v2/card-1.jpg", alt: "A printed greeting card in hand", href: "/prints", soon: true },
-  { title: "Wallet prints", img: "/images/v2/print-2.jpg", alt: "A hand fanning small wallet prints", href: "/prints" },
+const PHOTO_PRINTS: Card[] = [
+  {
+    size: "4 × 6",
+    dims: "10 × 15 cm",
+    img: "/images/card-prints-4x6.jpg",
+    alt: "Hands holding a small stack of freshly printed 4 by 6 photographs in warm daylight",
+    href: "/prints/4x6",
+  },
+  {
+    size: "5 × 7",
+    dims: "13 × 18 cm",
+    img: "/images/card-prints-5x7.jpg",
+    alt: "A single 5 by 7 print propped against a sunlit windowsill",
+    href: "/prints/5x7",
+  },
+  {
+    size: "6 × 6",
+    dims: "15 × 15 cm",
+    img: "/images/card-prints-6x6.jpg",
+    alt: "A square 6 by 6 print held between two fingers over a warm wooden table",
+    href: "/prints/6x6",
+  },
+  {
+    size: "8 × 10",
+    dims: "20 × 25 cm",
+    img: "/images/card-prints-8x10.jpg",
+    alt: "An 8 by 10 print resting on a linen surface in soft golden light",
+    href: "/prints/8x10",
+  },
 ];
 
-const OCCASIONS: Product[] = [
-  { title: "Weddings", img: "/images/v2/occ-wedding.jpg", alt: "An open wedding photo book", href: "/prints" },
-  { title: "Graduations", img: "/images/v2/occ-graduation.jpg", alt: "A graduate holding a bouquet", href: "/prints" },
-  { title: "New baby", img: "/images/v2/occ-baby.jpg", alt: "A hand holding a printed baby photo", href: "/prints" },
-  { title: "Family", img: "/images/v2/occ-family.jpg", alt: "A hand holding a family photo", href: "/prints" },
-  { title: "Everyday", img: "/images/v2/occ-everyday.jpg", alt: "Hands holding everyday prints", href: "/prints" },
-  { title: "Celebrations", img: "/images/v2/occ-celebrate.jpg", alt: "A celebration captured in a print", href: "/prints" },
+const WALL_ART: Card[] = [
+  {
+    size: "11 × 14",
+    dims: "28 × 36 cm",
+    img: "/images/card-wall-11x14.jpg",
+    alt: "An 11 by 14 framed print on a warm minimal interior wall",
+    href: "/prints/11x14",
+  },
+  {
+    size: "12 × 18",
+    dims: "30 × 45 cm",
+    img: "/images/card-wall-12x18.jpg",
+    alt: "A 12 by 18 poster print leaning against a softly lit wall",
+    href: "/prints/12x18",
+  },
+  {
+    size: "16 × 20",
+    dims: "40 × 50 cm",
+    img: "/images/card-wall-16x20.jpg",
+    alt: "A large 16 by 20 statement print above a console in a sunlit room",
+    href: "/prints/16x20",
+  },
+  {
+    size: "Finish guide",
+    dims: "Glossy & lustre",
+    img: "/images/card-finish-guide.jpg",
+    alt: "Close detail of glossy and lustre print surfaces catching warm light",
+    href: "/prints#wall-art",
+  },
 ];
 
-type BestSeller = { title: string; img: string; alt: string; tag?: string };
+/* ── Collection card ───────────────────────────────────────────────── */
 
-const BESTSELLERS: BestSeller[] = [
-  { title: "4×6 prints", img: "/images/v2/print-1.jpg", alt: "Classic 4x6 photo print", tag: "Most loved" },
-  { title: "16×20 wall art", img: "/images/v2/wall-feature.jpg", alt: "Large 16x20 wall art print" },
-  { title: "5×7 prints", img: "/images/v2/print-3.jpg", alt: "5x7 photo print" },
-  { title: "Wallet prints", img: "/images/v2/print-2.jpg", alt: "Set of wallet prints" },
-];
-
-/* ── Reusable category tile ────────────────────────────────────────── */
-
-function CategoryTile({ p, aspect = "aspect-square" }: { p: Product; aspect?: string }) {
+function CollectionCard({ c, ring = false }: { c: Card; ring?: boolean }) {
   return (
-    <Link
-      href={p.href}
-      className={`group relative isolate flex ${aspect} flex-col justify-end overflow-hidden rounded-2xl bg-ink/5 shadow-sm transition-shadow duration-200 hover:shadow-lg`}
-    >
-      <Image
-        src={p.img}
-        alt={p.alt}
-        fill
-        sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw"
-        className="-z-10 object-cover photo-warm transition-transform duration-300 group-hover:scale-[1.05]"
-      />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/80 via-ink/15 to-transparent" />
-      {p.soon && (
-        <span className="absolute right-3 top-3 rounded-full bg-amber/90 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-ink">
-          Soon
-        </span>
-      )}
-      <div className="p-4">
-        <h3 className="font-fraunces text-lg font-bold text-cream">{p.title}</h3>
-        <span className="mt-1 inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-widest text-malachite">
-          Shop
-          <ArrowIcon />
+    <Link href={c.href} className="group block cursor-pointer">
+      <div
+        className={`relative aspect-4/5 overflow-hidden rounded-2xl bg-ink/5 shadow-sm transition-shadow duration-200 group-hover:shadow-lg ${
+          ring ? "ring-1 ring-ink/10" : ""
+        }`}
+      >
+        <Image
+          src={c.img}
+          alt={c.alt}
+          fill
+          sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+        />
+      </div>
+      <div className="mt-4 flex items-baseline justify-between gap-3">
+        <h3 className="font-fraunces text-xl font-bold text-ink">{c.size}</h3>
+        <span className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">
+          {c.dims}
         </span>
       </div>
+      <span className="mt-1 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-malachite-deep transition-colors duration-200 group-hover:text-ink">
+        View
+        <ArrowIcon />
+      </span>
     </Link>
   );
 }
@@ -103,283 +139,137 @@ function CategoryTile({ p, aspect = "aspect-square" }: { p: Product; aspect?: st
 export default function HomePage() {
   return (
     <div>
-      {/* ── Promo hero ───────────────────────────────────────────────── */}
-      <section className="relative isolate flex min-h-[80vh] items-center overflow-hidden">
-        <Image
-          src="/images/v2/hero.jpg"
-          alt="Hands holding a fan of freshly printed photographs"
-          fill
-          priority
-          sizes="100vw"
-          className="-z-10 object-cover photo-warm"
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/90 via-ink/60 to-ink/20" />
-        <Container className="py-28">
-          <div className="max-w-xl">
-            <span className="inline-flex items-center rounded-full bg-malachite px-3 py-1 font-mono text-xs font-semibold uppercase tracking-widest text-ink">
-              Printed in-house · ready in 24h
-            </span>
-            <h1 className="mt-5 font-fraunces text-6xl font-bold leading-[0.95] text-cream sm:text-7xl lg:text-8xl">
-              Hold the moment.
-            </h1>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-cream/80">
-              Premium prints, wall art, books, and cards — made from the photos
-              you love, on paper worth keeping.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-4">
-              <Link
-                href="/prints"
-                className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-7 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-              >
-                Start an order
-              </Link>
-              <a
-                href={WA}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-12 cursor-pointer items-center rounded-full border border-cream/40 px-7 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
-              >
-                Order on WhatsApp
-              </a>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Trust strip (FP-honest: capabilities, not press) ─────────── */}
-      <section className="border-b border-ink/8 bg-ink">
-        <Container>
-          <ul className="grid grid-cols-2 divide-ink/15 py-6 text-center sm:grid-cols-4 sm:divide-x">
-            {[
-              "Printed in-house",
-              "Free colour correction",
-              "Ready in 24 hours",
-              "Collection or delivery",
-            ].map((t) => (
-              <li key={t} className="px-3 py-2 font-mono text-xs uppercase tracking-widest text-cream/70">
-                {t}
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </section>
-
-      {/* ── Shop by product (dense grid) ─────────────────────────────── */}
-      <section className="bg-cream py-18 sm:py-24">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-malachite-deep">
-                Shop by product
-              </p>
-              <h2 className="mt-3 font-fraunces text-4xl font-bold text-ink sm:text-5xl">
-                Everything we print.
-              </h2>
-            </div>
+      {/* ── Hero — typography only, dark Ink ─────────────────────────── */}
+      <section className="bg-ink">
+        <Container className="py-28 sm:py-36 lg:py-44">
+          <p className="font-mono text-xs uppercase tracking-[0.28em] text-malachite">
+            Premium photo printing
+          </p>
+          <h1 className="mt-6 font-fraunces text-6xl font-bold leading-[0.92] tracking-tight text-malachite sm:text-8xl lg:text-[8.5rem]">
+            Hold the moment.
+          </h1>
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-cream/75 sm:text-xl">
+            Prints and wall art made from the photos you love — printed in-house,
+            checked by hand, on paper worth keeping.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-4">
             <Link
               href="/prints"
-              className="group hidden cursor-pointer items-center gap-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-malachite-deep sm:flex"
+              className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
             >
-              See all products
-              <ArrowIcon />
+              Start an order
             </Link>
+            <a
+              href={WA}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
+            >
+              Order on WhatsApp
+            </a>
           </div>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {PRODUCTS.map((p) => (
-              <CategoryTile key={p.title} p={p} />
+        </Container>
+      </section>
+
+      {/* ── Photo Prints collection ──────────────────────────────────── */}
+      <section className="bg-cream py-20 sm:py-28">
+        <Container>
+          <div className="max-w-2xl">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-malachite-deep">
+              Photo prints
+            </p>
+            <h2 className="mt-4 font-fraunces text-4xl font-bold leading-tight text-ink sm:text-5xl">
+              Everyday moments, printed to last.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              Classic sizes on premium photo paper, colour-corrected by hand
+              before they ever reach the printer.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-8">
+            {PHOTO_PRINTS.map((c) => (
+              <CollectionCard key={c.size} c={c} />
             ))}
           </div>
         </Container>
       </section>
 
-      {/* ── Wall art moat (feature) ──────────────────────────────────── */}
-      <section className="border-y border-ink/8 bg-white py-18 sm:py-24">
+      {/* ── Wall Art collection — heavier, more premium ──────────────── */}
+      <section className="border-y border-ink/8 bg-white py-20 sm:py-28">
         <Container>
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
-            <div className="relative aspect-4/5 overflow-hidden rounded-3xl bg-ink/5 shadow-lg lg:order-1">
-              <Image
-                src="/images/v2/wall-feature.jpg"
-                alt="A person holding a large canvas print of a seascape"
-                fill
-                sizes="(min-width: 1024px) 45vw, 100vw"
-                className="object-cover photo-warm"
-              />
-            </div>
-            <div className="lg:order-2">
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-malachite-deep">
-                Wall art · only at FusionPrints
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="font-mono text-xs uppercase tracking-[0.24em] text-malachite-deep">
+                Wall art
               </p>
-              <h2 className="mt-3 font-fraunces text-4xl font-bold text-ink sm:text-5xl">
+              <h2 className="mt-4 font-fraunces text-4xl font-bold leading-tight text-ink sm:text-5xl">
                 Big enough to fill a wall.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-                Large-format canvas and posters up to 16×20 in — printed in-house
-                on professional inkjet. The statement piece most labs won&rsquo;t
-                touch.
+                Large-format statement pieces on professional stock — the kind of
+                print most labs won&rsquo;t touch.
               </p>
-              <ul className="mt-6 space-y-3">
-                {[
-                  "11×14 in (28×36 cm) — USD 10.00",
-                  "12×18 in (30×45 cm) — USD 14.00",
-                  "16×20 in (40×50 cm) — USD 22.00",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span className="font-mono text-sm text-ink">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/prints#wall-art"
-                className="mt-8 inline-flex h-11 cursor-pointer items-center rounded-full bg-ink px-6 text-sm font-semibold text-cream transition-colors duration-200 hover:bg-ink-soft"
-              >
-                View wall art sizes
-              </Link>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Shop by occasion ─────────────────────────────────────────── */}
-      <section className="bg-cream py-18 sm:py-24">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-malachite-deep">
-                Shop by occasion
-              </p>
-              <h2 className="mt-3 font-fraunces text-4xl font-bold text-ink sm:text-5xl">
-                For whatever you&rsquo;re celebrating.
-              </h2>
-            </div>
-          </div>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {OCCASIONS.map((o) => (
-              <CategoryTile key={o.title} p={o} aspect="aspect-4/5" />
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Bestsellers row (hand-picked) ────────────────────────────── */}
-      <section className="border-y border-ink/8 bg-white py-18 sm:py-24">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-malachite-deep">
-                Popular right now
-              </p>
-              <h2 className="mt-3 font-fraunces text-4xl font-bold text-ink sm:text-5xl">
-                Crowd favourites.
-              </h2>
             </div>
             <Link
-              href="/prints"
+              href="/prints#wall-art"
               className="group hidden cursor-pointer items-center gap-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-malachite-deep sm:flex"
             >
-              Shop all sizes
+              See all sizes
               <ArrowIcon />
             </Link>
           </div>
-          <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-4">
-            {BESTSELLERS.map((b) => (
-              <Link
-                key={b.title}
-                href="/prints"
-                className="group cursor-pointer"
-              >
-                <div className="relative aspect-square overflow-hidden rounded-2xl bg-ink/5 shadow-sm transition-shadow duration-200 group-hover:shadow-lg">
-                  <Image
-                    src={b.img}
-                    alt={b.alt}
-                    fill
-                    sizes="(min-width: 1024px) 22vw, 45vw"
-                    className="object-cover photo-warm transition-transform duration-300 group-hover:scale-[1.05]"
-                  />
-                  {b.tag && (
-                    <span className="absolute left-3 top-3 rounded-full bg-coral px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-cream">
-                      {b.tag}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-3 flex items-center gap-1">
-                  <h3 className="font-semibold text-ink">{b.title}</h3>
-                  <ArrowIcon />
-                </div>
-              </Link>
+          <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4 lg:gap-x-8">
+            {WALL_ART.map((c) => (
+              <CollectionCard key={c.size} c={c} ring />
             ))}
           </div>
         </Container>
       </section>
 
-      {/* ── Value props ──────────────────────────────────────────────── */}
-      <section className="bg-cream py-16">
+      {/* ── Promise strip — typography, no images ────────────────────── */}
+      <section className="bg-cream py-20 sm:py-24">
         <Container>
-          <div className="grid gap-8 sm:grid-cols-3">
+          <div className="grid gap-px overflow-hidden rounded-2xl bg-ink/8 sm:grid-cols-3">
             {[
-              { title: "Printed in-house", body: "Every order is printed at our own lab. No outsourcing, no middlemen." },
-              { title: "Colour corrected", body: "Our team reviews every image before it prints. Your colours come out right." },
-              { title: "Quick turnaround", body: "Most orders are ready within 24 hours, for collection or delivery." },
-            ].map((item) => (
-              <div key={item.title} className="border-t-2 border-malachite pt-5">
-                <h3 className="font-semibold text-ink">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.body}</p>
+              {
+                title: "Printed in-house",
+                body: "Every order is printed on our own equipment — no outsourcing, no middlemen.",
+              },
+              {
+                title: "Colour corrected by hand",
+                body: "Our team reviews every image before it prints, so your colours come out right.",
+              },
+              {
+                title: "Ready in 24 hours",
+                body: "Most orders are ready the next day, for collection or delivery to your door.",
+              },
+            ].map((p) => (
+              <div key={p.title} className="bg-cream p-8">
+                <span className="block h-1 w-10 rounded-full bg-malachite" />
+                <h3 className="mt-5 font-fraunces text-xl font-bold text-ink">
+                  {p.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{p.body}</p>
               </div>
             ))}
           </div>
         </Container>
       </section>
 
-      {/* ── How it works ─────────────────────────────────────────────── */}
-      <section className="border-t border-ink/8 bg-cream py-18 sm:py-24">
-        <Container>
-          <div className="max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-malachite-deep">
-              How it works
-            </p>
-            <h2 className="mt-3 font-fraunces text-4xl font-bold text-ink sm:text-5xl">
-              Simple from start to finish.
-            </h2>
-            <p className="mt-3 text-lg text-ink-soft">Two ways to order. Both take minutes.</p>
-          </div>
-          <div className="mt-14 grid gap-10 sm:grid-cols-3">
-            {[
-              { step: "01", title: "Send or upload", body: "Send your photo on WhatsApp or upload it on our website — straight from your camera roll." },
-              { step: "02", title: "Choose your size", body: "Pick your product and size. We'll flag it if the resolution isn't high enough before you commit." },
-              { step: "03", title: "We print and deliver", body: "Printed in-house and ready for collection or delivery — usually within 24 hours." },
-            ].map((item) => (
-              <div key={item.step}>
-                <p className="font-mono text-3xl font-medium text-malachite-deep">{item.step}</p>
-                <h3 className="mt-3 font-semibold text-ink">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-12">
-            <Link
-              href="/how-it-works"
-              className="group inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-malachite-deep"
-            >
-              See the full process
-              <ArrowIcon />
-            </Link>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-      <section className="bg-ink py-20 sm:py-24">
+      {/* ── Bottom CTA — typography only, dark Ink ───────────────────── */}
+      <section className="bg-ink py-24 sm:py-32">
         <Container className="text-center">
-          <h2 className="mx-auto max-w-2xl font-fraunces text-4xl font-bold text-cream sm:text-5xl">
+          <h2 className="mx-auto max-w-3xl font-fraunces text-4xl font-bold leading-tight text-cream sm:text-6xl">
             Don&rsquo;t let them fade on your phone.
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-cream/70">
-            Every photo you&rsquo;ve taken deserves to be held, framed, and remembered.
+          <p className="mx-auto mt-5 max-w-md text-lg text-cream/70">
+            Every photo worth taking is worth holding. Start with one — we&rsquo;ll
+            take care of the rest.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="/prints"
-              className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-7 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+              className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
             >
               Browse prints
             </Link>
@@ -387,7 +277,7 @@ export default function HomePage() {
               href={WA}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 cursor-pointer items-center rounded-full border border-cream/40 px-7 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
+              className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
             >
               Message us on WhatsApp
             </a>

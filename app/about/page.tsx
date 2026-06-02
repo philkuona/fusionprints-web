@@ -10,95 +10,89 @@ export const metadata: Metadata = {
 
 const WA = "https://wa.me/263781387466";
 
-// ⚠️ Update social handles before launch
 const SOCIAL = [
-  { label: "Instagram", handle: "@fusionprints", href: "https://instagram.com/fusionprints" },
+  { label: "Instagram", handle: "@fusionprints.zw", href: "https://instagram.com/fusionprints.zw" },
   { label: "Facebook", handle: "FusionPrints", href: "https://facebook.com/fusionprints" },
   { label: "WhatsApp", handle: "+263 781 387 466", href: WA },
+];
+
+const PROMISES = [
+  {
+    title: "In-house printing",
+    body: "Every order is printed on our own professional equipment. Your photo never leaves our hands until it reaches yours.",
+  },
+  {
+    title: "Colour correction included",
+    body: "Our team reviews every image before it prints. If something looks off, we fix it — at no extra charge.",
+  },
+  {
+    title: "Quick turnaround",
+    body: "Most orders are ready within 24 hours. We’ll let you know the moment your print is ready.",
+  },
+  {
+    title: "Honest quality checks",
+    body: "If a photo isn’t sharp enough for the size you’ve chosen, we’ll tell you before you pay — not after.",
+  },
 ];
 
 export default function AboutPage() {
   return (
     <div>
-      {/* ── Hero — full-bleed photography ────────────────────────────── */}
-      <section className="relative isolate flex min-h-[60vh] items-end overflow-hidden">
-        <Image
-          src="/images/detail.jpg"
-          alt="A close-up of printed photographs being held in hand"
-          fill
-          priority
-          sizes="100vw"
-          className="-z-10 object-cover"
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/55 to-ink/30" />
-        <Container className="pb-14 pt-32">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-cream/70">
+      {/* ── Header — typography only ─────────────────────────────────── */}
+      <section className="border-b border-ink/8 bg-cream">
+        <Container className="py-20 sm:py-24">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-malachite-deep">
             About
           </p>
-          <h1 className="mt-4 font-fraunces text-5xl font-bold text-cream sm:text-6xl">
+          <h1 className="mt-4 max-w-3xl font-fraunces text-5xl font-bold leading-[0.98] text-ink sm:text-6xl">
             We print what matters.
           </h1>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
+            A photo and poster printing service built on one idea — the moments
+            worth keeping deserve to be held, not lost in a camera roll.
+          </p>
         </Container>
       </section>
 
-      <Container className="py-20">
-        <div className="grid gap-16 lg:grid-cols-[1.5fr_1fr]">
+      <Container className="py-16 sm:py-20">
+        <div className="grid gap-14 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
           {/* Main content */}
           <div className="space-y-12">
-            {/* What we are */}
             <div>
               <h2 className="font-fraunces text-2xl font-bold text-ink">
                 What FusionPrints is
               </h2>
               <p className="mt-4 leading-relaxed text-ink-soft">
-                FusionPrints is a photo and poster printing service. We print
-                everything in-house — from classic 4×6 snapshots to large-format
-                wall art up to 16×20 inches. No outsourcing, no third parties.
+                We print everything in-house — from classic 4×6 snapshots to
+                large-format wall art up to 16×20 inches. No outsourcing, no third
+                parties touching your photos.
               </p>
               <p className="mt-4 leading-relaxed text-ink-soft">
-                You can order through WhatsApp for a fast, simple experience, or use
-                our web platform for full creative control — cropping, editing, and
-                custom layouts before your photo goes to print.
+                Order through WhatsApp for a fast, simple experience, or use our web
+                platform for full creative control — cropping, editing, and custom
+                layouts before your photo goes to print.
               </p>
             </div>
 
-            {/* Lifestyle image */}
-            <div className="relative aspect-16/9 overflow-hidden rounded-3xl bg-ink/5 shadow-md">
+            {/* Single lifestyle image */}
+            <div className="relative aspect-16/10 overflow-hidden rounded-3xl bg-ink/5 shadow-md">
               <Image
-                src="/images/gallery.jpg"
-                alt="A styled wall of framed photo prints in a warm home interior"
+                src="/images/about-lifestyle.jpg"
+                alt="A warm home interior with framed prints, softly lit by natural daylight"
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"
                 className="object-cover"
               />
             </div>
 
-            {/* Service promises */}
             <div>
               <h2 className="font-fraunces text-2xl font-bold text-ink">
                 What we promise
               </h2>
               <div className="mt-5 space-y-4">
-                {[
-                  {
-                    title: "In-house printing",
-                    body: "Every order is printed at our own lab on professional equipment. Your order never leaves our hands until it reaches yours.",
-                  },
-                  {
-                    title: "Colour correction included",
-                    body: "Our team reviews every image before it prints. If something looks off, we fix it. No extra charge.",
-                  },
-                  {
-                    title: "Quick turnaround",
-                    body: "Most orders are ready within 24 hours. We'll let you know as soon as your print is ready.",
-                  },
-                  {
-                    title: "Honest quality checks",
-                    body: "We'll tell you if your photo resolution isn't high enough for a good print — before you pay, not after.",
-                  },
-                ].map((item) => (
+                {PROMISES.map((item) => (
                   <div key={item.title} className="flex gap-4">
-                    <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-malachite" />
+                    <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-malachite" />
                     <div>
                       <p className="font-semibold text-ink">{item.title}</p>
                       <p className="mt-1 text-sm leading-relaxed text-ink-soft">
@@ -112,8 +106,7 @@ export default function AboutPage() {
           </div>
 
           {/* Sidebar — contact + social */}
-          <div className="space-y-8">
-            {/* Get in touch */}
+          <div className="space-y-6">
             <div className="rounded-2xl border border-ink/10 bg-white p-6">
               <h3 className="font-semibold text-ink">Get in touch</h3>
               <p className="mt-2 text-sm text-ink-soft">
@@ -129,7 +122,6 @@ export default function AboutPage() {
               </a>
             </div>
 
-            {/* Social */}
             <div className="rounded-2xl border border-ink/10 bg-white p-6">
               <h3 className="font-semibold text-ink">Find us</h3>
               <ul className="mt-4 space-y-3">
