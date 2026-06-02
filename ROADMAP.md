@@ -24,6 +24,10 @@ Next up after 2.0.7 sign-off: Phase 2.1
 | 2.1.6 | 90-day expiry cron | Cron logs a dry-run deletion list on server |
 | 2.1.7 | Google sign-in / sign-up (OAuth), alongside existing email auth | Founder signs in with Google; session created; the customise auth-gate resumes the journey; email login still works |
 
+Status (2026-06-02): 2.1.1 ✅ · 2.1.2 ✅ · 2.1.3 ✅ · 2.1.5 ✅ (EXIF baked server-side) · 2.1.6 ✅ (daily job + `npm run cleanup:images`, dry-run by default).
+2.1.4 🟡 partial — resolution detection + a "Low-res" badge ship in the My Photos grid; the "warning before size selection" lands with the ordering journey (size selection lives there).
+2.1.7 ⛔ blocked — needs founder's Google OAuth client ID + secret.
+
 Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
 Dependency: B2 capacity check before starting.
 Dependency: Google OAuth client credentials (founder obtains); decide email-verification handling for OAuth accounts.
