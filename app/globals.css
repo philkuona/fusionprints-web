@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------
+   FusionPrints — Sunlit design tokens
+   Colour hex values are LOCKED to the brand reference. Do not alter.
+   ---------------------------------------------------------------- */
+@theme {
+  --color-cream: #fbf7f0;
+  --color-ink: #1f1b16;
+  --color-malachite: #05d668;
+  --color-malachite-deep: #04a551;
+  --color-coral: #ff7a59;
+  --color-amber: #efab11;
+  --color-ink-soft: #4a3f32;
+  --color-ink-mute: #8a7b66;
+}
+
+/* Fonts injected by next/font as CSS variables on <html> */
+@theme inline {
+  --font-fraunces: var(--ff-fraunces), Georgia, "Times New Roman", serif;
+  --font-outfit: var(--ff-outfit), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--ff-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+/* Sunlit photo grade — unifies sourced photography toward the warm
+   brand tone (gentle: slight warmth + lift, no obvious filter look). */
+.photo-warm {
+  filter: sepia(0.10) saturate(1.08) brightness(1.02) contrast(1.02);
+}
+
+/* Sunlit is a light, cream-default brand. No OS dark-mode override. */
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink-soft);
+  font-family: var(--font-outfit);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* UI/UX Pro Max — respect reduced motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
