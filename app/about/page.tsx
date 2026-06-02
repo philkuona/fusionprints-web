@@ -78,7 +78,7 @@ export default function AboutPage() {
             <div className="relative aspect-16/10 overflow-hidden rounded-3xl bg-ink/5 shadow-md">
               <Image
                 src="/images/about-lifestyle.jpg"
-                alt="A warm home interior with framed prints, softly lit by natural daylight"
+                alt="A grandmother and grandchild on a sofa beside a gallery wall of framed prints in soft daylight"
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"
                 className="object-cover"

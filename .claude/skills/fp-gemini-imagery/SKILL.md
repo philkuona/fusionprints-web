@@ -37,9 +37,9 @@ Use this as the base for every image generated for FusionPrints. Append specific
 
 Generate a premium lifestyle photograph for a photo printing service website.
 
-DIVERSITY — this is the most important rule. The website serves a global, multicultural market. Every image set must reflect genuine human diversity across ALL of these dimensions:
+DIVERSITY — this is the most important rule. FusionPrints serves a Zimbabwean market, so imagery must reflect Zimbabwe's population — NOT a generic global rotation. Every image set must reflect genuine human diversity across ALL of these dimensions:
 
-Race and ethnicity: rotate freely and naturally across Black African, Black Caribbean, White European, South Asian, East Asian, Middle Eastern, Latin American, and mixed-race people. No single racial group should dominate the image set. Representation should feel natural and global, not tokenistic.
+Race and ethnicity: Black African is the majority and should clearly dominate the image set. Include, as visible minorities, white, Indian, and Asian people, and at least one person with albinism (a Black African person with albinism — pale skin, light hair — depicted with dignity, candid and natural, never medical or othering). Do not default to a worldwide spread (Latin American, Middle Eastern, Caribbean, etc.) — keep it true to Zimbabwe. Representation should feel natural, not tokenistic.
 
 Life occasions: FusionPrints serves every meaningful moment in life. Images across the site must cover: weddings, graduations, birthdays, newborn and baby moments, confirmations, baptisms, anniversaries, family reunions, everyday family life, couples, solo portraits, friendships, travel memories, and pet moments.
 

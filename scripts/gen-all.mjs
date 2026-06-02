@@ -1,42 +1,45 @@
 #!/usr/bin/env node
 /**
  * FusionPrints — batch-generate all marketing imagery via Gemini.
- * Runs scripts/gen-image.mjs for each item sequentially.
- * Requires GEMINI_API_KEY (billing-enabled). Optional GEMINI_IMAGE_MODEL.
+ * Prompts follow the MASTER IMAGE PROMPT in
+ * .claude/skills/fp-gemini-imagery/SKILL.md — diversity is the #1 rule.
+ * The 9 slots below are a planned matrix: no two share >2 attributes
+ * (race · age · gender · setting · subject type · occasion).
  *
- *   node scripts/gen-all.mjs          # generate all
- *   node scripts/gen-all.mjs 4x6 wall # only matching slugs
+ * Requires GEMINI_API_KEY (billing-enabled). Optional GEMINI_IMAGE_MODEL.
+ *   node scripts/gen-all.mjs            # all
+ *   node scripts/gen-all.mjs 4x6 wall   # only matching slugs
  */
 import { spawnSync } from "node:child_process";
 
-const BRAND =
-  "Premium editorial lifestyle photograph for a high-end photo printing brand, in the style of Artifact Uprising and Mpix. " +
-  "Warm natural golden-hour light, soft shadows, shallow depth of field, clean minimal premium interior, warm cream and natural-wood tones. " +
-  "Genuine candid moment, never posed stock. People of African descent prominently and naturally featured. " +
-  "Any photo content shown within prints is soft abstract warm landscape or nature with NO identifiable faces. " +
-  "Absolutely no text, no logos, no watermarks, no UI elements, no printer equipment or machinery, " +
-  "and no location identifiers (no landmarks, flags, street signs or recognisable skylines). " +
-  "Photorealistic, fine detail, magazine quality.";
+const BASE =
+  "Premium editorial lifestyle photograph for a photo printing service website. " +
+  "Benchmark: Artifact Uprising, Mpix, Nations Photo Lab. " +
+  "Warm golden-hour or warm interior light, never cold or clinical. Candid, not posed — real, tender emotion. " +
+  "Casual-smart, warm-toned, unbranded clothing. Shallow depth of field, fine detail, photorealistic, magazine quality. " +
+  "Any photos visible within the prints show soft abstract landscape or nature with NO identifiable faces. " +
+  "No text, no logos, no watermarks, no UI elements, no printer equipment or cameras, " +
+  "and no location identifiers (no landmarks, flags, street signs or recognisable skylines).";
 
 const ITEMS = [
   { slug: "card-prints-4x6", file: "public/images/card-prints-4x6.jpg", aspect: "4:5",
-    prompt: "Close-up of the hands of a young woman of African descent gently holding a small fan of freshly printed 4x6 glossy photographs near a sunlit window." },
+    prompt: "A young Black African couple in their late twenties at a sunlit kitchen counter, leaning together and smiling warmly as they look through a small stack of freshly printed 4x6 photographs they hold between them." },
   { slug: "card-prints-5x7", file: "public/images/card-prints-5x7.jpg", aspect: "4:5",
-    prompt: "A single 5x7 matte photo print propped upright on a pale linen-covered windowsill, warm morning light raking across it, a soft blurred plant behind." },
+    prompt: "An older White European man in his sixties seated in a worn leather armchair beside a window, holding a single 5x7 print and gazing at it with quiet nostalgia in warm afternoon light." },
   { slug: "card-prints-6x6", file: "public/images/card-prints-6x6.jpg", aspect: "4:5",
-    prompt: "Hands of a middle-aged man of African descent holding a square 6x6 print over a warm wooden table scattered with a few other small prints." },
+    prompt: "Two young Black African children, a brother and sister, lying on a soft rug on a bedroom floor, arranging a scatter of square 6x6 prints into a neat grid and laughing together under warm lamplight." },
   { slug: "card-prints-8x10", file: "public/images/card-prints-8x10.jpg", aspect: "4:5",
-    prompt: "An 8x10 photo print resting on a folded cream linen cloth on a wooden surface, soft golden side light, a few dried stems beside it." },
+    prompt: "An Indian mother in her thirties sitting outdoors on a garden bench with her baby on her lap, holding up an 8x10 print for the baby to see, soft golden-hour backlight through the leaves." },
   { slug: "card-wall-11x14", file: "public/images/card-wall-11x14.jpg", aspect: "4:5",
-    prompt: "An 11x14 framed print hanging on a warm off-white plaster wall in a minimal sunlit room, a slim shadow cast beside the simple wooden frame." },
+    prompt: "A young Black African woman with albinism — very pale, depigmented skin and pale blonde-white hair, with African facial features — standing in a bright, minimal warm interior, smiling as she admires a framed 11x14 print of an abstract landscape on a plaster wall. Portrayed with genuine warmth and dignity, candid and natural, soft warm light." },
   { slug: "card-wall-12x18", file: "public/images/card-wall-12x18.jpg", aspect: "4:5",
-    prompt: "A 12x18 unframed poster print leaning against a softly lit warm wall on a wooden floor, a small ceramic vase nearby, calm minimal styling." },
+    prompt: "An East Asian teenage girl in her sunlit bedroom, proudly holding up a large 12x18 poster print of an abstract landscape that she is about to hang on the wall, a few personal touches nearby like a potted plant and a small stack of books. Absolutely no text, numbers, lettering or labels anywhere in the scene." },
   { slug: "card-wall-16x20", file: "public/images/card-wall-16x20.jpg", aspect: "4:5",
-    prompt: "A woman of African descent standing back to admire a large 16x20 framed statement print mounted above a minimal wooden console, warm interior, seen from behind in soft focus." },
+    prompt: "A Black African family — two parents in their forties and two children — gathered in a warm living room, hanging a large 16x20 framed print of an abstract landscape on the wall together, candid and joyful." },
   { slug: "card-finish-guide", file: "public/images/card-finish-guide.jpg", aspect: "4:5",
-    prompt: "Macro detail of two photo prints side by side at a raking angle, one glossy and reflective, one soft lustre matte, warm light revealing the difference in surface texture." },
+    prompt: "Close-up flat lay on a wooden table of two prints of the same abstract warm landscape laid side by side, one glossy and reflective, one soft lustre matte, a hand gently tilting one to reveal the difference in surface texture." },
   { slug: "about-lifestyle", file: "public/images/about-lifestyle.jpg", aspect: "3:2",
-    prompt: "A warm, lived-in home interior in soft natural daylight: a small wall of tastefully framed photo prints, a family of African descent gently out of focus in the background sharing a quiet moment." },
+    prompt: "A warm, lived-in living room with a gallery wall of tastefully framed abstract prints; a Black African grandmother and her young grandchild sit together on the sofa nearby, sharing a quiet, tender moment in soft daylight." },
 ];
 
 const filters = process.argv.slice(2);
@@ -49,7 +52,7 @@ for (const item of todo) {
   process.stdout.write(`\n▶ ${item.slug} (${item.aspect}) … `);
   const r = spawnSync(
     "node",
-    ["scripts/gen-image.mjs", item.file, item.aspect, `${item.prompt} ${BRAND}`],
+    ["scripts/gen-image.mjs", item.file, item.aspect, `${item.prompt} ${BASE}`],
     { stdio: ["ignore", "inherit", "inherit"] },
   );
   if (r.status === 0) ok++;
