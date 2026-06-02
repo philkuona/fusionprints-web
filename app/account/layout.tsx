@@ -48,7 +48,6 @@ const NAV = [
         <path d="M21 15l-5-5L5 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
       </svg>
     ),
-    stub: true,
   },
 ];
 
