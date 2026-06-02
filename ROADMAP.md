@@ -22,9 +22,12 @@ Next up after 2.0.7 sign-off: Phase 2.1
 | 2.1.4 | Resolution detection + low-res warning | Upload a tiny image; warning fires before size selection |
 | 2.1.5 | EXIF orientation handling | Sideways phone photo displays upright |
 | 2.1.6 | 90-day expiry cron | Cron logs a dry-run deletion list on server |
+| 2.1.7 | Google sign-in / sign-up (OAuth), alongside existing email auth | Founder signs in with Google; session created; the customise auth-gate resumes the journey; email login still works |
 
 Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
 Dependency: B2 capacity check before starting.
+Dependency: Google OAuth client credentials (founder obtains); decide email-verification handling for OAuth accounts.
+Note: Google auth powers the "must be logged in to customise" gate on the web ordering journey — logged-out users hitting "Create your prints" go to login/sign-up (Google or email), then resume where they left off.
 
 ---
 
