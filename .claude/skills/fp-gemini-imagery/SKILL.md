@@ -2,13 +2,14 @@
 
 ## Trigger
 Use this skill whenever any page, section, or component needs an image.
+This is the sole image source for the entire FusionPrints project.
 Read fully before generating anything.
 
 ## API key
-Set via environment variable only — never hardcoded:
-GEMINI_API_KEY (read from os.environ)
+Environment variable only — never hardcode or commit:
+import os; key = os.environ["GEMINI_API_KEY"]
 
-## How to generate an image
+## How to generate
 
 ```python
 import google.generativeai as genai
@@ -26,86 +27,55 @@ response = client.models.generate_content(
 for part in response.candidates[0].content.parts:
     if part.inline_data:
         img_data = base64.b64decode(part.inline_data.data)
-        pathlib.Path("public/images/YOUR_FILENAME.jpg").write_bytes(img_data)
-        print("saved public/images/YOUR_FILENAME.jpg")
+        pathlib.Path("public/images/FILENAME.jpg").write_bytes(img_data)
+        print("saved public/images/FILENAME.jpg")
 ```
 
-## Workflow — always follow this order
-1. Understand what the image is for (hero, card, section background, accent)
-2. Determine the right dimensions for that use (do not guess — check the component)
-3. Write a prompt using the brand rules below
-4. Generate the image
-5. Quality check against the checklist below
-6. If it fails any check — regenerate with a refined prompt
-7. Save to public/images/ with a descriptive filename (e.g. card-wall-art-16x20.jpg)
-8. Reference in the component using next/image with proper alt text
+## Workflow
+1. Understand what the image is for
+2. Determine correct dimensions from the component
+3. Write prompt using brand rules below
+4. Generate
+5. Quality check — if fails, regenerate
+6. Save to public/images/[section]-[description].jpg
+7. Use next/image with proper alt text
 
-## Brand rules — apply to every prompt
+## Brand rules — every prompt
 
-### People
-- Diversity is non-negotiable. People of African descent must be prominently represented across all images as a set
+People:
+- Diversity non-negotiable. African descent prominently represented across full image set.
 - Mix of ages, genders, family structures
-- No images that are exclusively white or Western-presenting
-- Real moments — genuine emotion, not posed stock photography
-- Never staring directly at camera holding a product
+- Real moments — genuine emotion, not posed
+- Never staring at camera holding a product
 
-### Environment
-- No location identifiers — no landmarks, flags, street signs, recognisable skylines
-- Warm natural light — golden hour tones preferred
-- Never cold, clinical, or studio-white lighting
+Environment:
+- No location identifiers — no landmarks, flags, street signs, skylines
+- Warm natural light — golden hour tones
 - Premium interiors — clean, minimal, warm textures
 
-### Image content
-- No text, watermarks, logos, or UI elements in any image
-- No printer equipment, cameras, or production machinery visible
-- No FusionPrints branding inside the image itself
-- Print content (when prints appear) should be abstract, landscape, or nature — never sharp faces
+Content:
+- No text, watermarks, logos or UI elements in any image
+- No printer equipment visible
+- Print content: abstract, landscape or nature — never sharp identifiable faces
 
-### Style benchmark
-Artifact Uprising · Chatbooks · Mpix · Nations Photo Lab
-Premium lifestyle photography. Intentional, quiet, warm.
-The kind of image that makes you feel something before you read a word.
+Style benchmark: Artifact Uprising · Mpix · Nations Photo Lab
 
-## Quality checklist — must pass before saving
-- [ ] Feels premium (benchmark: would Mpix use this?)
-- [ ] Diversity represented (African descent prominent)
-- [ ] No location identifiers
-- [ ] Lighting is warm
-- [ ] No text or logos in image
-- [ ] Correct dimensions for its use case
-- [ ] Would not embarrass the brand if published
+## Quality checklist
+- Feels premium (would Mpix use this?)
+- Diversity represented
+- No location identifiers
+- Warm lighting
+- No text or logos
+- Correct dimensions
+- Brand-safe
+Fail any — regenerate.
 
-## Naming convention
-public/images/[section]-[description]-[variant].jpg
-Examples:
-  public/images/hero-background.jpg
-  public/images/card-prints-4x6.jpg
-  public/images/card-wall-art-16x20.jpg
-  public/images/section-promise-lifestyle.jpg
-  public/images/about-team-warmth.jpg
+## Naming
+public/images/[section]-[description].jpg
 
-## next/image usage
-Always use next/image — never raw img tags:
-```tsx
-import Image from "next/image";
-
-<Image
-  src="/images/card-prints-4x6.jpg"
-  alt="Hands holding a printed family photo"
-  width={800}
-  height={600}
-  className="object-cover"
-/>
-```
-
-For fill mode (card backgrounds):
+## next/image — always
 ```tsx
 <div className="relative h-64 w-full overflow-hidden rounded-xl">
-  <Image
-    src="/images/card-wall-art-16x20.jpg"
-    alt="Large framed print on a warm interior wall"
-    fill
-    className="object-cover"
-  />
+  <Image src="/images/FILENAME.jpg" alt="description" fill className="object-cover" />
 </div>
 ```
