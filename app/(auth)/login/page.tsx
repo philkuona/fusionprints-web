@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login, type ApiError } from "@/lib/api/auth";
+import { AuthOAuth } from "@/components/auth/auth-oauth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,10 +38,12 @@ export default function LoginPage() {
 
   return (
     <div>
-      <h1 className="font-fraunces text-3xl font-bold text-ink">Welcome back</h1>
+      <h1 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Welcome back</h1>
       <p className="mt-2 text-ink-soft">Sign in to your FusionPrints account.</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+      <AuthOAuth label="Continue with Google" />
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-ink">

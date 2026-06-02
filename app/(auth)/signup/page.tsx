@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signup, type ApiError } from "@/lib/api/auth";
+import { AuthOAuth } from "@/components/auth/auth-oauth";
 
 export default function SignupPage() {
   const [form, setForm] = useState({ email: "", password: "", whatsappNumber: "" });
@@ -66,10 +67,12 @@ export default function SignupPage() {
 
   return (
     <div>
-      <h1 className="font-fraunces text-3xl font-bold text-ink">Create your account</h1>
+      <h1 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Create your account</h1>
       <p className="mt-2 text-ink-soft">Print your memories. Start here.</p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+      <AuthOAuth label="Sign up with Google" />
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-ink">

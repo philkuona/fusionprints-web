@@ -40,6 +40,16 @@ const ITEMS = [
     prompt: "Close-up flat lay on a wooden table of two prints of the same abstract warm landscape laid side by side, one glossy and reflective, one soft lustre matte, a hand gently tilting one to reveal the difference in surface texture." },
   { slug: "about-lifestyle", file: "public/images/about-lifestyle.jpg", aspect: "3:2",
     prompt: "A warm, lived-in living room with a gallery wall of tastefully framed abstract prints; a Black African grandmother and her young grandchild sit together on the sofa nearby, sharing a quiet, tender moment in soft daylight." },
+
+  // Login-screen collage (2x2) — all unique, never reused elsewhere
+  { slug: "auth-collage-1", file: "public/images/auth-collage-1.jpg", aspect: "1:1",
+    prompt: "Close-up of the hands of a Black African man gently sliding a freshly printed photograph into a simple wooden frame on a warm wooden table, soft golden window light." },
+  { slug: "auth-collage-2", file: "public/images/auth-collage-2.jpg", aspect: "1:1",
+    prompt: "A young Indian woman standing by a bright window, smiling warmly as she looks down at a small stack of printed photographs she holds in both hands, soft golden-hour light." },
+  { slug: "auth-collage-3", file: "public/images/auth-collage-3.jpg", aspect: "1:1",
+    prompt: "An overhead flat-lay of several printed photographs of soft abstract warm landscapes fanned across a pale linen surface beside a sprig of dried botanicals, warm natural light, no people." },
+  { slug: "auth-collage-4", file: "public/images/auth-collage-4.jpg", aspect: "1:1",
+    prompt: "A laughing young Black African child holding up a framed photograph with both hands toward the camera, warm sunlit living room behind, candid joy; the photo in the frame is a soft abstract landscape with no identifiable faces." },
 ];
 
 const filters = process.argv.slice(2);

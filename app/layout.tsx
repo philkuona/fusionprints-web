@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit, DM_Mono } from "next/font/google";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -41,9 +40,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${outfit.variable} ${dmMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <SiteHeader />
-        <div className="flex-1">{children}</div>
-        <SiteFooter />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
