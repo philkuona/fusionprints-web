@@ -26,7 +26,7 @@ Next up after 2.0.7 sign-off: Phase 2.1
 
 Status (2026-06-02): 2.1.1 ✅ · 2.1.2 ✅ · 2.1.3 ✅ · 2.1.5 ✅ (EXIF baked server-side) · 2.1.6 ✅ (daily job + `npm run cleanup:images`, dry-run by default).
 2.1.4 🟡 partial — resolution detection + a "Low-res" badge ship in the My Photos grid; the "warning before size selection" lands with the ordering journey (size selection lives there).
-2.1.7 ✅ built — Google sign-in (server-side Authorization Code flow, mirrors QBO; no @fastify/oauth2). Auto-links to an existing email account. Awaiting live test: founder must register the redirect URI in Google Cloud Console (`http://localhost:3000/web/api/auth/google/callback` dev, `https://api.fusionprints.co.zw/web/api/auth/google/callback` prod).
+2.1.7 ✅ done — Google sign-in (server-side Authorization Code flow, mirrors QBO; no @fastify/oauth2), opens in an auto-closing popup. Auto-links to an existing email account. Live-tested (auto-link verified). Prod rollout pending: register `https://api.fusionprints.co.zw/web/api/auth/google/callback` in Google Console, set creds on the server, run db:migrate on the prod DB.
 
 Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
 Dependency: B2 capacity check before starting.
