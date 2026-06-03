@@ -156,8 +156,13 @@ These are mechanical deploy steps, not roadmap milestones — a normal `npm run 
 does not perform them. Action them when the relevant feature goes live (formal launch
 is Phase 2.4.6). Prod host: Hetzner `178.104.67.122`, app at `/home/fusionprints/app`.
 
-**2.1.7 Google sign-in:**
-- [ ] Register prod redirect URI `https://api.fusionprints.co.zw/web/api/auth/google/callback` in the Google Cloud Console (both the redirect and popup flows use this one callback). Dev URI `http://localhost:3000/web/api/auth/google/callback` already registered.
-- [ ] Set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` in the server `.env` (`npm run deploy` does not touch env), then `sudo systemctl restart fusionprints`.
-- [ ] Run `db:migrate` against the prod DB — migration `0009` (web_users: nullable password_hash + google_id/display_name/avatar_url) is applied to dev only.
-- [ ] Confirm prod `PUBLIC_URL=https://api.fusionprints.co.zw` and `WEB_URL` = the real frontend origin (popup `postMessage` targetOrigin must match it exactly).
+**Web app staging/launch — done 2026-06-03 (prod API ready for `app.fusionprints.co.zw`):**
+- [x] Backend deployed (editor + auth routes); migrations `0009` + `0010` applied to PROD DB.
+- [x] Prod `.env`: `WEB_URL=https://app.fusionprints.co.zw`, `PUBLIC_URL=https://api.fusionprints.co.zw`, `GOOGLE_*`/`RESEND_API_KEY`/`B2_*` set. Backup at `/home/fusionprints/app/.env.bak.*`.
+- [x] Set a strong `ADMIN_SESSION_SECRET` (was EMPTY → was using the public dev fallback; security fix).
+- [x] CORS allows `https://app.fusionprints.co.zw` (in code) + via `WEB_URL`.
+- [ ] **Frontend on Vercel** → custom domain `app.fusionprints.co.zw`, env `NEXT_PUBLIC_API_URL=https://api.fusionprints.co.zw`; DNS CNAME `app` → Vercel. (founder)
+- [ ] **Google sign-in on prod:** register redirect URI `https://api.fusionprints.co.zw/web/api/auth/google/callback` in Google Cloud Console. (founder — email signup+verify already works via Resend.)
+
+**Real launch (Phase 2.4) — when the web app replaces the apex landing page:** repoint
+`WEB_URL` if the app moves to the apex; revisit hosting (Vercel vs Hetzner).
