@@ -130,7 +130,7 @@ export function CropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-2 sm:p-4">
-      <div className="flex h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         {/* Header */}
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-ink/10 px-4 py-3">
           <button type="button" onClick={onCancel} className="flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5">

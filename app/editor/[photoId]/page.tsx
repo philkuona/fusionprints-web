@@ -304,7 +304,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const lineItems = Object.values(items);
 
   return (
-    <div className="flex h-screen flex-col bg-cream text-ink">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream text-ink">
       {/* Promo / nav bar */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-ink/10 bg-ink px-4">
         <Link href="/" aria-label="FusionPrints home" className="cursor-pointer">
@@ -421,11 +421,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                     <button
                       type="button"
                       onClick={() => setActivePhotoId(p.id)}
-                      className={`relative block h-28 w-28 overflow-hidden rounded-lg border-2 transition-colors duration-200 ${
+                      className={`relative block h-16 w-16 overflow-hidden rounded-lg border-2 transition-colors duration-200 sm:h-28 sm:w-28 ${
                         isActive ? "border-malachite" : "border-transparent hover:border-ink/20"
                       }`}
                     >
-                      <Image src={p.storageUrl} alt="" fill sizes="112px" className="object-cover" />
+                      <Image src={p.storageUrl} alt="" fill sizes="(max-width: 640px) 64px, 112px" className="object-cover" />
                     </button>
                     <button
                       type="button"
@@ -452,8 +452,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
 
           {/* Body */}
           <div className="flex min-h-0 flex-1">
-            {/* Left: size list */}
-            <aside className="w-64 shrink-0 space-y-5 overflow-y-auto border-r border-ink/10 bg-white p-4">
+            {/* Left: size list (desktop only — mobile uses the dropdown) */}
+            <aside className="hidden w-64 shrink-0 space-y-5 overflow-y-auto border-r border-ink/10 bg-white p-4 lg:block">
               <p className="text-xs text-ink-mute">
                 {selected.size > 1 ? `Adding sizes to ${selected.size} photos` : "Tap a size's + to add it"}
               </p>
@@ -462,80 +462,70 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
             </aside>
 
             {/* Centre */}
-            <main className="flex min-h-0 flex-1 flex-col overflow-auto p-4 sm:p-6">
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6">
               {addedNote && (
                 <p className="mx-auto mb-3 rounded-full bg-malachite/15 px-4 py-2 text-sm text-ink">{addedNote}</p>
               )}
 
-              {/* Top-left: qty + size, divider, finish options — full section width */}
-              <div className="w-full">
+              {/* Size + qty. Mobile: a size dropdown (Mpix-style). Desktop: label (sidebar selects). */}
+              <div className="w-full shrink-0">
                 <div className="flex items-center gap-3">
+                  <select
+                    value={activeSizeCode ?? ""}
+                    onChange={(e) => setActiveSizeCode(e.target.value)}
+                    aria-label="Print size"
+                    className="h-11 min-w-0 flex-1 cursor-pointer rounded-xl border border-ink/15 bg-white px-3 text-sm font-semibold text-ink lg:hidden"
+                  >
+                    <optgroup label="Photo prints">
+                      {photoPrints.map((p) => (
+                        <option key={p.sizeCode} value={p.sizeCode}>
+                          {p.labelInches} — from {formatPrice(p.unitPriceUsd)}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Wall art">
+                      {wallArt.map((p) => (
+                        <option key={p.sizeCode} value={p.sizeCode}>
+                          {p.labelInches} — from {formatPrice(p.unitPriceUsd)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <span className="hidden text-sm font-semibold text-ink lg:inline">
+                    {activeProduct.labelInches} print
+                  </span>
                   <QtyStepper
                     value={activeQty}
                     onDec={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty - 1)}
                     onInc={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty + 1)}
                   />
-                  <span className="text-sm font-semibold text-ink">{activeProduct.labelInches} print</span>
                 </div>
-                <div className="my-3 border-t border-ink/10" />
-                <div className="flex flex-wrap gap-2">
-                  {/* Paper */}
-                  <div className="flex min-w-[160px] flex-col rounded-xl border border-ink/15 px-3 py-2">
-                    <span className="text-[11px] text-ink-mute">Paper</span>
-                    {isPhotoPrint ? (
-                      <div className="mt-1 flex gap-1">
-                        {(["glossy", "satin"] as const).map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setPaperByKey((prev) => ({ ...prev, [activeKey]: p }))}
-                            className={`flex-1 cursor-pointer rounded-lg px-2 py-1 text-xs font-medium capitalize transition-colors duration-200 ${
-                              activePaper === p ? "bg-malachite text-ink" : "bg-ink/5 text-ink-soft hover:bg-ink/10"
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-sm font-medium text-ink">{cap(activeProduct.finish)}</span>
-                    )}
-                  </div>
 
-                  {/* Finishing & Border */}
-                  <div className="flex min-w-[160px] flex-col rounded-xl border border-ink/15 px-3 py-2">
-                    <span className="text-[11px] text-ink-mute">Finishing &amp; Border</span>
-                    <button
-                      type="button"
-                      onClick={() => setBorderByKey((prev) => ({ ...prev, [activeKey]: !activeBorder }))}
-                      className="mt-1 flex items-center justify-between gap-2"
-                    >
-                      <span className="text-sm font-medium text-ink">½&quot; border</span>
-                      <span
-                        className={`relative inline-flex h-5 w-9 cursor-pointer items-center rounded-full transition-colors duration-200 ${
-                          activeBorder ? "bg-malachite" : "bg-ink/15"
-                        }`}
-                      >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${activeBorder ? "translate-x-4" : "translate-x-0.5"}`} />
-                      </span>
-                    </button>
-                  </div>
-
-                  <OptionChip label="Frame / Mount" value="None" soon />
+                {/* Finish options — desktop shows them up top */}
+                <div className="hidden lg:block">
+                  <div className="my-3 border-t border-ink/10" />
+                  <FinishOptions
+                    isPhotoPrint={isPhotoPrint}
+                    finish={activeProduct.finish}
+                    activePaper={activePaper}
+                    onPaper={(p) => setPaperByKey((prev) => ({ ...prev, [activeKey]: p }))}
+                    activeBorder={activeBorder}
+                    onToggleBorder={() => setBorderByKey((prev) => ({ ...prev, [activeKey]: !activeBorder }))}
+                  />
                 </div>
               </div>
 
               {/* Separator before the image */}
-              <div className="mt-3 border-t border-ink/10" />
+              <div className="mt-3 shrink-0 border-t border-ink/10" />
 
-              {/* Clickable preview — frames to the selected size; opens focus mode */}
-              <div className="mt-4 flex flex-1 items-center justify-center">
+              {/* Clickable preview — fills remaining space; opens focus mode */}
+              <div className="mt-4 flex min-h-0 flex-1 items-center justify-center">
                 <button
                   type="button"
                   onClick={() => setFocused(true)}
                   aria-label="Edit or crop this photo"
-                  className="group relative block cursor-pointer overflow-hidden rounded-lg bg-white shadow-md"
-                  style={{ aspectRatio: `${pvW} / ${pvH}`, height: "75vh", maxWidth: "100%" }}
+                  className="group relative block h-full cursor-pointer overflow-hidden rounded-lg bg-white shadow-md"
+                  style={{ aspectRatio: `${pvW} / ${pvH}`, maxWidth: "100%", maxHeight: "100%" }}
                 >
                   {activeItem?.processedUrl ? (
                     <Image src={activeItem.processedUrl} alt="Edited print preview" fill sizes="560px" className="object-cover" priority />
@@ -560,18 +550,31 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                 </button>
               </div>
 
-              {/* Edit/Crop centered below image */}
-              <div className="mt-3 flex justify-center">
+              {/* Edit/Crop (desktop button) / tap hint (mobile) */}
+              <div className="mt-3 flex shrink-0 justify-center">
                 <button
                   type="button"
                   onClick={() => setFocused(true)}
-                  className="flex h-10 cursor-pointer items-center gap-2 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink transition-colors duration-200 hover:border-ink/30"
+                  className="hidden h-10 cursor-pointer items-center gap-2 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink transition-colors duration-200 hover:border-ink/30 lg:flex"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M4 16v4h4M20 8V4h-4M4 8V4h4M20 16v4h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                   </svg>
                   Edit / Crop
                 </button>
+                <p className="text-xs text-ink-mute lg:hidden">Tap the photo to crop &amp; edit</p>
+              </div>
+
+              {/* Finish options — mobile shows them at the bottom (Mpix-style) */}
+              <div className="mt-3 shrink-0 lg:hidden">
+                <FinishOptions
+                  isPhotoPrint={isPhotoPrint}
+                  finish={activeProduct.finish}
+                  activePaper={activePaper}
+                  onPaper={(p) => setPaperByKey((prev) => ({ ...prev, [activeKey]: p }))}
+                  activeBorder={activeBorder}
+                  onToggleBorder={() => setBorderByKey((prev) => ({ ...prev, [activeKey]: !activeBorder }))}
+                />
               </div>
             </main>
           </div>
@@ -604,12 +607,70 @@ function cap(s: string): string {
 
 function OptionChip({ label, value, soon }: { label: string; value: string; soon?: boolean }) {
   return (
-    <div className={`flex min-w-[140px] flex-col rounded-xl border px-3 py-2 ${soon ? "border-dashed border-ink/15" : "border-ink/15"}`}>
-      <span className="flex items-center gap-1.5 text-[11px] text-ink-mute">
+    <div className={`flex min-w-0 flex-col rounded-xl border px-2 py-2 sm:px-3 ${soon ? "border-dashed border-ink/15" : "border-ink/15"}`}>
+      <span className="flex items-center gap-1 text-[11px] text-ink-mute">
         {label}
         {soon && <span className="rounded bg-ink/8 px-1 text-[10px]">soon</span>}
       </span>
       <span className={`text-sm font-medium ${soon ? "text-ink-mute" : "text-ink"}`}>{value}</span>
+    </div>
+  );
+}
+
+/** Paper / Border / Frame option chips (3-col grid). Used top on desktop, bottom on mobile. */
+function FinishOptions({
+  isPhotoPrint,
+  finish,
+  activePaper,
+  onPaper,
+  activeBorder,
+  onToggleBorder,
+}: {
+  isPhotoPrint: boolean;
+  finish: string;
+  activePaper: "glossy" | "satin";
+  onPaper: (p: "glossy" | "satin") => void;
+  activeBorder: boolean;
+  onToggleBorder: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {/* Paper */}
+      <div className="flex min-w-0 flex-col rounded-xl border border-ink/15 px-2 py-2 sm:px-3">
+        <span className="text-[11px] text-ink-mute">Paper</span>
+        {isPhotoPrint ? (
+          <div className="mt-1 flex gap-1">
+            {(["glossy", "satin"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPaper(p)}
+                className={`flex-1 cursor-pointer rounded-lg px-1 py-1 text-[11px] font-medium capitalize transition-colors duration-200 ${
+                  activePaper === p ? "bg-malachite text-ink" : "bg-ink/5 text-ink-soft hover:bg-ink/10"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="mt-1 text-sm font-medium text-ink">{cap(finish)}</span>
+        )}
+      </div>
+
+      {/* Finishing & Border */}
+      <div className="flex min-w-0 flex-col rounded-xl border border-ink/15 px-2 py-2 sm:px-3">
+        <span className="text-[11px] text-ink-mute">Border</span>
+        <button type="button" onClick={onToggleBorder} className="mt-1 flex cursor-pointer items-center justify-between gap-1">
+          <span className="text-xs font-medium text-ink">½&quot;</span>
+          <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${activeBorder ? "bg-malachite" : "bg-ink/15"}`}>
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${activeBorder ? "translate-x-4" : "translate-x-0.5"}`} />
+          </span>
+        </button>
+      </div>
+
+      {/* Frame / Mount */}
+      <OptionChip label="Frame" value="None" soon />
     </div>
   );
 }
