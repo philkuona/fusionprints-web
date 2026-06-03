@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   getPhotos,
   deletePhoto,
   uploadPhoto,
-  formatFileSize,
   type Photo,
 } from "@/lib/api/photos";
 import { getCatalog } from "@/lib/api/catalog";
@@ -24,6 +24,7 @@ interface PendingUpload {
 let uploadKeySeq = 0;
 
 export default function PhotosPage() {
+  const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragActive, setDragActive] = useState(false);
@@ -44,10 +45,10 @@ export default function PhotosPage() {
       .finally(() => setLoading(false));
 
     getCatalog()
-      .then((catalog) => {
-        if (catalog.length === 0) return;
+      .then((list) => {
+        if (list.length === 0) return;
         const min = Math.min(
-          ...catalog.map(
+          ...list.map(
             (p) => p.recommendedResolution.width * p.recommendedResolution.height,
           ),
         );
@@ -367,13 +368,15 @@ export default function PhotosPage() {
                   </span>
                 )}
 
-                {/* Hover footer: size + delete */}
+                {/* Hover footer: make prints + delete */}
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-ink/70 to-transparent p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  <span className="font-mono text-[11px] text-cream/90">
-                    {photo.widthPx && photo.heightPx
-                      ? `${photo.widthPx}×${photo.heightPx}`
-                      : formatFileSize(photo.fileSizeBytes)}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/editor/${photo.id}`)}
+                    className="pointer-events-auto flex h-8 cursor-pointer items-center rounded-full bg-malachite px-3 text-[11px] font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+                  >
+                    Make prints
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleDeleteOne(photo.id)}

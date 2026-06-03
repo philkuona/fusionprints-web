@@ -107,6 +107,7 @@ Timing note: the headline promises ideally land before the 2.4 soft launch — 2
 
 ## Phase 2.6+ — Post-launch
 
+- Upsell add-ons at the cart/summary step (frames, mounts, gift boxes) — space reserved in the editor's review/summary view
 - Tier 2 editor: text overlays, borders, collages
 - Photo book builder
 - Photo card templates (birthday, wedding, graduation, newborn)
