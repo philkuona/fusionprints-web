@@ -1,4 +1,15 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+const START_URL = `${API}/web/api/auth/google`;
+
+const POPUP_ERRORS: Record<string, string> = {
+  google: "We couldn't sign you in with Google. Please try again.",
+  google_disabled: "Google sign-in isn't available right now — use your email below.",
+};
 
 function GoogleIcon() {
   return (
@@ -13,19 +24,95 @@ function GoogleIcon() {
 
 /**
  * Google sign-in/up button + "or" divider, shared by login and signup.
- * Links to the backend's Authorization Code flow, which redirects to Google
- * and back to /account once signed in (roadmap 2.1.7).
+ *
+ * Opens Google in a small popup; the backend callback postMessages the result
+ * back, then we route to /account and the popup auto-closes. Falls back to a
+ * full-page redirect if the popup is blocked (or JS is off — the anchor href).
  */
 export function AuthOAuth({ label }: { label: string }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+  const popupRef = useRef<Window | null>(null);
+
+  const openPopup = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setError("");
+
+    const w = 500;
+    const h = 640;
+    const left = window.screenX + Math.max(0, (window.outerWidth - w) / 2);
+    const top = window.screenY + Math.max(0, (window.outerHeight - h) / 2);
+    const popup = window.open(
+      `${START_URL}?popup=1`,
+      "fp-google-auth",
+      `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`,
+    );
+
+    // Popup blocked → fall back to a full-page redirect.
+    if (!popup) {
+      window.location.href = START_URL;
+      return;
+    }
+    popupRef.current = popup;
+    setPending(true);
+  }, []);
+
+  // Listen for the result the backend popup posts back.
+  useEffect(() => {
+    let apiOrigin = "";
+    try {
+      apiOrigin = new URL(API).origin;
+    } catch {
+      apiOrigin = "";
+    }
+
+    const onMessage = (event: MessageEvent) => {
+      if (apiOrigin && event.origin !== apiOrigin) return;
+      const data = event.data as { source?: string; ok?: boolean; error?: string } | null;
+      if (!data || data.source !== "fp-google-auth") return;
+
+      setPending(false);
+      popupRef.current?.close();
+      popupRef.current = null;
+
+      if (data.ok) {
+        router.push("/account");
+        router.refresh();
+      } else {
+        setError(POPUP_ERRORS[data.error ?? "google"] ?? POPUP_ERRORS.google);
+      }
+    };
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [router]);
+
+  // If the user closes the popup themselves, drop the pending state.
+  useEffect(() => {
+    if (!pending) return;
+    const timer = window.setInterval(() => {
+      if (popupRef.current && popupRef.current.closed) {
+        popupRef.current = null;
+        setPending(false);
+        window.clearInterval(timer);
+      }
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [pending]);
+
   return (
     <div className="mt-8">
       <a
-        href={`${API}/web/api/auth/google`}
+        href={START_URL}
+        onClick={openPopup}
+        aria-busy={pending}
         className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-ink/15 bg-white text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/[0.04]"
       >
         <GoogleIcon />
-        {label}
+        {pending ? "Waiting for Google…" : label}
       </a>
+      {error && <p className="mt-2 text-center text-xs text-coral">{error}</p>}
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-ink/10" />
         <span className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">or</span>
