@@ -26,7 +26,7 @@ Next up after 2.0.7 sign-off: Phase 2.1
 
 Status (2026-06-02): 2.1.1 ✅ · 2.1.2 ✅ · 2.1.3 ✅ · 2.1.5 ✅ (EXIF baked server-side) · 2.1.6 ✅ (daily job + `npm run cleanup:images`, dry-run by default).
 2.1.4 🟡 partial — resolution detection + a "Low-res" badge ship in the My Photos grid; the "warning before size selection" lands with the ordering journey (size selection lives there).
-2.1.7 ✅ done — Google sign-in (server-side Authorization Code flow, mirrors QBO; no @fastify/oauth2), opens in an auto-closing popup. Auto-links to an existing email account. Live-tested (auto-link verified). Prod rollout pending: register `https://api.fusionprints.co.zw/web/api/auth/google/callback` in Google Console, set creds on the server, run db:migrate on the prod DB.
+2.1.7 ✅ done — Google sign-in (server-side Authorization Code flow, mirrors QBO; no @fastify/oauth2), opens in an auto-closing popup. Auto-links to an existing email account. Live-tested (auto-link verified). See deploy checklist at the end for the production steps.
 
 Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
 Dependency: B2 capacity check before starting.
@@ -146,3 +146,17 @@ Timing note: the headline promises ideally land before the 2.4 soft launch — 2
 9. No location references in copy.
 10. No printer names in customer-facing copy.
 11. No Innovative Fusions / GIZMO Tech Store on customer pages.
+
+---
+
+## Deploy checklist (production steps that live outside git)
+
+These are mechanical deploy steps, not roadmap milestones — a normal `npm run deploy`
+does not perform them. Action them when the relevant feature goes live (formal launch
+is Phase 2.4.6). Prod host: Hetzner `178.104.67.122`, app at `/home/fusionprints/app`.
+
+**2.1.7 Google sign-in:**
+- [ ] Register prod redirect URI `https://api.fusionprints.co.zw/web/api/auth/google/callback` in the Google Cloud Console (both the redirect and popup flows use this one callback). Dev URI `http://localhost:3000/web/api/auth/google/callback` already registered.
+- [ ] Set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` in the server `.env` (`npm run deploy` does not touch env), then `sudo systemctl restart fusionprints`.
+- [ ] Run `db:migrate` against the prod DB — migration `0009` (web_users: nullable password_hash + google_id/display_name/avatar_url) is applied to dev only.
+- [ ] Confirm prod `PUBLIC_URL=https://api.fusionprints.co.zw` and `WEB_URL` = the real frontend origin (popup `postMessage` targetOrigin must match it exactly).
