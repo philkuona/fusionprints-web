@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 function GoogleIcon() {
   return (
@@ -15,26 +13,19 @@ function GoogleIcon() {
 
 /**
  * Google sign-in/up button + "or" divider, shared by login and signup.
- * Visual-only until OAuth is wired (roadmap 2.1.7); clicking shows a note.
+ * Links to the backend's Authorization Code flow, which redirects to Google
+ * and back to /account once signed in (roadmap 2.1.7).
  */
 export function AuthOAuth({ label }: { label: string }) {
-  const [note, setNote] = useState(false);
-
   return (
     <div className="mt-8">
-      <button
-        type="button"
-        onClick={() => setNote(true)}
+      <a
+        href={`${API}/web/api/auth/google`}
         className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-ink/15 bg-white text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/[0.04]"
       >
         <GoogleIcon />
         {label}
-      </button>
-      {note && (
-        <p className="mt-2 text-center text-xs text-ink-mute">
-          Google sign-in is coming soon — continue with your email below for now.
-        </p>
-      )}
+      </a>
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-ink/10" />
         <span className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">or</span>

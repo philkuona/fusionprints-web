@@ -10,6 +10,8 @@ export interface WebUser {
   email: string;
   emailVerified: boolean;
   whatsappNumber: string | null;
+  displayName: string | null;
+  avatarUrl: string | null;
   createdAt: string;
   lastLoginAt: string | null;
 }

@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         hostname: "**.backblazeb2.com",
         pathname: "/**",
       },
+      {
+        // Google profile pictures for users who signed in with Google.
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
     ],
   },
 };

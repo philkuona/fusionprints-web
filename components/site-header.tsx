@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
@@ -105,9 +106,19 @@ export function SiteHeader() {
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 aria-label="Account menu"
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+                className="relative flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
               >
-                {initials(user.email)}
+                {user.avatarUrl ? (
+                  <Image
+                    src={user.avatarUrl}
+                    alt=""
+                    fill
+                    sizes="44px"
+                    className="object-cover"
+                  />
+                ) : (
+                  initials(user.email)
+                )}
               </button>
 
               {menuOpen && (

@@ -1,17 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { login, type ApiError } from "@/lib/api/auth";
 import { AuthOAuth } from "@/components/auth/auth-oauth";
 
+const GOOGLE_ERRORS: Record<string, string> = {
+  google: "We couldn't sign you in with Google. Please try again or use your email below.",
+  google_disabled: "Google sign-in isn't available right now — please sign in with your email.",
+};
+
 export default function LoginPage() {
+  // useSearchParams needs a Suspense boundary; wrap the form in one.
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Surface OAuth failures the backend redirected back with (?error=google).
+  const oauthError = searchParams.get("error");
+  const initialMessage = oauthError ? (GOOGLE_ERRORS[oauthError] ?? "") : "";
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">(
+    initialMessage ? "error" : "idle",
+  );
+  const [message, setMessage] = useState(initialMessage);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
