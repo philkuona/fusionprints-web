@@ -369,7 +369,7 @@ export default function PhotosPage() {
                 )}
 
                 {/* Hover footer: make prints + delete */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-ink/70 to-transparent p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-ink/70 to-transparent p-2 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={() => router.push(`/editor/${photo.id}`)}
