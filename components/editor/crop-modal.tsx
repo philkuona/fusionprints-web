@@ -104,6 +104,15 @@ export function CropModal({
 
   const cssFilter = buildCssFilter(adjustments, filterId, autoEnhance);
 
+  const effectsDirty =
+    autoEnhance || filterId !== "none" || (Object.values(adjustments) as number[]).some((v) => v !== 0);
+
+  function resetEffects() {
+    setAdjustments(ZERO_ADJUSTMENTS);
+    setAutoEnhance(false);
+    setFilterId("none");
+  }
+
   const handleCropChange = (c: CropChange) => {
     cropRef.current = c.crop;
     setCropPixels(c.pixels);
@@ -205,15 +214,25 @@ export function CropModal({
           {showEffects && (
             <aside className="shrink-0 overflow-y-auto border-t border-ink/10 px-4 pb-3 pt-3 lg:w-80 lg:border-r lg:border-t-0 lg:py-4">
               <div className="space-y-2 rounded-xl border border-ink/10 bg-white p-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold text-ink">Effects</span>
-                  <button
-                    type="button"
-                    onClick={() => setAutoEnhance((v) => !v)}
-                    className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${autoEnhance ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
-                  >
-                    Auto-enhance {autoEnhance ? "on" : "off"}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={resetEffects}
+                      disabled={!effectsDirty}
+                      className="cursor-pointer rounded-full border border-ink/15 px-3 py-1 text-xs font-medium text-ink-soft transition-colors duration-200 hover:border-ink/30 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAutoEnhance((v) => !v)}
+                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${autoEnhance ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
+                    >
+                      Auto-enhance {autoEnhance ? "on" : "off"}
+                    </button>
+                  </div>
                 </div>
                 {SLIDERS.map((s) => (
                   <label key={s.key} className="flex items-center gap-3 text-xs text-ink-soft">

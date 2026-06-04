@@ -101,6 +101,7 @@ export function EditorCanvas({
   maxZoom = 5,
 }: EditorCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   const onCropChangeRef = useRef(onCropChange);
@@ -127,6 +128,7 @@ export function EditorCanvas({
 
   const ctrlRef = useRef<{
     stage: Konva.Stage;
+    overlayStage: Konva.Stage;
     natW: number;
     natH: number;
     frame: Rect;
@@ -140,7 +142,8 @@ export function EditorCanvas({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    const overlayEl = overlayRef.current;
+    if (!el || !overlayEl) return;
 
     let destroyed = false;
     let resizeObserver: ResizeObserver | null = null;
@@ -148,11 +151,19 @@ export function EditorCanvas({
 
     (async () => {
       const Konva = (await import("konva/lib/index.js")).default;
-      if (destroyed || !el) return;
+      if (destroyed || !el || !overlayEl) return;
 
+      // Two stacked stages: the photo lives on `stage` (its container carries the
+      // CSS colour filter) and every overlay — white masks, frame border, grid,
+      // border bands, safe line — lives on `overlayStage`, which is NOT filtered.
+      // This keeps the effects on the image only, never the surrounding canvas.
       const stage = new Konva.Stage({ container: el, width: el.clientWidth, height: el.clientHeight });
       const layer = new Konva.Layer();
       stage.add(layer);
+
+      const overlayStage = new Konva.Stage({ container: overlayEl, width: el.clientWidth, height: el.clientHeight });
+      const overlayLayer = new Konva.Layer();
+      overlayStage.add(overlayLayer);
 
       imageObj.onerror = () => {
         if (!destroyed) setStatus("error");
@@ -179,14 +190,17 @@ export function EditorCanvas({
         // Dashed grey "safe-area" line (outline only — never covers the photo).
         const safeRect = new Konva.Rect({ listening: false, stroke: "#9ca3af", strokeWidth: 1.5, dash: [6, 5] });
         layer.add(image);
-        mask.forEach((m) => layer.add(m));
-        layer.add(frameBorder);
-        grid.forEach((g) => layer.add(g));
-        guide.forEach((g) => layer.add(g));
-        layer.add(safeRect);
+        // Overlays go on the unfiltered top stage so the colour filter only
+        // affects the photo, never the masks/guides around it.
+        mask.forEach((m) => overlayLayer.add(m));
+        overlayLayer.add(frameBorder);
+        grid.forEach((g) => overlayLayer.add(g));
+        guide.forEach((g) => overlayLayer.add(g));
+        overlayLayer.add(safeRect);
 
         const ctrl = {
           stage,
+          overlayStage,
           natW: sz.w,
           natH: sz.h,
           frame: { x: 0, y: 0, width: 0, height: 0 } as Rect,
@@ -210,6 +224,7 @@ export function EditorCanvas({
             const sh = el.clientHeight;
             if (sw === 0 || sh === 0) return;
             stage.size({ width: sw, height: sh });
+            overlayStage.size({ width: sw, height: sh });
             const prev = this.frame.width
               ? centerOf(computeNormalizedCrop(this.frame, this.imageRect()))
               : { x: 0.5, y: 0.5 };
@@ -285,7 +300,7 @@ export function EditorCanvas({
               height: Math.max(0, f.height - 2 * sy),
               opacity: on ? 0 : 1,
             });
-            stage.batchDraw();
+            overlayStage.batchDraw();
           },
           emit() {
             const crop = computeNormalizedCrop(this.frame, this.imageRect());
@@ -323,6 +338,7 @@ export function EditorCanvas({
       imageObj.onerror = null;
       if (resizeObserver) resizeObserver.disconnect();
       ctrlRef.current?.stage.destroy();
+      ctrlRef.current?.overlayStage.destroy();
       ctrlRef.current = null;
     };
   }, [imageUrl]);
@@ -351,6 +367,9 @@ export function EditorCanvas({
   return (
     <div className="relative h-full w-full touch-none overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 cursor-grab active:cursor-grabbing" style={{ filter: cssFilter }} />
+      {/* Overlays (masks, frame, grid, safe line) — on top, unfiltered, and
+          transparent to pointer events so the photo below stays draggable. */}
+      <div ref={overlayRef} className="pointer-events-none absolute inset-0" />
       {status === "loading" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-ink/10 border-t-malachite" />
