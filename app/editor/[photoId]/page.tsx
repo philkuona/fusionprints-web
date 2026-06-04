@@ -22,8 +22,6 @@ import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal
 import { Dropdown } from "@/components/editor/dropdown";
 import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
 
-const INTRO_KEY = "fp_editor_safe_intro_v1";
-
 const ACCEPT = "image/jpeg,image/png,image/tiff,image/webp,image/heic,image/heif";
 
 interface LineItem {
@@ -261,13 +259,9 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     setView("editor");
   }
 
-  /** Enter crop mode — show the safe-area checkpoint first (once per device). */
+  /** Enter crop mode — always show the safe-area checkpoint first. */
   function openFocused() {
-    if (typeof window !== "undefined" && window.localStorage.getItem(INTRO_KEY)) {
-      setFocused(true);
-    } else {
-      setShowIntro(true);
-    }
+    setShowIntro(true);
   }
 
   /** From the summary: jump into focus mode for a specific line item. */
@@ -627,11 +621,10 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         />
       )}
 
-      {/* Safe-area checkpoint before entering crop mode (once per device) */}
+      {/* Safe-area checkpoint shown every time before entering crop mode */}
       {showIntro && (
         <SafeAreaIntro
           onContinue={() => {
-            if (typeof window !== "undefined") window.localStorage.setItem(INTRO_KEY, "1");
             setShowIntro(false);
             setFocused(true);
           }}

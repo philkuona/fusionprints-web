@@ -10,8 +10,8 @@ import Image from "next/image";
  */
 export function SafeAreaIntro({ onContinue }: { onContinue: () => void }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-cream p-6 text-center shadow-2xl">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/70 p-4 backdrop-blur-xl">
+      <div className="w-full max-w-lg rounded-2xl bg-cream p-7 text-center shadow-2xl">
         <h2 className="font-fraunces text-xl font-bold text-ink">Keep the important bits inside the line</h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-ink-soft">
           Everything inside the frame prints. The <strong className="font-semibold text-ink">dashed line</strong> is a
@@ -21,13 +21,13 @@ export function SafeAreaIntro({ onContinue }: { onContinue: () => void }) {
         {/* Demo: photo fills the print frame; dashed safe line + pointer overlaid */}
         <div
           className="relative mx-auto mt-5 overflow-hidden rounded-lg bg-ink/5 shadow-md"
-          style={{ aspectRatio: "4 / 5", maxWidth: 240 }}
+          style={{ aspectRatio: "4 / 5", maxWidth: 360 }}
         >
           <Image
             src="/images/editor-safe-demo.jpg"
             alt="A smiling woman in a warm-lit room, shown inside a print frame with a dashed line marking the safe area"
             fill
-            sizes="240px"
+            sizes="360px"
             className="object-cover"
           />
           {/* dashed safe-area line */}
