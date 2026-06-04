@@ -81,6 +81,7 @@ export function CropModal({
   const [filterId, setFilterId] = useState<FilterId>("none");
   const [showEffects, setShowEffects] = useState(false);
   const [cropPixels, setCropPixels] = useState<{ width: number; height: number } | null>(null);
+  const [frame, setFrame] = useState<Rect | null>(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const cropRef = useRef<Rect | null>(null);
@@ -151,9 +152,9 @@ export function CropModal({
           </button>
         </header>
 
-        {/* Canvas with L-shaped dimension labels (bottom-left, with arrows) */}
-        <div className="relative min-h-0 flex-1 px-4 pt-4">
-          <div className="h-full w-full">
+        {/* Canvas with L-shaped dimension labels anchored to the print frame */}
+        <div className="min-h-0 flex-1 p-4">
+          <div className="relative h-full w-full">
             <EditorCanvas
               key={resetKey}
               imageUrl={photo.storageUrl}
@@ -168,22 +169,27 @@ export function CropModal({
               zoom={zoom}
               onZoomChange={setZoom}
               onCropChange={handleCropChange}
+              onFrameChange={setFrame}
             />
-          </div>
-          {/* measurements */}
-          <div className="pointer-events-none absolute bottom-3 left-3 flex items-end gap-2">
-            <div className="flex flex-col items-center rounded bg-white/85 px-1 py-1 font-mono text-[11px] text-ink">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 5v14M12 5l-5 5M12 5l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
-            </div>
-            <div className="flex items-center gap-1 rounded bg-white/85 px-1.5 py-1 font-mono text-[11px] text-ink">
-              <span>{aspectW} in</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12h14M19 12l-5-5M19 12l-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            {frame && (
+              <div
+                className="pointer-events-none absolute flex items-end gap-1"
+                style={{ left: frame.x + 6, top: frame.y + frame.height - 6, transform: "translateY(-100%)" }}
+              >
+                <div className="flex flex-col items-center rounded bg-white/85 px-1 py-1 font-mono text-[11px] text-ink">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5v14M12 5l-5 5M12 5l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
+                </div>
+                <div className="flex items-center gap-1 rounded bg-white/85 px-1.5 py-1 font-mono text-[11px] text-ink">
+                  <span>{aspectW} in</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12h14M19 12l-5-5M19 12l-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

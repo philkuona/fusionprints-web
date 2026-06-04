@@ -37,6 +37,8 @@ interface EditorCanvasProps {
   zoom: number;
   onZoomChange: (z: number) => void;
   onCropChange?: (c: CropChange) => void;
+  /** Reports the print frame rect (in container px) so callers can position labels. */
+  onFrameChange?: (frame: Rect) => void;
   maxZoom?: number;
 }
 
@@ -95,6 +97,7 @@ export function EditorCanvas({
   zoom,
   onZoomChange,
   onCropChange,
+  onFrameChange,
   maxZoom = 5,
 }: EditorCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,6 +105,7 @@ export function EditorCanvas({
 
   const onCropChangeRef = useRef(onCropChange);
   const onZoomChangeRef = useRef(onZoomChange);
+  const onFrameChangeRef = useRef(onFrameChange);
   const aspectRef = useRef({ w: frameAspectW, h: frameAspectH });
   const transformRef = useRef({ rotation, flipH, flipV });
   const borderRef = useRef(border);
@@ -114,6 +118,9 @@ export function EditorCanvas({
   useEffect(() => {
     onZoomChangeRef.current = onZoomChange;
   }, [onZoomChange]);
+  useEffect(() => {
+    onFrameChangeRef.current = onFrameChange;
+  }, [onFrameChange]);
   useEffect(() => {
     maxZoomRef.current = maxZoom;
   }, [maxZoom]);
@@ -207,6 +214,7 @@ export function EditorCanvas({
             this.baseScale = coverScale(this.natW, this.natH, this.frame.width, this.frame.height);
             this.setCentre(prev);
             this.paintOverlay();
+            onFrameChangeRef.current?.({ ...this.frame });
           },
           setCentre(c: { x: number; y: number }) {
             const r = this.imageRect();
