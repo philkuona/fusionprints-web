@@ -158,8 +158,10 @@ export function EditorCanvas({
         let sz = sourceSize(src, imageObj);
 
         const image = new Konva.Image({ image: src, draggable: true });
+        // Covers the area outside the print frame with the card's white so the
+        // photo reads as filling just the print box (no grey bleed).
         const mask = [0, 1, 2, 3].map(
-          () => new Konva.Rect({ fill: "#1F1B16", opacity: 0.5, listening: false }),
+          () => new Konva.Rect({ fill: "#FFFFFF", opacity: 1, listening: false }),
         );
         const frameBorder = new Konva.Rect({ stroke: "#FBF7F0", strokeWidth: 1.5, listening: false });
         const grid = [0, 1, 2, 3].map(
