@@ -22,6 +22,10 @@ import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal
 import { Dropdown } from "@/components/editor/dropdown";
 import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
 
+// Show the safe-area checkpoint once per browser session (sessionStorage clears
+// when the tab/browser closes), so repeat editors aren't nagged every time.
+const INTRO_KEY = "fp_editor_safe_intro_session";
+
 const ACCEPT = "image/jpeg,image/png,image/tiff,image/webp,image/heic,image/heif";
 
 interface LineItem {
@@ -63,6 +67,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [view, setView] = useState<"editor" | "summary">("editor");
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
+  const [myPhotosOpen, setMyPhotosOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +84,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         }
         const active = list.find((p) => p.id === entryPhotoId)?.id ?? list[0]?.id ?? null;
         const initialSize =
-          cat.find((p) => p.sizeCode === "8x10")?.sizeCode ||
+          cat.find((p) => p.sizeCode === "4x6")?.sizeCode ||
           cat.find((p) => p.productType === "photo_print")?.sizeCode ||
           cat[0].sizeCode;
         setPhotos(list);
@@ -138,6 +144,14 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         .finally(() => setUploading((n) => Math.max(0, n - 1)));
     }
   }, []);
+
+  /** Bring photos chosen from the existing library into the working selection. */
+  function addFromMyPhotos(ids: string[]) {
+    if (ids.length === 0) return;
+    setSelected(new Set(ids));
+    setActivePhotoId(ids[0]);
+    setMyPhotosOpen(false);
+  }
 
   function toggleSelected(id: string) {
     setSelected((prev) => {
@@ -259,9 +273,13 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     setView("editor");
   }
 
-  /** Enter crop mode — always show the safe-area checkpoint first. */
+  /** Enter crop mode — show the safe-area checkpoint once per browser session. */
   function openFocused() {
-    setShowIntro(true);
+    if (typeof window !== "undefined" && window.sessionStorage.getItem(INTRO_KEY)) {
+      setFocused(true);
+    } else {
+      setShowIntro(true);
+    }
   }
 
   /** From the summary: jump into focus mode for a specific line item. */
@@ -402,14 +420,61 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                 e.target.value = "";
               }}
             />
-            <div className="flex shrink-0 flex-col gap-1.5">
+            <div className="relative flex shrink-0 flex-col gap-1.5">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex h-9 cursor-pointer items-center rounded-full bg-ink px-4 text-xs font-semibold text-cream transition-colors duration-200 hover:bg-ink/85"
+                onClick={() => setUploadMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={uploadMenuOpen}
+                className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-semibold text-cream transition-colors duration-200 hover:bg-ink/85"
               >
-                {uploading > 0 ? "Uploading…" : "Upload photos"}
+                {uploading > 0 ? "Uploading…" : "Add photos"}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
+              {uploadMenuOpen && (
+                <>
+                  <button
+                    type="button"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    className="fixed inset-0 z-20 cursor-default"
+                    onClick={() => setUploadMenuOpen(false)}
+                  />
+                  <div role="menu" className="absolute left-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-xl border border-ink/10 bg-white py-1 shadow-lg shadow-ink/10">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setUploadMenuOpen(false);
+                        fileInputRef.current?.click();
+                      }}
+                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
+                        <path d="M12 16V4M12 4L7 9M12 4l5 5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Upload from device
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setUploadMenuOpen(false);
+                        setMyPhotosOpen(true);
+                      }}
+                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                        <path d="M3 16l4-4 3 3 4-4 7 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Choose from My Photos
+                    </button>
+                  </div>
+                </>
+              )}
               <div className="flex gap-1.5">
                 <button
                   type="button"
@@ -469,7 +534,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           {/* Body */}
           <div className="flex min-h-0 flex-1">
             {/* Left: size list (desktop only — mobile uses the dropdown) */}
-            <aside className="hidden w-64 shrink-0 space-y-5 overflow-y-auto border-r border-ink/10 bg-white p-4 lg:block">
+            <aside className="hidden w-64 shrink-0 space-y-5 overflow-y-auto border-r border-ink/10 bg-white p-4 lg:block pointer-fine:w-[26rem]">
               <p className="text-xs text-ink-mute">
                 {selected.size > 1 ? `Adding sizes to ${selected.size} photos` : "Tap a size's + to add it"}
               </p>
@@ -621,10 +686,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         />
       )}
 
-      {/* Safe-area checkpoint shown every time before entering crop mode */}
+      {/* Safe-area checkpoint — shown once per browser session before crop mode */}
       {showIntro && (
         <SafeAreaIntro
           onContinue={() => {
+            if (typeof window !== "undefined") window.sessionStorage.setItem(INTRO_KEY, "1");
             setShowIntro(false);
             setFocused(true);
           }}
@@ -644,6 +710,104 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           onClose={() => setSizeModalOpen(false)}
         />
       )}
+
+      {/* Choose-from-library picker (the "From My Photos" upload option) */}
+      {myPhotosOpen && (
+        <MyPhotosModal
+          photos={photos}
+          initialSelected={selected}
+          onClose={() => setMyPhotosOpen(false)}
+          onAdd={addFromMyPhotos}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Library picker: a grid of the user's existing fp uploads to pull into the
+ * current project (the "Choose from My Photos" upload option). Multi-select;
+ * "Add" sets the working selection and active photo.
+ */
+function MyPhotosModal({
+  photos,
+  initialSelected,
+  onClose,
+  onAdd,
+}: {
+  photos: Photo[];
+  initialSelected: Set<string>;
+  onClose: () => void;
+  onAdd: (ids: string[]) => void;
+}) {
+  const [picked, setPicked] = useState<Set<string>>(new Set(initialSelected));
+  const toggle = (id: string) =>
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <div className="fixed inset-0 z-[55] flex items-center justify-center bg-ink/60 p-4" onClick={onClose}>
+      <div
+        className="flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-cream shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-ink/10 px-5 py-3">
+          <h2 className="font-fraunces text-lg font-bold text-ink">My Photos</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        {photos.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-ink-mute">No photos in your library yet. Upload from your device to get started.</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2 overflow-y-auto p-4 sm:grid-cols-4 md:grid-cols-5">
+            {photos.map((p) => {
+              const on = picked.has(p.id);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => toggle(p.id)}
+                  className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-colors duration-200 ${on ? "border-malachite" : "border-transparent hover:border-ink/20"}`}
+                >
+                  <Image src={p.storageUrl} alt={p.originalFilename ?? ""} fill sizes="(max-width: 640px) 33vw, 160px" className="object-cover" />
+                  <span
+                    className={`absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors duration-200 ${on ? "border-malachite bg-malachite text-ink" : "border-white/80 bg-ink/30 text-transparent"}`}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-ink/10 px-5 py-3">
+          <span className="text-xs text-ink-mute">{picked.size} selected</span>
+          <button
+            type="button"
+            onClick={() => onAdd([...picked])}
+            disabled={picked.size === 0}
+            className="flex h-10 cursor-pointer items-center rounded-full bg-malachite px-6 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Add to project
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -875,7 +1039,8 @@ function SizeGroup({
   return (
     <div>
       <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">{title}</p>
-      <div className="mt-2 space-y-1.5">
+      {/* One column on tablet (coarse pointer); two columns on desktop (mouse). */}
+      <div className="mt-2 grid grid-cols-1 gap-1.5 pointer-fine:grid-cols-2">
         {items.map((p) => {
           const active = p.sizeCode === activeSizeCode;
           const added = Boolean(lineItems[keyOf(activePhotoId, p.sizeCode)]);
