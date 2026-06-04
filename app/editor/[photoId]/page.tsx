@@ -20,6 +20,9 @@ import { applyEdit } from "@/lib/api/editor";
 import { addToCart, type CartItem } from "@/lib/cart";
 import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal";
 import { Dropdown } from "@/components/editor/dropdown";
+import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
+
+const INTRO_KEY = "fp_editor_safe_intro_v1";
 
 const ACCEPT = "image/jpeg,image/png,image/tiff,image/webp,image/heic,image/heif";
 
@@ -61,6 +64,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [addedNote, setAddedNote] = useState<string | null>(null);
   const [view, setView] = useState<"editor" | "summary">("editor");
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -257,11 +261,20 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     setView("editor");
   }
 
+  /** Enter crop mode — show the safe-area checkpoint first (once per device). */
+  function openFocused() {
+    if (typeof window !== "undefined" && window.localStorage.getItem(INTRO_KEY)) {
+      setFocused(true);
+    } else {
+      setShowIntro(true);
+    }
+  }
+
   /** From the summary: jump into focus mode for a specific line item. */
   function editItem(photoId: string, sizeCode: string) {
     setActivePhotoId(photoId);
     setActiveSizeCode(sizeCode);
-    setFocused(true);
+    openFocused();
   }
 
   if (status === "loading") {
@@ -532,7 +545,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               <div className="mt-4 flex min-h-0 flex-1 items-center justify-center">
                 <button
                   type="button"
-                  onClick={() => setFocused(true)}
+                  onClick={openFocused}
                   aria-label="Edit or crop this photo"
                   className="group relative block h-full cursor-pointer overflow-hidden rounded-lg bg-white shadow-md"
                   style={{ aspectRatio: `${pvW} / ${pvH}`, maxWidth: "100%", maxHeight: "100%" }}
@@ -567,7 +580,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               <div className="mt-3 flex shrink-0 justify-center">
                 <button
                   type="button"
-                  onClick={() => setFocused(true)}
+                  onClick={openFocused}
                   className="hidden h-10 cursor-pointer items-center gap-2 rounded-full border border-ink/15 px-5 text-sm font-medium text-ink transition-colors duration-200 hover:border-ink/30 lg:flex"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -611,6 +624,17 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           onNext={() => setActivePhotoId(photos[(photoIndex + 1) % photos.length].id)}
           onCancel={() => setFocused(false)}
           onSave={saveCrop}
+        />
+      )}
+
+      {/* Safe-area checkpoint before entering crop mode (once per device) */}
+      {showIntro && (
+        <SafeAreaIntro
+          onContinue={() => {
+            if (typeof window !== "undefined") window.localStorage.setItem(INTRO_KEY, "1");
+            setShowIntro(false);
+            setFocused(true);
+          }}
         />
       )}
 
