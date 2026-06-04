@@ -178,19 +178,19 @@ export function CropModal({
                   className="pointer-events-none absolute flex flex-col items-center gap-1 font-mono text-[11px] text-ink-mute"
                   style={{ left: frame.x - 8, top: frame.y + frame.height, transform: "translate(-100%, -100%)" }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M12 4v16M12 4l-5 5M12 4l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="14" height="32" viewBox="0 0 14 32" fill="none" aria-hidden="true">
+                    <path d="M7 31V3M7 3L3 8M7 3L11 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
                 </div>
                 {/* Width — below the frame's bottom edge, left-aligned, arrow right */}
                 <div
-                  className="pointer-events-none absolute flex items-center gap-1 font-mono text-[11px] text-ink-mute"
+                  className="pointer-events-none absolute flex items-center gap-1.5 font-mono text-[11px] text-ink-mute"
                   style={{ left: frame.x, top: frame.y + frame.height + 8 }}
                 >
                   <span>{aspectW} in</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 12h16M20 12l-5-5M20 12l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="32" height="14" viewBox="0 0 32 14" fill="none" aria-hidden="true">
+                    <path d="M1 7H29M29 7L24 3M29 7L24 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </>
