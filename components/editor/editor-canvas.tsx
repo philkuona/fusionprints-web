@@ -174,13 +174,16 @@ export function EditorCanvas({
         const grid = [0, 1, 2, 3].map(
           () => new Konva.Line({ stroke: "#FBF7F0", strokeWidth: 1, opacity: 0.35, listening: false }),
         );
-        // ¼" margin guide (grey, translucent) — becomes a solid white border when on.
+        // White print-border bands (shown only when a border is selected).
         const guide = [0, 1, 2, 3].map(() => new Konva.Rect({ listening: false }));
+        // Dashed grey "safe-area" line (outline only — never covers the photo).
+        const safeRect = new Konva.Rect({ listening: false, stroke: "#9ca3af", strokeWidth: 1.5, dash: [6, 5] });
         layer.add(image);
         mask.forEach((m) => layer.add(m));
         layer.add(frameBorder);
         grid.forEach((g) => layer.add(g));
         guide.forEach((g) => layer.add(g));
+        layer.add(safeRect);
 
         const ctrl = {
           stage,
@@ -259,19 +262,29 @@ export function EditorCanvas({
             // ¼" margin guide: 4 inset bands. Grey + translucent normally; solid
             // white when the ¼" border is on (the print's white border).
             const bi = borderInchesRef.current;
-            const insetX = (bi / aspectRef.current.w) * f.width;
-            const insetY = (bi / aspectRef.current.h) * f.height;
-            // Margin guide inside the image: grey + translucent normally, solid
-            // white when the border is on. Hidden for sizes with no border option.
             const on = borderRef.current;
-            const gFill = on ? "#FFFFFF" : "#9ca3af";
-            const gOpacity = bi <= 0 ? 0 : on ? 1 : 0.45;
-            const setG = (i: number, x: number, y: number, w: number, h: number) =>
-              guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: gFill, opacity: gOpacity });
-            setG(0, f.x, f.y, f.width, insetY);
-            setG(1, f.x, f.y + f.height - insetY, f.width, insetY);
-            setG(2, f.x, f.y + insetY, insetX, f.height - 2 * insetY);
-            setG(3, f.x + f.width - insetX, f.y + insetY, insetX, f.height - 2 * insetY);
+            // White print-border bands — solid white, only when a border is on.
+            const bx = (bi / aspectRef.current.w) * f.width;
+            const by = (bi / aspectRef.current.h) * f.height;
+            const bOpacity = on && bi > 0 ? 1 : 0;
+            const setB = (i: number, x: number, y: number, w: number, h: number) =>
+              guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: "#FFFFFF", opacity: bOpacity });
+            setB(0, f.x, f.y, f.width, by);
+            setB(1, f.x, f.y + f.height - by, f.width, by);
+            setB(2, f.x, f.y + by, bx, f.height - 2 * by);
+            setB(3, f.x + f.width - bx, f.y + by, bx, f.height - 2 * by);
+            // Grey safe-area line (dashed outline, never covers the photo). Shown
+            // when no border is on; inset scales with the print size.
+            const safeBi = bi > 0 ? bi : 0.25;
+            const sx = (safeBi / aspectRef.current.w) * f.width;
+            const sy = (safeBi / aspectRef.current.h) * f.height;
+            safeRect.setAttrs({
+              x: f.x + sx,
+              y: f.y + sy,
+              width: Math.max(0, f.width - 2 * sx),
+              height: Math.max(0, f.height - 2 * sy),
+              opacity: on ? 0 : 1,
+            });
             stage.batchDraw();
           },
           emit() {

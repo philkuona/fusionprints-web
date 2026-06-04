@@ -300,9 +300,13 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const activePaper = paperByKey[activeKey] ?? "glossy";
   const borderInches = borderInchesForSize(activeProduct.sizeCode); // 0.25 | 0.5 | null
   const activeBorder = borderInches !== null && (borderByKey[activeKey] ?? false);
-  // Border margin as a % of each side (uniform physical border).
+  // White-border margin as a % of each side (when a border is on).
   const insetXPct = ((borderInches ?? 0) / pvW) * 100;
   const insetYPct = ((borderInches ?? 0) / pvH) * 100;
+  // Safe-area line inset (always shown): the border margin, or ¼" default.
+  const safeBi = borderInches ?? 0.25;
+  const safeXPct = (safeBi / pvW) * 100;
+  const safeYPct = (safeBi / pvH) * 100;
 
   const photoIndex = photos.findIndex((p) => p.id === activePhoto.id);
   const photoPrints = catalog.filter((p) => p.productType === "photo_print");
@@ -546,15 +550,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                   ) : (
                     <>
                       <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
-                      {/* grey margin guide (where a border would sit) */}
-                      {borderInches !== null && (
-                        <>
-                          <span className="pointer-events-none absolute inset-x-0 top-0 bg-[#9ca3af]/45" style={{ height: `${insetYPct}%` }} />
-                          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-[#9ca3af]/45" style={{ height: `${insetYPct}%` }} />
-                          <span className="pointer-events-none absolute left-0 bg-[#9ca3af]/45" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
-                          <span className="pointer-events-none absolute right-0 bg-[#9ca3af]/45" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
-                        </>
-                      )}
+                      {/* safe-area line: dashed outline, never covers the photo */}
+                      <span
+                        className="pointer-events-none absolute border border-dashed border-[#9ca3af]"
+                        style={{ top: `${safeYPct}%`, left: `${safeXPct}%`, right: `${safeXPct}%`, bottom: `${safeYPct}%` }}
+                      />
                     </>
                   )}
                   <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:bg-ink/25 group-hover:opacity-100">
