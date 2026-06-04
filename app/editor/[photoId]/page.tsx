@@ -497,16 +497,18 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                   />
                 </div>
 
-                {/* Desktop: size text + bordered Quantity box just above the options. */}
+                {/* Desktop: Quantity box (left) + size info (right), then options. */}
                 <div className="hidden lg:block">
-                  <div className="mb-2 flex items-end gap-3">
-                    <span className="pb-2 text-sm font-semibold text-ink">{activeProduct.labelInches} print</span>
+                  <div className="mb-3 flex items-center gap-4">
                     <QtyBox
                       value={activeQty}
                       onDec={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty - 1)}
                       onInc={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty + 1)}
-                      className="w-48"
                     />
+                    <div>
+                      <p className="text-base font-semibold text-ink">{activeProduct.labelInches} print</p>
+                      <p className="text-sm text-ink-mute">{activeProduct.labelCm}</p>
+                    </div>
                   </div>
                   <FinishOptions
                     isPhotoPrint={isPhotoPrint}
@@ -543,14 +545,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
                     </span>
                   ) : (
-                    <>
-                      <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
-                      {/* grey ¼" margin guide (within the image) */}
-                      <span className="pointer-events-none absolute inset-x-0 top-0 bg-[#6b7280]/40" style={{ height: `${insetYPct}%` }} />
-                      <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-[#6b7280]/40" style={{ height: `${insetYPct}%` }} />
-                      <span className="pointer-events-none absolute left-0 bg-[#6b7280]/40" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
-                      <span className="pointer-events-none absolute right-0 bg-[#6b7280]/40" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
-                    </>
+                    <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
                   )}
                   <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:bg-ink/25 group-hover:opacity-100">
                     <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-ink">Edit / Crop</span>
@@ -765,41 +760,31 @@ function FinishOptions({
   );
 }
 
-/** Bordered Quantity box (desktop) — matches the dropdown chips' size. */
-function QtyBox({
-  value,
-  onDec,
-  onInc,
-  className,
-}: {
-  value: number;
-  onDec: () => void;
-  onInc: () => void;
-  className?: string;
-}) {
+/** Bordered Quantity box (desktop): label + value, then malachite + / grey −. */
+function QtyBox({ value, onDec, onInc }: { value: number; onDec: () => void; onInc: () => void }) {
   return (
-    <div className={`rounded-xl border border-ink/15 px-3 py-2 ${className ?? ""}`}>
-      <span className="text-[11px] text-ink-mute">Quantity</span>
-      <div className="mt-1 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onDec}
-          aria-label="Decrease quantity"
-          disabled={value <= 0}
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-ink/5 text-lg font-bold text-ink-soft transition-colors duration-200 hover:bg-ink/10 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          −
-        </button>
-        <span className="font-mono text-sm">{value}</span>
-        <button
-          type="button"
-          onClick={onInc}
-          aria-label="Increase quantity"
-          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-malachite text-lg font-bold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-        >
-          +
-        </button>
+    <div className="flex items-center gap-2 rounded-lg border border-ink/15 px-3 py-2">
+      <div className="leading-none">
+        <span className="text-[11px] text-ink-mute">Quantity</span>
+        <div className="mt-0.5 font-mono text-lg font-semibold text-ink">{value}</div>
       </div>
+      <button
+        type="button"
+        onClick={onInc}
+        aria-label="Increase quantity"
+        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-malachite text-xl font-bold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+      >
+        +
+      </button>
+      <button
+        type="button"
+        onClick={onDec}
+        aria-label="Decrease quantity"
+        disabled={value <= 0}
+        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-ink/5 text-xl font-bold text-ink-soft transition-colors duration-200 hover:bg-ink/10 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        −
+      </button>
     </div>
   );
 }

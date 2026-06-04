@@ -57,6 +57,29 @@ export function fitFrame(
 }
 
 /**
+ * Fit a frame of aspect `aspectW:aspectH` inside `stage` with a CONSTANT height
+ * (stageH minus padding) so the on-screen height stays the same across print
+ * sizes; only the width changes with the aspect. If the resulting width would
+ * overflow, it's capped (and height reduced) so it still fits.
+ */
+export function fitFrameByHeight(
+  stageW: number,
+  stageH: number,
+  aspectW: number,
+  aspectH: number,
+  pad = 16,
+): Rect {
+  const maxW = Math.max(0, stageW - pad * 2);
+  let h = Math.max(0, stageH - pad * 2);
+  let w = (h * aspectW) / aspectH;
+  if (w > maxW) {
+    w = maxW;
+    h = (w * aspectH) / aspectW;
+  }
+  return { x: (stageW - w) / 2, y: (stageH - h) / 2, width: w, height: h };
+}
+
+/**
  * Clamp an image's top-left position so it still fully covers the frame
  * (no empty gutters). `imageSize` is the displayed (scaled) size.
  */

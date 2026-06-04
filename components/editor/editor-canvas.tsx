@@ -6,7 +6,7 @@ import {
   type Rect,
   clamp,
   coverScale,
-  fitFrame,
+  fitFrameByHeight,
   clampImagePos,
   computeNormalizedCrop,
   croppedPixels,
@@ -201,7 +201,7 @@ export function EditorCanvas({
             const prev = this.frame.width
               ? centerOf(computeNormalizedCrop(this.frame, this.imageRect()))
               : { x: 0.5, y: 0.5 };
-            this.frame = fitFrame(sw, sh, aspectRef.current.w, aspectRef.current.h, PAD);
+            this.frame = fitFrameByHeight(sw, sh, aspectRef.current.w, aspectRef.current.h, PAD);
             this.baseScale = coverScale(this.natW, this.natH, this.frame.width, this.frame.height);
             this.setCentre(prev);
             this.paintOverlay();
@@ -251,9 +251,9 @@ export function EditorCanvas({
             const bi = borderInchesRef.current;
             const insetX = (bi / aspectRef.current.w) * f.width;
             const insetY = (bi / aspectRef.current.h) * f.height;
-            const on = borderRef.current;
-            const gFill = on ? "#FFFFFF" : "#6b7280";
-            const gOpacity = bi <= 0 ? 0 : on ? 1 : 0.4;
+            // White print border shown only when the border is ON; no grey guide.
+            const gFill = "#FFFFFF";
+            const gOpacity = borderRef.current && bi > 0 ? 1 : 0;
             const setG = (i: number, x: number, y: number, w: number, h: number) =>
               guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: gFill, opacity: gOpacity });
             setG(0, f.x, f.y, f.width, insetY);
