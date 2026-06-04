@@ -340,16 +340,18 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           </Link>
           <span className="text-sm font-semibold text-ink">Create prints</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-ink-mute">
-            Subtotal <span className="ml-1 font-mono text-ink">{formatPrice(subtotal)}</span>
-          </span>
+        <div className="flex flex-col items-end gap-1 lg:flex-row lg:items-center lg:gap-4">
+          {/* Subtotal: mobile → one line above the button; desktop → stacked beside it */}
+          <div className="flex items-baseline gap-1.5 leading-tight lg:flex-col lg:items-end lg:gap-0">
+            <span className="text-[11px] text-ink-mute">Subtotal</span>
+            <span className="font-mono text-sm text-ink">{formatPrice(subtotal)}</span>
+          </div>
           {view === "editor" ? (
             <button
               type="button"
               onClick={() => setView("summary")}
               disabled={totalPrints === 0}
-              className="flex h-10 items-center rounded-full bg-malachite px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:bg-malachite/40 disabled:text-ink/50 enabled:cursor-pointer"
+              className="flex h-9 items-center rounded-full bg-malachite px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:bg-malachite/40 disabled:text-ink/50 enabled:cursor-pointer lg:h-10"
             >
               Review &amp; cart{totalPrints > 0 ? ` (${totalPrints})` : ""}
             </button>
@@ -357,7 +359,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
             <button
               type="button"
               onClick={() => setView("editor")}
-              className="flex h-10 cursor-pointer items-center gap-1 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5"
+              className="flex h-9 cursor-pointer items-center gap-1 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 lg:h-10"
             >
               ‹ Back to editing
             </button>
