@@ -101,14 +101,21 @@ function AccountSidebar({ user }: { user: WebUser }) {
 }
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  // The account landing is a card grid that acts as its own nav — no sidebar.
+  const isLanding = pathname === "/account";
   return (
     <AuthGuard>
       {(user) => (
         <Container className="py-10">
-          <div className="flex flex-col gap-8 md:flex-row md:gap-12">
-            <AccountSidebar user={user} />
-            <main className="min-w-0 flex-1">{children}</main>
-          </div>
+          {isLanding ? (
+            <main className="min-w-0">{children}</main>
+          ) : (
+            <div className="flex flex-col gap-8 md:flex-row md:gap-12">
+              <AccountSidebar user={user} />
+              <main className="min-w-0 flex-1">{children}</main>
+            </div>
+          )}
         </Container>
       )}
     </AuthGuard>
