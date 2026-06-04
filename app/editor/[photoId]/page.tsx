@@ -327,24 +327,21 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       </div>
 
       {/* Top bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-ink/10 bg-white px-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/account/photos"
-            aria-label="Close editor"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </Link>
-          <span className="text-sm font-semibold text-ink">Create prints</span>
-        </div>
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-ink/10 bg-white px-4 py-2.5">
+        <Link
+          href="/account/photos"
+          aria-label="Close editor"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </Link>
         <div className="flex flex-col items-end gap-1 lg:flex-row lg:items-center lg:gap-4">
           {/* Subtotal: mobile → one line above the button; desktop → stacked beside it */}
           <div className="flex items-baseline gap-1.5 leading-tight lg:flex-col lg:items-end lg:gap-0">
             <span className="text-[11px] text-ink-mute">Subtotal</span>
-            <span className="font-mono text-sm text-ink">{formatPrice(subtotal)}</span>
+            <span className="font-mono text-xs text-ink">{formatPrice(subtotal)}</span>
           </div>
           {view === "editor" ? (
             <button
