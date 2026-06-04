@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
+import { HeroCarousel } from "@/components/home/hero-carousel";
 
 export const metadata: Metadata = {
   title: "FusionPrints — Hold the moment.",
@@ -139,36 +140,45 @@ function CollectionCard({ c, ring = false }: { c: Card; ring?: boolean }) {
 export default function HomePage() {
   return (
     <div>
-      {/* ── Hero — typography only, dark Ink ─────────────────────────── */}
-      <section className="bg-ink">
-        <Container className="py-28 sm:py-36 lg:py-44">
-          <p className="font-mono text-xs uppercase tracking-[0.28em] text-malachite">
-            Premium photo printing
-          </p>
-          <h1 className="mt-6 font-fraunces text-6xl font-bold leading-[0.92] tracking-tight text-malachite sm:text-8xl lg:text-[8.5rem]">
-            Hold the moment.
-          </h1>
-          <p className="mt-8 max-w-xl text-lg leading-relaxed text-cream/75 sm:text-xl">
-            Prints and wall art made from the photos you love — printed in-house,
-            checked by hand, on paper worth keeping.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/prints"
-              className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-            >
-              Start an order
-            </Link>
-            <a
-              href={WA}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
-            >
-              Order on WhatsApp
-            </a>
+      {/* ── Hero — split: brand panel (left) + themed slideshow (right) ── */}
+      <section className="overflow-hidden bg-ink">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          {/* Left: brand text panel. On wide screens the text aligns to the
+              page container's left edge while the slideshow bleeds right. */}
+          <div className="flex min-w-0 flex-col justify-center px-5 py-16 sm:px-6 sm:py-20 lg:py-28 lg:pr-12 lg:pl-[max(2rem,calc((100vw-72rem)/2+2rem))]">
+            <p className="font-mono text-xs uppercase tracking-[0.28em] text-malachite">
+              Premium photo printing
+            </p>
+            <h1 className="mt-5 font-fraunces text-4xl font-bold leading-[0.95] tracking-tight text-malachite sm:text-6xl lg:text-7xl">
+              Hold the moment.
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg">
+              Prints and wall art made from the photos you love — printed in-house,
+              checked by hand, on paper worth keeping.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-4">
+              <Link
+                href="/prints"
+                className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+              >
+                Start an order
+              </Link>
+              <a
+                href={WA}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
+              >
+                Order on WhatsApp
+              </a>
+            </div>
           </div>
-        </Container>
+
+          {/* Right: auto-rotating themed slideshow */}
+          <div className="relative min-h-[300px] min-w-0 sm:min-h-[400px] lg:min-h-[620px]">
+            <HeroCarousel />
+          </div>
+        </div>
       </section>
 
       {/* ── Photo Prints collection ──────────────────────────────────── */}
