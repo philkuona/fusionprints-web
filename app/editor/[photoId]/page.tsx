@@ -545,7 +545,18 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
                     </span>
                   ) : (
-                    <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
+                    <>
+                      <Image src={activePhoto.storageUrl} alt={activePhoto.originalFilename ?? "Photo to print"} fill sizes="560px" className="object-cover" priority />
+                      {/* grey margin guide (where a border would sit) */}
+                      {borderInches !== null && (
+                        <>
+                          <span className="pointer-events-none absolute inset-x-0 top-0 bg-[#9ca3af]/45" style={{ height: `${insetYPct}%` }} />
+                          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-[#9ca3af]/45" style={{ height: `${insetYPct}%` }} />
+                          <span className="pointer-events-none absolute left-0 bg-[#9ca3af]/45" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
+                          <span className="pointer-events-none absolute right-0 bg-[#9ca3af]/45" style={{ top: `${insetYPct}%`, bottom: `${insetYPct}%`, width: `${insetXPct}%` }} />
+                        </>
+                      )}
+                    </>
                   )}
                   <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:bg-ink/25 group-hover:opacity-100">
                     <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-ink">Edit / Crop</span>

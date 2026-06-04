@@ -261,9 +261,11 @@ export function EditorCanvas({
             const bi = borderInchesRef.current;
             const insetX = (bi / aspectRef.current.w) * f.width;
             const insetY = (bi / aspectRef.current.h) * f.height;
-            // White print border shown only when the border is ON; no grey guide.
-            const gFill = "#FFFFFF";
-            const gOpacity = borderRef.current && bi > 0 ? 1 : 0;
+            // Margin guide inside the image: grey + translucent normally, solid
+            // white when the border is on. Hidden for sizes with no border option.
+            const on = borderRef.current;
+            const gFill = on ? "#FFFFFF" : "#9ca3af";
+            const gOpacity = bi <= 0 ? 0 : on ? 1 : 0.45;
             const setG = (i: number, x: number, y: number, w: number, h: number) =>
               guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: gFill, opacity: gOpacity });
             setG(0, f.x, f.y, f.width, insetY);
