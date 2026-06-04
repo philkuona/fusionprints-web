@@ -184,7 +184,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Photo Prints collection ──────────────────────────────────── */}
-      <section className="bg-cream py-20 sm:py-28">
+      <section className="bg-cream py-16">
         <Container>
           <div className="max-w-2xl">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-malachite-deep">
@@ -207,7 +207,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Wall Art collection — heavier, more premium ──────────────── */}
-      <section className="border-y border-ink/8 bg-white py-20 sm:py-28">
+      <section className="border-y border-ink/8 bg-white py-16">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-2xl">
@@ -239,7 +239,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Promise strip — typography, no images ────────────────────── */}
-      <section className="bg-cream py-20 sm:py-24">
+      <section className="bg-cream py-16">
         <Container>
           <div className="grid gap-px overflow-hidden rounded-2xl bg-ink/8 sm:grid-cols-3">
             {[
@@ -269,7 +269,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Bottom CTA — typography only, dark Ink ───────────────────── */}
-      <section className="bg-ink py-24 sm:py-32">
+      <section className="bg-ink py-16">
         <Container className="text-center">
           <h2 className="mx-auto max-w-3xl font-fraunces text-4xl font-bold leading-tight text-cream sm:text-6xl">
             Don&rsquo;t let them fade on your phone.
