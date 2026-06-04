@@ -25,3 +25,14 @@ export function photoOrientation(photo: Photo): Orientation {
 export function defaultOrientation(sizeCode: string, photo: Photo): Orientation {
   return isSquareSize(sizeCode) ? "square" : photoOrientation(photo);
 }
+
+/**
+ * White-border option per size (inches), or null if the size offers no border.
+ * ¼" for the small photo prints, ½" for 8x10/11x14, none for larger wall art.
+ * MUST match borderInchesForSize in the backend applier.
+ */
+export function borderInchesForSize(sizeCode: string): number | null {
+  if (["4x6", "5x7", "6x6", "6x8"].includes(sizeCode)) return 0.25;
+  if (["8x10", "11x14"].includes(sizeCode)) return 0.5;
+  return null;
+}

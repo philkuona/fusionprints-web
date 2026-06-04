@@ -30,6 +30,7 @@ interface CropModalProps {
   product: CatalogProduct;
   initialOrientation: Orientation;
   border: boolean;
+  borderInches: number;
   qty: number;
   onQtyChange: (qty: number) => void;
   photoIndex: number;
@@ -59,6 +60,7 @@ export function CropModal({
   product,
   initialOrientation,
   border,
+  borderInches,
   qty,
   onQtyChange,
   photoIndex,
@@ -161,6 +163,7 @@ export function CropModal({
               flipH={flipH}
               flipV={flipV}
               border={border}
+              borderInches={borderInches}
               cssFilter={cssFilter}
               zoom={zoom}
               onZoomChange={setZoom}

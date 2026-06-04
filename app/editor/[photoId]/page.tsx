@@ -7,7 +7,7 @@ import { Logo } from "@/components/logo";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { getPhotos, uploadPhoto, type Photo } from "@/lib/api/photos";
 import { getCatalog, formatPrice, type CatalogProduct } from "@/lib/api/catalog";
-import { type Orientation, orientedAspect, defaultOrientation } from "@/lib/editor/sizes";
+import { type Orientation, orientedAspect, defaultOrientation, borderInchesForSize } from "@/lib/editor/sizes";
 import { type Rect } from "@/lib/edit/crop-math";
 import {
   type EditPayload,
@@ -298,10 +298,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const activeQty = activeItem?.qty ?? 0;
   const isPhotoPrint = activeProduct.productType === "photo_print";
   const activePaper = paperByKey[activeKey] ?? "glossy";
-  const activeBorder = borderByKey[activeKey] ?? false;
-  // ¼" margin as a % of each side (uniform physical border).
-  const insetXPct = (0.25 / pvW) * 100;
-  const insetYPct = (0.25 / pvH) * 100;
+  const borderInches = borderInchesForSize(activeProduct.sizeCode); // 0.25 | 0.5 | null
+  const activeBorder = borderInches !== null && (borderByKey[activeKey] ?? false);
+  // Border margin as a % of each side (uniform physical border).
+  const insetXPct = ((borderInches ?? 0) / pvW) * 100;
+  const insetYPct = ((borderInches ?? 0) / pvH) * 100;
 
   const photoIndex = photos.findIndex((p) => p.id === activePhoto.id);
   const photoPrints = catalog.filter((p) => p.productType === "photo_print");
@@ -472,14 +473,13 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                 <p className="mx-auto mb-3 rounded-full bg-malachite/15 px-4 py-2 text-sm text-ink">{addedNote}</p>
               )}
 
-              {/* Size + qty. Mobile: a Product button opening the Select Product modal
-                  (Mpix-style, our font). Desktop: label (the sidebar selects). */}
               <div className="w-full shrink-0">
-                <div className="flex items-center gap-3">
+                {/* Mobile: a Product button opening the Select Product modal (our font) + qty. */}
+                <div className="flex items-center gap-3 lg:hidden">
                   <button
                     type="button"
                     onClick={() => setSizeModalOpen(true)}
-                    className="flex min-w-0 flex-1 cursor-pointer flex-col items-start rounded-xl border border-ink/15 bg-white px-3 py-2 text-left transition-colors duration-200 hover:border-ink/30 lg:hidden"
+                    className="flex min-w-0 flex-1 cursor-pointer flex-col items-start rounded-xl border border-ink/15 bg-white px-3 py-2 text-left transition-colors duration-200 hover:border-ink/30"
                   >
                     <span className="text-[11px] text-ink-mute">Product</span>
                     <span className="flex w-full items-center justify-between gap-2">
@@ -489,9 +489,6 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       </svg>
                     </span>
                   </button>
-                  <span className="hidden text-sm font-semibold text-ink lg:inline">
-                    {activeProduct.labelInches} print
-                  </span>
                   <QtyStepper
                     label="Quantity"
                     value={activeQty}
@@ -500,9 +497,17 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                   />
                 </div>
 
-                {/* Finish options — desktop shows them up top */}
+                {/* Desktop: size text + bordered Quantity box just above the options. */}
                 <div className="hidden lg:block">
-                  <div className="my-3 border-t border-ink/10" />
+                  <div className="mb-2 flex items-end gap-3">
+                    <span className="pb-2 text-sm font-semibold text-ink">{activeProduct.labelInches} print</span>
+                    <QtyBox
+                      value={activeQty}
+                      onDec={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty - 1)}
+                      onInc={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty + 1)}
+                      className="w-48"
+                    />
+                  </div>
                   <FinishOptions
                     isPhotoPrint={isPhotoPrint}
                     finish={activeProduct.finish}
@@ -510,6 +515,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                     onPaper={(p) => setPaperByKey((prev) => ({ ...prev, [activeKey]: p }))}
                     activeBorder={activeBorder}
                     onBorder={(on) => setBorderByKey((prev) => ({ ...prev, [activeKey]: on }))}
+                    borderInches={borderInches}
                   />
                 </div>
               </div>
@@ -576,6 +582,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                   onPaper={(p) => setPaperByKey((prev) => ({ ...prev, [activeKey]: p }))}
                   activeBorder={activeBorder}
                   onBorder={(on) => setBorderByKey((prev) => ({ ...prev, [activeKey]: on }))}
+                    borderInches={borderInches}
                 />
               </div>
             </main>
@@ -590,6 +597,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           product={activeProduct}
           initialOrientation={activeOrientation}
           border={activeBorder}
+          borderInches={borderInches ?? 0}
           qty={activeQty}
           onQtyChange={(q) => setQty(activePhoto.id, activeProduct.sizeCode, q)}
           photoIndex={photoIndex}
@@ -697,6 +705,7 @@ function FinishOptions({
   onPaper,
   activeBorder,
   onBorder,
+  borderInches,
 }: {
   isPhotoPrint: boolean;
   finish: string;
@@ -704,8 +713,10 @@ function FinishOptions({
   onPaper: (p: "glossy" | "satin") => void;
   activeBorder: boolean;
   onBorder: (on: boolean) => void;
+  borderInches: number | null;
 }) {
   const item = "min-w-0 flex-1 lg:flex-none lg:w-48";
+  const borderLabel = borderInches === 0.25 ? '¼" white border' : '½" white border';
   return (
     <div className="flex gap-2">
       {isPhotoPrint ? (
@@ -726,22 +737,68 @@ function FinishOptions({
         </div>
       )}
 
-      <Dropdown
-        label="Finishing & Border"
-        value={activeBorder ? "quarter" : "none"}
-        onChange={(v) => onBorder(v === "quarter")}
-        options={[
-          { value: "none", label: "None" },
-          { value: "quarter", label: '¼" white border', hint: 'Include a ¼" white border around your image' },
-        ]}
-        className={item}
-      />
+      {borderInches === null ? (
+        <div className={`${item} flex flex-col rounded-xl border border-ink/15 px-3 py-2`}>
+          <span className="text-[11px] text-ink-mute">Finishing &amp; Border</span>
+          <span className="text-sm font-medium text-ink">None</span>
+        </div>
+      ) : (
+        <Dropdown
+          label="Finishing & Border"
+          value={activeBorder ? "on" : "none"}
+          onChange={(v) => onBorder(v === "on")}
+          options={[
+            { value: "none", label: "None" },
+            { value: "on", label: borderLabel, hint: `Include a ${borderInches === 0.25 ? "¼" : "½"}" white border around your image` },
+          ]}
+          className={item}
+        />
+      )}
 
       <div className={`${item} flex flex-col rounded-xl border border-dashed border-ink/15 px-3 py-2`}>
         <span className="flex items-center gap-1 text-[11px] text-ink-mute">
           Frame / Mount <span className="rounded bg-ink/8 px-1 text-[10px]">soon</span>
         </span>
         <span className="text-sm font-medium text-ink-mute">None</span>
+      </div>
+    </div>
+  );
+}
+
+/** Bordered Quantity box (desktop) — matches the dropdown chips' size. */
+function QtyBox({
+  value,
+  onDec,
+  onInc,
+  className,
+}: {
+  value: number;
+  onDec: () => void;
+  onInc: () => void;
+  className?: string;
+}) {
+  return (
+    <div className={`rounded-xl border border-ink/15 px-3 py-2 ${className ?? ""}`}>
+      <span className="text-[11px] text-ink-mute">Quantity</span>
+      <div className="mt-1 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onDec}
+          aria-label="Decrease quantity"
+          disabled={value <= 0}
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-ink/5 text-lg font-bold text-ink-soft transition-colors duration-200 hover:bg-ink/10 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          −
+        </button>
+        <span className="font-mono text-sm">{value}</span>
+        <button
+          type="button"
+          onClick={onInc}
+          aria-label="Increase quantity"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-malachite text-lg font-bold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+        >
+          +
+        </button>
       </div>
     </div>
   );

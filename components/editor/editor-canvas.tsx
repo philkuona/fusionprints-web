@@ -28,8 +28,10 @@ interface EditorCanvasProps {
   rotation?: 0 | 90 | 180 | 270;
   flipH?: boolean;
   flipV?: boolean;
-  /** ¼" border on → guide shows as a solid white print border; off → grey guide. */
+  /** border on → guide shows as a solid white print border; off → grey guide. */
   border?: boolean;
+  /** Border/guide thickness in inches (0 = the size offers no border → no guide). */
+  borderInches?: number;
   /** CSS filter string for the live colour preview (approximate; server is exact). */
   cssFilter?: string;
   zoom: number;
@@ -88,6 +90,7 @@ export function EditorCanvas({
   flipH = false,
   flipV = false,
   border = false,
+  borderInches = 0,
   cssFilter,
   zoom,
   onZoomChange,
@@ -102,6 +105,7 @@ export function EditorCanvas({
   const aspectRef = useRef({ w: frameAspectW, h: frameAspectH });
   const transformRef = useRef({ rotation, flipH, flipV });
   const borderRef = useRef(border);
+  const borderInchesRef = useRef(borderInches);
   const maxZoomRef = useRef(maxZoom);
 
   useEffect(() => {
@@ -244,11 +248,12 @@ export function EditorCanvas({
             grid[3].points([f.x, f.y + 2 * ty, f.x + f.width, f.y + 2 * ty]);
             // ¼" margin guide: 4 inset bands. Grey + translucent normally; solid
             // white when the ¼" border is on (the print's white border).
-            const insetX = (0.25 / aspectRef.current.w) * f.width;
-            const insetY = (0.25 / aspectRef.current.h) * f.height;
+            const bi = borderInchesRef.current;
+            const insetX = (bi / aspectRef.current.w) * f.width;
+            const insetY = (bi / aspectRef.current.h) * f.height;
             const on = borderRef.current;
             const gFill = on ? "#FFFFFF" : "#6b7280";
-            const gOpacity = on ? 1 : 0.4;
+            const gOpacity = bi <= 0 ? 0 : on ? 1 : 0.4;
             const setG = (i: number, x: number, y: number, w: number, h: number) =>
               guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: gFill, opacity: gOpacity });
             setG(0, f.x, f.y, f.width, insetY);
@@ -309,8 +314,9 @@ export function EditorCanvas({
 
   useEffect(() => {
     borderRef.current = border;
+    borderInchesRef.current = borderInches;
     ctrlRef.current?.reframe();
-  }, [border]);
+  }, [border, borderInches]);
 
   useEffect(() => {
     const c = ctrlRef.current;
