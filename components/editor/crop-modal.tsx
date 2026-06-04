@@ -29,6 +29,7 @@ interface CropModalProps {
   photo: Photo;
   product: CatalogProduct;
   initialOrientation: Orientation;
+  border: boolean;
   qty: number;
   onQtyChange: (qty: number) => void;
   photoIndex: number;
@@ -57,6 +58,7 @@ export function CropModal({
   photo,
   product,
   initialOrientation,
+  border,
   qty,
   onQtyChange,
   photoIndex,
@@ -147,30 +149,38 @@ export function CropModal({
           </button>
         </header>
 
-        {/* Canvas + dimension labels */}
-        <div className="flex min-h-0 flex-1 gap-2 px-4 pt-4">
-          <div className="flex items-center">
-            <span className="font-mono text-[11px] text-ink-mute" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
-              {aspectH} in
-            </span>
+        {/* Canvas with L-shaped dimension labels (bottom-left, with arrows) */}
+        <div className="relative min-h-0 flex-1 px-4 pt-4">
+          <div className="h-full w-full">
+            <EditorCanvas
+              key={resetKey}
+              imageUrl={photo.storageUrl}
+              frameAspectW={aspectW}
+              frameAspectH={aspectH}
+              rotation={rotation}
+              flipH={flipH}
+              flipV={flipV}
+              border={border}
+              cssFilter={cssFilter}
+              zoom={zoom}
+              onZoomChange={setZoom}
+              onCropChange={handleCropChange}
+            />
           </div>
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1">
-              <EditorCanvas
-                key={resetKey}
-                imageUrl={photo.storageUrl}
-                frameAspectW={aspectW}
-                frameAspectH={aspectH}
-                rotation={rotation}
-                flipH={flipH}
-                flipV={flipV}
-                cssFilter={cssFilter}
-                zoom={zoom}
-                onZoomChange={setZoom}
-                onCropChange={handleCropChange}
-              />
+          {/* measurements */}
+          <div className="pointer-events-none absolute bottom-3 left-3 flex items-end gap-2">
+            <div className="flex flex-col items-center rounded bg-white/85 px-1 py-1 font-mono text-[11px] text-ink">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5v14M12 5l-5 5M12 5l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
             </div>
-            <p className="mt-1 text-center font-mono text-[11px] text-ink-mute">{aspectW} in</p>
+            <div className="flex items-center gap-1 rounded bg-white/85 px-1.5 py-1 font-mono text-[11px] text-ink">
+              <span>{aspectW} in</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M19 12l-5-5M19 12l-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </div>
         </div>
 

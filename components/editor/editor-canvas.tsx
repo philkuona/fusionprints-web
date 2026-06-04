@@ -28,6 +28,8 @@ interface EditorCanvasProps {
   rotation?: 0 | 90 | 180 | 270;
   flipH?: boolean;
   flipV?: boolean;
+  /** ¼" border on → guide shows as a solid white print border; off → grey guide. */
+  border?: boolean;
   /** CSS filter string for the live colour preview (approximate; server is exact). */
   cssFilter?: string;
   zoom: number;
@@ -85,6 +87,7 @@ export function EditorCanvas({
   rotation = 0,
   flipH = false,
   flipV = false,
+  border = false,
   cssFilter,
   zoom,
   onZoomChange,
@@ -98,6 +101,7 @@ export function EditorCanvas({
   const onZoomChangeRef = useRef(onZoomChange);
   const aspectRef = useRef({ w: frameAspectW, h: frameAspectH });
   const transformRef = useRef({ rotation, flipH, flipV });
+  const borderRef = useRef(border);
   const maxZoomRef = useRef(maxZoom);
 
   useEffect(() => {
@@ -153,14 +157,17 @@ export function EditorCanvas({
         const mask = [0, 1, 2, 3].map(
           () => new Konva.Rect({ fill: "#1F1B16", opacity: 0.5, listening: false }),
         );
-        const border = new Konva.Rect({ stroke: "#FBF7F0", strokeWidth: 1.5, listening: false });
+        const frameBorder = new Konva.Rect({ stroke: "#FBF7F0", strokeWidth: 1.5, listening: false });
         const grid = [0, 1, 2, 3].map(
           () => new Konva.Line({ stroke: "#FBF7F0", strokeWidth: 1, opacity: 0.35, listening: false }),
         );
+        // ¼" margin guide (grey, translucent) — becomes a solid white border when on.
+        const guide = [0, 1, 2, 3].map(() => new Konva.Rect({ listening: false }));
         layer.add(image);
         mask.forEach((m) => layer.add(m));
-        layer.add(border);
+        layer.add(frameBorder);
         grid.forEach((g) => layer.add(g));
+        guide.forEach((g) => layer.add(g));
 
         const ctrl = {
           stage,
@@ -228,13 +235,26 @@ export function EditorCanvas({
             mask[1].setAttrs({ x: 0, y: f.y + f.height, width: sw, height: sh - (f.y + f.height) });
             mask[2].setAttrs({ x: 0, y: f.y, width: f.x, height: f.height });
             mask[3].setAttrs({ x: f.x + f.width, y: f.y, width: sw - (f.x + f.width), height: f.height });
-            border.setAttrs({ x: f.x, y: f.y, width: f.width, height: f.height });
+            frameBorder.setAttrs({ x: f.x, y: f.y, width: f.width, height: f.height });
             const tx = f.width / 3;
             const ty = f.height / 3;
             grid[0].points([f.x + tx, f.y, f.x + tx, f.y + f.height]);
             grid[1].points([f.x + 2 * tx, f.y, f.x + 2 * tx, f.y + f.height]);
             grid[2].points([f.x, f.y + ty, f.x + f.width, f.y + ty]);
             grid[3].points([f.x, f.y + 2 * ty, f.x + f.width, f.y + 2 * ty]);
+            // ¼" margin guide: 4 inset bands. Grey + translucent normally; solid
+            // white when the ¼" border is on (the print's white border).
+            const insetX = (0.25 / aspectRef.current.w) * f.width;
+            const insetY = (0.25 / aspectRef.current.h) * f.height;
+            const on = borderRef.current;
+            const gFill = on ? "#FFFFFF" : "#6b7280";
+            const gOpacity = on ? 1 : 0.4;
+            const setG = (i: number, x: number, y: number, w: number, h: number) =>
+              guide[i].setAttrs({ x, y, width: Math.max(0, w), height: Math.max(0, h), fill: gFill, opacity: gOpacity });
+            setG(0, f.x, f.y, f.width, insetY);
+            setG(1, f.x, f.y + f.height - insetY, f.width, insetY);
+            setG(2, f.x, f.y + insetY, insetX, f.height - 2 * insetY);
+            setG(3, f.x + f.width - insetX, f.y + insetY, insetX, f.height - 2 * insetY);
             stage.batchDraw();
           },
           emit() {
@@ -286,6 +306,11 @@ export function EditorCanvas({
     aspectRef.current = { w: frameAspectW, h: frameAspectH };
     ctrlRef.current?.reframe();
   }, [frameAspectW, frameAspectH]);
+
+  useEffect(() => {
+    borderRef.current = border;
+    ctrlRef.current?.reframe();
+  }, [border]);
 
   useEffect(() => {
     const c = ctrlRef.current;
