@@ -1038,7 +1038,7 @@ function SizeGroup({
   if (items.length === 0) return null;
   return (
     <div>
-      <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">{title}</p>
+      <p className="text-center font-mono text-[11px] font-bold uppercase tracking-widest text-ink-soft">{title}</p>
       {/* One column on tablet (coarse pointer); two columns on desktop (mouse). */}
       <div className="mt-2 grid grid-cols-1 gap-1.5 pointer-fine:grid-cols-2">
         {items.map((p) => {
