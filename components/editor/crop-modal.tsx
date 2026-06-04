@@ -172,23 +172,28 @@ export function CropModal({
               onFrameChange={setFrame}
             />
             {frame && (
-              <div
-                className="pointer-events-none absolute flex items-end gap-1"
-                style={{ left: frame.x + 6, top: frame.y + frame.height - 6, transform: "translateY(-100%)" }}
-              >
-                <div className="flex flex-col items-center rounded bg-white/85 px-1 py-1 font-mono text-[11px] text-ink">
+              <>
+                {/* Height — outside the frame's LEFT edge, bottom-aligned, arrow up */}
+                <div
+                  className="pointer-events-none absolute flex flex-col items-center gap-1 font-mono text-[11px] text-ink-mute"
+                  style={{ left: frame.x - 8, top: frame.y + frame.height, transform: "translate(-100%, -100%)" }}
+                >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M12 5v14M12 5l-5 5M12 5l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 4v16M12 4l-5 5M12 4l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
                 </div>
-                <div className="flex items-center gap-1 rounded bg-white/85 px-1.5 py-1 font-mono text-[11px] text-ink">
+                {/* Width — below the frame's bottom edge, left-aligned, arrow right */}
+                <div
+                  className="pointer-events-none absolute flex items-center gap-1 font-mono text-[11px] text-ink-mute"
+                  style={{ left: frame.x, top: frame.y + frame.height + 8 }}
+                >
                   <span>{aspectW} in</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M5 12h14M19 12l-5-5M19 12l-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 12h16M20 12l-5-5M20 12l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>

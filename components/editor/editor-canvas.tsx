@@ -12,9 +12,9 @@ import {
   croppedPixels,
 } from "@/lib/edit/crop-math";
 
-// Gap between the crop frame and the stage edge → the photo outside the frame
-// shows as a dimmed "bleed" guide.
-const PAD = 24;
+// Margin between the print frame and the stage edge — leaves room for the
+// dimension labels outside the frame (left + below).
+const PAD = 44;
 
 export interface CropChange {
   crop: Rect; // normalized [0,1] of the rotated+flipped image
