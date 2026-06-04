@@ -478,7 +478,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
             </aside>
 
             {/* Centre */}
-            <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6">
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6 lg:px-6 lg:py-3">
               {addedNote && (
                 <p className="mx-auto mb-3 rounded-full bg-malachite/15 px-4 py-2 text-sm text-ink">{addedNote}</p>
               )}
@@ -509,7 +509,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
 
                 {/* Desktop: Quantity box (left) + size info (right), then options. */}
                 <div className="hidden lg:block">
-                  <div className="mb-3 flex items-center gap-4">
+                  <div className="mb-2 flex items-center gap-4">
                     <QtyBox
                       value={activeQty}
                       onDec={() => setQty(activePhoto.id, activeProduct.sizeCode, activeQty - 1)}
@@ -533,10 +533,10 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               </div>
 
               {/* Separator before the image */}
-              <div className="mt-3 shrink-0 border-t border-ink/10" />
+              <div className="mt-3 shrink-0 border-t border-ink/10 lg:mt-2" />
 
               {/* Clickable preview — fills remaining space; opens focus mode */}
-              <div className="mt-4 flex min-h-0 flex-1 items-center justify-center">
+              <div className="mt-4 flex min-h-0 flex-1 items-center justify-center lg:mt-2">
                 <button
                   type="button"
                   onClick={openFocused}
@@ -571,7 +571,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               </div>
 
               {/* Edit/Crop (desktop button) / tap hint (mobile) */}
-              <div className="mt-3 flex shrink-0 justify-center">
+              <div className="mt-3 flex shrink-0 justify-center lg:mt-2">
                 <button
                   type="button"
                   onClick={openFocused}
@@ -753,14 +753,14 @@ function FinishOptions({
           className={item}
         />
       ) : (
-        <div className={`${item} flex flex-col rounded-xl border border-ink/15 px-3 py-2`}>
+        <div className={`${item} flex flex-col rounded-xl border border-ink/15 px-3 py-2 lg:py-1.5`}>
           <span className="text-[11px] text-ink-mute">Paper</span>
           <span className="text-sm font-medium text-ink">{cap(finish)}</span>
         </div>
       )}
 
       {borderInches === null ? (
-        <div className={`${item} flex flex-col rounded-xl border border-ink/15 px-3 py-2`}>
+        <div className={`${item} flex flex-col rounded-xl border border-ink/15 px-3 py-2 lg:py-1.5`}>
           <span className="text-[11px] text-ink-mute">Finishing &amp; Border</span>
           <span className="text-sm font-medium text-ink">None</span>
         </div>
@@ -777,7 +777,7 @@ function FinishOptions({
         />
       )}
 
-      <div className={`${item} flex flex-col rounded-xl border border-dashed border-ink/15 px-3 py-2`}>
+      <div className={`${item} flex flex-col rounded-xl border border-dashed border-ink/15 px-3 py-2 lg:py-1.5`}>
         <span className="flex items-center gap-1 text-[11px] text-ink-mute">
           Frame / Mount <span className="rounded bg-ink/8 px-1 text-[10px]">soon</span>
         </span>

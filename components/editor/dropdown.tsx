@@ -47,7 +47,7 @@ export function Dropdown({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex w-full cursor-pointer flex-col items-start rounded-xl border border-ink/15 bg-white px-3 py-2 text-left transition-colors duration-200 hover:border-ink/30"
+        className="flex w-full cursor-pointer flex-col items-start rounded-xl border border-ink/15 bg-white px-3 py-2 text-left transition-colors duration-200 hover:border-ink/30 lg:py-1.5"
       >
         {label && <span className="text-[11px] text-ink-mute">{label}</span>}
         <span className="flex w-full items-center justify-between gap-2">

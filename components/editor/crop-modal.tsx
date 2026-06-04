@@ -135,7 +135,7 @@ export function CropModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-2 sm:p-4">
-      <div className="flex h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl lg:max-w-5xl">
         {/* Header */}
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-ink/10 px-4 py-3">
           <button type="button" onClick={onCancel} className="flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5">
@@ -152,96 +152,102 @@ export function CropModal({
           </button>
         </header>
 
-        {/* Canvas with L-shaped dimension labels anchored to the print frame */}
-        <div className="min-h-0 flex-1 p-4">
-          <div className="relative h-full w-full">
-            <EditorCanvas
-              key={resetKey}
-              imageUrl={photo.storageUrl}
-              frameAspectW={aspectW}
-              frameAspectH={aspectH}
-              rotation={rotation}
-              flipH={flipH}
-              flipV={flipV}
-              border={border}
-              borderInches={borderInches}
-              cssFilter={cssFilter}
-              zoom={zoom}
-              onZoomChange={setZoom}
-              onCropChange={handleCropChange}
-              onFrameChange={setFrame}
-            />
-            {frame && (
-              <>
-                {/* Height — outside the frame's LEFT edge, bottom-aligned, arrow up */}
-                <div
-                  className="pointer-events-none absolute flex flex-col items-center gap-1 font-mono text-[11px] text-ink-mute"
-                  style={{ left: frame.x - 8, top: frame.y + frame.height, transform: "translate(-100%, -100%)" }}
-                >
-                  <svg width="14" height="32" viewBox="0 0 14 32" fill="none" aria-hidden="true">
-                    <path d="M7 31V3M7 3L3 8M7 3L11 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
-                </div>
-                {/* Width — below the frame's bottom edge, left-aligned, arrow right */}
-                <div
-                  className="pointer-events-none absolute flex items-center gap-1.5 font-mono text-[11px] text-ink-mute"
-                  style={{ left: frame.x, top: frame.y + frame.height + 8 }}
-                >
-                  <span>{aspectW} in</span>
-                  <svg width="32" height="14" viewBox="0 0 32 14" fill="none" aria-hidden="true">
-                    <path d="M1 7H29M29 7L24 3M29 7L24 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              </>
-            )}
+        {/* Workspace: the print canvas, plus the effects panel — below the image
+            on phones, a left sidebar on large screens so the image stays large */}
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row-reverse">
+          {/* Canvas with L-shaped dimension labels anchored to the print frame */}
+          <div className="min-h-0 flex-1 p-4">
+            <div className="relative h-full w-full">
+              <EditorCanvas
+                key={resetKey}
+                imageUrl={photo.storageUrl}
+                frameAspectW={aspectW}
+                frameAspectH={aspectH}
+                rotation={rotation}
+                flipH={flipH}
+                flipV={flipV}
+                border={border}
+                borderInches={borderInches}
+                cssFilter={cssFilter}
+                zoom={zoom}
+                onZoomChange={setZoom}
+                onCropChange={handleCropChange}
+                onFrameChange={setFrame}
+              />
+              {frame && (
+                <>
+                  {/* Height — outside the frame's LEFT edge, bottom-aligned, arrow up */}
+                  <div
+                    className="pointer-events-none absolute flex flex-col items-center gap-1 font-mono text-[11px] text-ink-mute"
+                    style={{ left: frame.x - 8, top: frame.y + frame.height, transform: "translate(-100%, -100%)" }}
+                  >
+                    <svg width="14" height="32" viewBox="0 0 14 32" fill="none" aria-hidden="true">
+                      <path d="M7 31V3M7 3L3 8M7 3L11 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>{aspectH} in</span>
+                  </div>
+                  {/* Width — below the frame's bottom edge, left-aligned, arrow right */}
+                  <div
+                    className="pointer-events-none absolute flex items-center gap-1.5 font-mono text-[11px] text-ink-mute"
+                    style={{ left: frame.x, top: frame.y + frame.height + 8 }}
+                  >
+                    <span>{aspectW} in</span>
+                    <svg width="32" height="14" viewBox="0 0 32 14" fill="none" aria-hidden="true">
+                      <path d="M1 7H29M29 7L24 3M29 7L24 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Effects panel — sidebar on large screens, stacked below on phones */}
+          {showEffects && (
+            <aside className="shrink-0 overflow-y-auto border-t border-ink/10 px-4 pb-3 pt-3 lg:w-80 lg:border-r lg:border-t-0 lg:py-4">
+              <div className="space-y-2 rounded-xl border border-ink/10 bg-white p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-ink">Effects</span>
+                  <button
+                    type="button"
+                    onClick={() => setAutoEnhance((v) => !v)}
+                    className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${autoEnhance ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
+                  >
+                    Auto-enhance {autoEnhance ? "on" : "off"}
+                  </button>
+                </div>
+                {SLIDERS.map((s) => (
+                  <label key={s.key} className="flex items-center gap-3 text-xs text-ink-soft">
+                    <span className="w-20 shrink-0">{s.label}</span>
+                    <input
+                      type="range"
+                      min={s.min}
+                      max={s.max}
+                      step={0.01}
+                      value={adjustments[s.key]}
+                      onChange={(e) => setAdjustments((a) => ({ ...a, [s.key]: Number(e.target.value) }))}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink/15 accent-malachite"
+                    />
+                  </label>
+                ))}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {FILTERS.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setFilterId(f.id)}
+                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${filterId === f.id ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          )}
         </div>
 
         {/* Controls */}
         <div className="shrink-0 space-y-2.5 bg-ink/[0.05] px-4 py-3">
-          {/* Effects panel */}
-          {showEffects && (
-            <div className="space-y-2 rounded-xl border border-ink/10 bg-white p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-ink">Effects</span>
-                <button
-                  type="button"
-                  onClick={() => setAutoEnhance((v) => !v)}
-                  className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${autoEnhance ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
-                >
-                  Auto-enhance {autoEnhance ? "on" : "off"}
-                </button>
-              </div>
-              {SLIDERS.map((s) => (
-                <label key={s.key} className="flex items-center gap-3 text-xs text-ink-soft">
-                  <span className="w-20 shrink-0">{s.label}</span>
-                  <input
-                    type="range"
-                    min={s.min}
-                    max={s.max}
-                    step={0.01}
-                    value={adjustments[s.key]}
-                    onChange={(e) => setAdjustments((a) => ({ ...a, [s.key]: Number(e.target.value) }))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink/15 accent-malachite"
-                  />
-                </label>
-              ))}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {FILTERS.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setFilterId(f.id)}
-                    className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200 ${filterId === f.id ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Row 1: qty · rotate · flips · orientation · prev/next */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 rounded-xl border border-ink/15 bg-white px-3 py-1.5">
