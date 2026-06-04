@@ -24,8 +24,8 @@ export function SafeAreaIntro({ onContinue }: { onContinue: () => void }) {
           style={{ aspectRatio: "4 / 5", maxWidth: 240 }}
         >
           <Image
-            src="/images/card-prints-5x7.jpg"
-            alt="A portrait shown inside a print frame, with a dashed line marking the safe area"
+            src="/images/editor-safe-demo.jpg"
+            alt="A smiling woman in a warm-lit room, shown inside a print frame with a dashed line marking the safe area"
             fill
             sizes="240px"
             className="object-cover"
