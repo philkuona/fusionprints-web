@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
 import { getMe, logout, type WebUser } from "@/lib/api/auth";
@@ -30,7 +30,6 @@ function initials(email: string): string {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false); // mobile panel
   const [menuOpen, setMenuOpen] = useState(false); // account dropdown
   const [user, setUser] = useState<WebUser | null>(null);
@@ -72,10 +71,9 @@ export function SiteHeader() {
 
   const handleLogout = async () => {
     await logout().catch(() => {});
-    setUser(null);
-    setMenuOpen(false);
-    setOpen(false);
-    router.push("/");
+    // Hard navigation: fully re-initialise the app against the now-destroyed
+    // session so no stale client state or cached /me can keep the header signed in.
+    window.location.href = "/";
   };
 
   return (

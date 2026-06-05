@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { Container } from "@/components/ui/container";
 import { logout, type WebUser } from "@/lib/api/auth";
@@ -53,11 +53,11 @@ const NAV = [
 
 function AccountSidebar({ user }: { user: WebUser }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await logout().catch(() => {});
-    router.push("/");
+    // Hard navigation so the header fully resets against the destroyed session.
+    window.location.href = "/";
   };
 
   return (
