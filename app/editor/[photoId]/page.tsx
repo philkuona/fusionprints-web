@@ -11,6 +11,7 @@ import {
   importFromUrls,
   chooseFromDropbox,
   dropboxEnabled,
+  googlePhotosEnabled,
   googlePhotosStartUrl,
   pollGooglePhotos,
 } from "@/lib/api/imports";
@@ -612,21 +613,23 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       </svg>
                       Choose from My Photos
                     </button>
-                    <div className="my-1 border-t border-ink/8" />
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setUploadMenuOpen(false);
-                        importViaGoogle();
-                      }}
-                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
-                        <path d="M12 11v3.5h5a5 5 0 1 1-1.3-4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                      </svg>
-                      Google Photos
-                    </button>
+                    {(googlePhotosEnabled() || dropboxEnabled()) && <div className="my-1 border-t border-ink/8" />}
+                    {googlePhotosEnabled() && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setUploadMenuOpen(false);
+                          importViaGoogle();
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
+                          <path d="M12 11v3.5h5a5 5 0 1 1-1.3-4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                        </svg>
+                        Google Photos
+                      </button>
+                    )}
                     {dropboxEnabled() && (
                       <button
                         type="button"

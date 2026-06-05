@@ -5,6 +5,14 @@ import type { UploadedPhoto } from "@/lib/api/photos";
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 export const DROPBOX_APP_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY ?? "";
 
+/**
+ * Google Photos is gated off by default: the option only appears once the Google
+ * Cloud setup (Picker API + scope on the consent screen) is done, otherwise the
+ * popup would error at Google. Set NEXT_PUBLIC_GOOGLE_PHOTOS_ENABLED=1 to show it.
+ */
+export const googlePhotosEnabled = () =>
+  (process.env.NEXT_PUBLIC_GOOGLE_PHOTOS_ENABLED ?? "") === "1";
+
 // ── Shared: import from URLs (Dropbox direct links) ──────────────────────────
 export async function importFromUrls(
   files: { url: string; filename?: string }[],
