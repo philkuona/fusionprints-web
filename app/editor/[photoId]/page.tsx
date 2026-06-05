@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/imports";
 import { getCatalog, formatPrice, type CatalogProduct } from "@/lib/api/catalog";
 import { type Orientation, orientedAspect, defaultOrientation, borderInchesForSize } from "@/lib/editor/sizes";
+import { resLevelForArea } from "@/lib/editor/resolution";
 import { type Rect } from "@/lib/edit/crop-math";
 import {
   type EditPayload,
@@ -494,6 +495,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const safeYPct = (safeBi / pvH) * 100;
 
   const photoIndex = photos.findIndex((p) => p.id === activePhoto.id);
+  const activePhotoArea =
+    activePhoto.widthPx && activePhoto.heightPx ? activePhoto.widthPx * activePhoto.heightPx : null;
   const photoPrints = catalog.filter((p) => p.productType === "photo_print");
   const wallArt = catalog.filter((p) => p.productType === "poster");
   const lineItems = Object.values(items);
@@ -736,8 +739,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               <p className="text-xs text-ink-mute">
                 {selected.size > 1 ? `Adding sizes to ${selected.size} photos` : "Tap a size's + to add it"}
               </p>
-              <SizeGroup title="Photo prints" items={photoPrints} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
-              <SizeGroup title="Wall art" items={wallArt} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
+              <SizeGroup title="Photo prints" items={photoPrints} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
+              <SizeGroup title="Wall art" items={wallArt} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
             </aside>
 
             {/* Centre */}
@@ -901,6 +904,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           photoPrints={photoPrints}
           wallArt={wallArt}
           activeSizeCode={activeSizeCode}
+          photoArea={activePhotoArea}
           onSelect={(code) => {
             setActiveSizeCode(code);
             setSizeModalOpen(false);
@@ -1014,12 +1018,14 @@ function SizePickerModal({
   photoPrints,
   wallArt,
   activeSizeCode,
+  photoArea,
   onSelect,
   onClose,
 }: {
   photoPrints: CatalogProduct[];
   wallArt: CatalogProduct[];
   activeSizeCode: string | null;
+  photoArea: number | null;
   onSelect: (code: string) => void;
   onClose: () => void;
 }) {
@@ -1051,19 +1057,30 @@ function SizePickerModal({
             <div key={g.title} className="mb-4">
               <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">{g.title}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {g.items.map((p) => (
-                  <button
-                    key={p.sizeCode}
-                    type="button"
-                    onClick={() => onSelect(p.sizeCode)}
-                    className={`flex min-h-[44px] cursor-pointer flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-colors duration-200 ${
-                      p.sizeCode === activeSizeCode ? "border-malachite bg-malachite/10" : "border-ink/15 hover:border-ink/30"
-                    }`}
-                  >
-                    <span className="text-sm font-semibold text-ink">{p.labelInches}</span>
-                    <span className="font-mono text-[11px] text-ink-mute">Starting at {formatPrice(p.unitPriceUsd)}</span>
-                  </button>
-                ))}
+                {g.items.map((p) => {
+                  const level = resLevelForArea(photoArea, p);
+                  return (
+                    <button
+                      key={p.sizeCode}
+                      type="button"
+                      onClick={() => onSelect(p.sizeCode)}
+                      className={`flex min-h-[44px] cursor-pointer flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-colors duration-200 ${
+                        p.sizeCode === activeSizeCode ? "border-malachite bg-malachite/10" : "border-ink/15 hover:border-ink/30"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-ink">{p.labelInches}</span>
+                        {level === "bad" && (
+                          <span className="rounded bg-coral/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-coral">Low-res</span>
+                        )}
+                        {level === "warn" && (
+                          <span className="rounded bg-amber/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber">Soft</span>
+                        )}
+                      </span>
+                      <span className="font-mono text-[11px] text-ink-mute">Starting at {formatPrice(p.unitPriceUsd)}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ),
@@ -1221,6 +1238,7 @@ function SizeGroup({
   items,
   activeSizeCode,
   activePhotoId,
+  photoArea,
   lineItems,
   onSelect,
   onAdd,
@@ -1229,6 +1247,7 @@ function SizeGroup({
   items: CatalogProduct[];
   activeSizeCode: string | null;
   activePhotoId: string;
+  photoArea: number | null;
   lineItems: Record<string, LineItem>;
   onSelect: (code: string) => void;
   onAdd: (code: string) => void;
@@ -1242,10 +1261,24 @@ function SizeGroup({
         {items.map((p) => {
           const active = p.sizeCode === activeSizeCode;
           const added = Boolean(lineItems[keyOf(activePhotoId, p.sizeCode)]);
+          // Best-case grade: the whole photo against this size, ignoring crop.
+          const level = resLevelForArea(photoArea, p);
           return (
             <div key={p.sizeCode} className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors duration-200 ${active ? "border-malachite bg-malachite/10" : "border-ink/15"}`}>
               <button type="button" onClick={() => onSelect(p.sizeCode)} className="flex min-h-[40px] flex-1 cursor-pointer flex-col items-start text-left">
-                <span className="text-sm font-semibold text-ink">{p.labelInches}</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-ink">{p.labelInches}</span>
+                  {level === "bad" && (
+                    <span title={`Your photo is below the minimum for a sharp ${p.labelInches} print`} className="rounded bg-coral/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-coral">
+                      Low-res
+                    </span>
+                  )}
+                  {level === "warn" && (
+                    <span title={`Your photo may print a little soft at ${p.labelInches}`} className="rounded bg-amber/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber">
+                      Soft
+                    </span>
+                  )}
+                </span>
                 <span className="font-mono text-[11px] text-ink-mute">Starting at {formatPrice(p.unitPriceUsd)}</span>
               </button>
               <button type="button" onClick={() => onAdd(p.sizeCode)} aria-label={`Add ${p.labelInches}`} className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-lg font-semibold transition-colors duration-200 ${added ? "bg-malachite text-ink" : "bg-ink/5 text-ink hover:bg-malachite hover:text-ink"}`}>

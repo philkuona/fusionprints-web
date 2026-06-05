@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Photo } from "@/lib/api/photos";
 import type { CatalogProduct } from "@/lib/api/catalog";
 import { type Orientation, orientedAspect, isSquareSize } from "@/lib/editor/sizes";
+import { resLevelForArea } from "@/lib/editor/resolution";
 import { type Rect } from "@/lib/edit/crop-math";
 import {
   type EditAdjustments,
@@ -84,6 +85,10 @@ export function CropModal({
   const [frame, setFrame] = useState<Rect | null>(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  // Set when the user hits Save on a below-minimum crop; surfaces the
+  // "print anyway / keep editing" choice. Naturally clears if they fix the
+  // crop, because the prompt only renders while resLevel is still "bad".
+  const [confirmLowRes, setConfirmLowRes] = useState(false);
   const cropRef = useRef<Rect | null>(null);
 
   const square = orientation === "square";
@@ -96,11 +101,8 @@ export function CropModal({
     ? { w: product.recommendedResolution.height, h: product.recommendedResolution.width }
     : { w: product.recommendedResolution.width, h: product.recommendedResolution.height };
 
-  const minArea = product.minResolution.width * product.minResolution.height;
-  const recArea = product.recommendedResolution.width * product.recommendedResolution.height;
   const cropArea = cropPixels ? cropPixels.width * cropPixels.height : null;
-  const resLevel: "ok" | "warn" | "bad" =
-    cropArea === null ? "ok" : cropArea < minArea ? "bad" : cropArea < recArea ? "warn" : "ok";
+  const resLevel = resLevelForArea(cropArea, product);
 
   const cssFilter = buildCssFilter(adjustments, filterId, autoEnhance);
 
@@ -127,7 +129,7 @@ export function CropModal({
     setResetKey((k) => k + 1);
   }
 
-  async function handleSave() {
+  async function doSave() {
     setSaving(true);
     setErr("");
     try {
@@ -137,6 +139,15 @@ export function CropModal({
       setErr("Couldn't save. Please try again.");
       setSaving(false);
     }
+  }
+
+  // Below the minimum, the first Save asks for confirmation instead of saving.
+  function handleSave() {
+    if (resLevel === "bad" && !confirmLowRes) {
+      setConfirmLowRes(true);
+      return;
+    }
+    void doSave();
   }
 
   const pillBtn =
@@ -342,6 +353,55 @@ export function CropModal({
               Add text<span className="rounded bg-ink/8 px-1 text-[9px]">soon</span>
             </span>
           </div>
+
+          {/* Low-resolution gate */}
+          {resLevel !== "ok" && (
+            <div
+              className={`flex items-start gap-2.5 rounded-xl border px-3 py-2.5 text-xs ${
+                resLevel === "bad" ? "border-coral/40 bg-coral/10" : "border-amber/40 bg-amber/10"
+              }`}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+                className={`mt-px shrink-0 ${resLevel === "bad" ? "text-coral" : "text-amber"}`}
+              >
+                <path d="M12 9v4m0 4h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="flex-1">
+                <p className={`font-semibold ${resLevel === "bad" ? "text-coral" : "text-ink"}`}>
+                  {resLevel === "bad" ? "Resolution too low for this size" : "May print a little soft"}
+                </p>
+                <p className="mt-0.5 text-ink-soft">
+                  {resLevel === "bad"
+                    ? `This crop is below the minimum for a sharp ${product.labelInches} print and may look blurry. Zoom out, or choose a smaller size for the sharpest result.`
+                    : `At this crop your ${product.labelInches} print may look a little soft. Zoom out, or choose a smaller size for the sharpest result.`}
+                </p>
+                {resLevel === "bad" && confirmLowRes && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void doSave()}
+                      disabled={saving}
+                      className="flex h-9 cursor-pointer items-center rounded-full bg-coral px-4 text-xs font-semibold text-white transition-colors duration-200 hover:bg-coral/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {saving ? "Saving…" : "Print anyway"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmLowRes(false)}
+                      className="flex h-9 cursor-pointer items-center rounded-full border border-ink/20 px-4 text-xs font-semibold text-ink transition-colors duration-200 hover:bg-ink/5"
+                    >
+                      Keep editing
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Minimum / Recommended */}
           <div className="flex items-center justify-center gap-10 pt-0.5 text-center">
