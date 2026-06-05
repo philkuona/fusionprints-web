@@ -21,6 +21,7 @@ import { addToCart, type CartItem } from "@/lib/cart";
 import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal";
 import { Dropdown } from "@/components/editor/dropdown";
 import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
+import { PerfOverlay } from "@/components/editor/perf-overlay";
 
 // Show the safe-area checkpoint once per browser session (sessionStorage clears
 // when the tab/browser closes), so repeat editors aren't nagged every time.
@@ -340,6 +341,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream text-ink">
+      <PerfOverlay />
       {/* Promo / nav bar */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-ink/10 bg-ink px-4">
         <Link href="/" aria-label="FusionPrints home" className="cursor-pointer">
