@@ -125,7 +125,7 @@ function CheckoutScreen() {
                 active={fulfillment === "collection"}
                 onClick={() => setFulfillment("collection")}
                 title="Collection"
-                sub="Pick up from our studio — free"
+                sub="Pick up from our studio, free"
               />
               <FulfillmentCard
                 active={fulfillment === "delivery"}

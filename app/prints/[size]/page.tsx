@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProduct(size);
   if (!product) return {};
   return {
-    title: `${product.labelInches} Print — FusionPrints`,
+    title: `${product.labelInches} Print | FusionPrints`,
     description: `Order a ${product.displayLabel} print from FusionPrints. ${formatPrice(product.unitPriceUsd)} per print.`,
   };
 }
@@ -102,7 +102,7 @@ export default async function ProductPage({ params }: Props) {
               Start printing
             </button>
             <p className="mt-2 text-xs text-ink-mute">
-              Photo upload coming soon — order via{" "}
+              Photo upload coming soon. Order via{" "}
               <a
                 href="https://wa.me/263781387466"
                 className="cursor-pointer underline underline-offset-2"

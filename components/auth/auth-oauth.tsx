@@ -8,7 +8,7 @@ const START_URL = `${API}/web/api/auth/google`;
 
 const POPUP_ERRORS: Record<string, string> = {
   google: "We couldn't sign you in with Google. Please try again.",
-  google_disabled: "Google sign-in isn't available right now — use your email below.",
+  google_disabled: "Google sign-in isn't available right now. Use your email below.",
 };
 
 function GoogleIcon() {

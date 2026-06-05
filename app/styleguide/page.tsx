@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Styleguide — FusionPrints",
+  title: "Styleguide | FusionPrints",
 };
 
 const SWATCHES: { name: string; token: string; hex: string; dark?: boolean }[] = [
@@ -16,10 +16,10 @@ const SWATCHES: { name: string; token: string; hex: string; dark?: boolean }[] =
 ];
 
 const OUTFIT_WEIGHTS: { label: string; cls: string }[] = [
-  { label: "Outfit 400 — Regular", cls: "font-normal" },
-  { label: "Outfit 500 — Medium", cls: "font-medium" },
-  { label: "Outfit 600 — SemiBold", cls: "font-semibold" },
-  { label: "Outfit 700 — Bold", cls: "font-bold" },
+  { label: "Outfit 400, Regular", cls: "font-normal" },
+  { label: "Outfit 500, Medium", cls: "font-medium" },
+  { label: "Outfit 600, SemiBold", cls: "font-semibold" },
+  { label: "Outfit 700, Bold", cls: "font-bold" },
 ];
 
 export default function StyleguidePage() {
@@ -41,7 +41,7 @@ export default function StyleguidePage() {
           Hold the moment.
         </p>
         <p className="mt-3 max-w-md text-ink-soft">
-          Fraunces 700, Malachite. The brand&rsquo;s signature line — always
+          Fraunces 700, Malachite. The brand&rsquo;s signature line, always
           present with prominence on key surfaces.
         </p>
       </section>
@@ -74,23 +74,23 @@ export default function StyleguidePage() {
         </h2>
 
         <div className="mt-6 space-y-2">
-          <p className="text-sm text-ink-mute">Fraunces — headlines</p>
+          <p className="text-sm text-ink-mute">Fraunces, headlines</p>
           <p className="font-fraunces text-5xl font-bold text-ink">
             Your photos deserve to be printed.
           </p>
         </div>
 
         <div className="mt-8 space-y-3">
-          <p className="text-sm text-ink-mute">Outfit — body &amp; UI</p>
+          <p className="text-sm text-ink-mute">Outfit, body &amp; UI</p>
           {OUTFIT_WEIGHTS.map((w) => (
             <p key={w.cls} className={`${w.cls} text-2xl text-ink`}>
-              {w.label} — Moments worth keeping.
+              {w.label}: Moments worth keeping.
             </p>
           ))}
         </div>
 
         <div className="mt-8 space-y-2">
-          <p className="text-sm text-ink-mute">DM Mono — prices, order refs</p>
+          <p className="text-sm text-ink-mute">DM Mono, prices, order refs</p>
           <p className="font-mono text-2xl font-medium text-ink">
             FP-2026-00417 · USD 24.00 · 16&times;20
           </p>

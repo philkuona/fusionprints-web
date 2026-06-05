@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/catalog/product-card";
 import { Container } from "@/components/ui/container";
 
 export const metadata: Metadata = {
-  title: "Prints — FusionPrints",
+  title: "Prints | FusionPrints",
   description: "Premium photo prints in 8 sizes. From everyday snapshots to statement wall art.",
 };
 
@@ -25,7 +25,7 @@ export default async function PrintsPage() {
             Wall art that fills the room.
           </h2>
           <p className="mt-4 max-w-xl text-cream/70">
-            Large-format prints up to 16×20 in — printed in-house on professional inkjet.
+            Large-format prints up to 16×20 in. Printed in-house on professional inkjet.
             The kind of statement piece most labs won&rsquo;t touch.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">

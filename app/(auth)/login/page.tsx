@@ -8,7 +8,7 @@ import { AuthOAuth } from "@/components/auth/auth-oauth";
 
 const GOOGLE_ERRORS: Record<string, string> = {
   google: "We couldn't sign you in with Google. Please try again or use your email below.",
-  google_disabled: "Google sign-in isn't available right now — please sign in with your email.",
+  google_disabled: "Google sign-in isn't available right now. Please sign in with your email.",
 };
 
 export default function LoginPage() {

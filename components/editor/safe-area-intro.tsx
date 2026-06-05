@@ -15,7 +15,7 @@ export function SafeAreaIntro({ onContinue }: { onContinue: () => void }) {
         <h2 className="font-fraunces text-xl font-bold text-ink">Keep the important bits inside the line</h2>
         <p className="mx-auto mt-2 max-w-sm text-sm text-ink-soft">
           Everything inside the frame prints. The <strong className="font-semibold text-ink">dashed line</strong> is a
-          safe zone — keep faces and key details inside it so nothing important is lost near the edge.
+          safe zone. Keep faces and key details inside it so nothing important is lost near the edge.
         </p>
 
         {/* Demo: photo fills the print frame; dashed safe line + pointer overlaid */}
@@ -53,7 +53,7 @@ export function SafeAreaIntro({ onContinue }: { onContinue: () => void }) {
           onClick={onContinue}
           className="mt-6 flex h-11 w-full cursor-pointer items-center justify-center rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
         >
-          Got it — continue
+          Got it, continue
         </button>
       </div>
     </div>

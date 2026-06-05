@@ -244,7 +244,7 @@ export default function PhotosPage() {
             <>
               <p className="mt-3 font-medium text-ink">Drag your photos here</p>
               <p className="mt-1 text-sm text-ink-mute">
-                or click to browse — JPEG, PNG, TIFF, WebP
+                or click to browse. JPEG, PNG, TIFF, WebP
               </p>
             </>
           )}

@@ -5,11 +5,11 @@ import { Container } from "@/components/ui/container";
 import { HeroCarousel } from "@/components/home/hero-carousel";
 
 export const metadata: Metadata = {
-  title: "FusionPrints — Hold the moment.",
+  title: "FusionPrints. Hold the moment.",
   description:
     "Premium photo prints and wall art, printed in-house. Order on WhatsApp or design it yourself on the web.",
   openGraph: {
-    title: "FusionPrints — Hold the moment.",
+    title: "FusionPrints. Hold the moment.",
     description: "Premium photo prints and wall art, printed in-house.",
   },
 };
@@ -154,7 +154,7 @@ export default function HomePage() {
                 Hold the moment.
               </h1>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg lg:text-sm">
-                Prints and wall art made from the photos you love — printed in-house,
+                Prints and wall art made from the photos you love. Printed in-house,
                 checked by hand, on paper worth keeping.
               </p>
               <div className="mt-7 flex flex-wrap gap-3 lg:flex-col">
@@ -218,7 +218,7 @@ export default function HomePage() {
                 Big enough to fill a wall.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-                Large-format statement pieces on professional stock — the kind of
+                Large-format statement pieces on professional stock, the kind of
                 print most labs won&rsquo;t touch.
               </p>
             </div>
@@ -244,16 +244,16 @@ export default function HomePage() {
           <div className="grid gap-px overflow-hidden rounded-2xl bg-ink/8 sm:grid-cols-3">
             {[
               {
-                title: "Printed in-house",
-                body: "Every order is printed on our own equipment — no outsourcing, no middlemen.",
+                title: `We print it ourselves. Every single one.`,
+                body: `No outsourcing. No "sent to a lab somewhere." Your photos stay with us from upload to handoff, which means if something's off, we catch it before you do.`,
               },
               {
-                title: "Colour corrected by hand",
-                body: "Our team reviews every image before it prints, so your colours come out right.",
+                title: `Blink and it's ready.`,
+                body: `24 hours. Sometimes less. We're not waiting on anyone because we're doing it all ourselves. Your wall won't stay empty for long.`,
               },
               {
-                title: "Ready in 24 hours",
-                body: "Most orders are ready the next day, for collection or delivery to your door.",
+                title: `Ordering a print shouldn't feel like filing taxes.`,
+                body: `Two minutes on WhatsApp. A few taps on the web. That's it. We built the simplest checkout in the room because life's too short for complicated.`,
               },
             ].map((p) => (
               <div key={p.title} className="bg-cream p-8">
@@ -275,8 +275,8 @@ export default function HomePage() {
             Don&rsquo;t let them fade on your phone.
           </h2>
           <p className="mx-auto mt-5 max-w-md text-lg text-cream/70">
-            Every photo worth taking is worth holding. Start with one — we&rsquo;ll
-            take care of the rest.
+            Every photo worth taking is worth holding. Start with one, and
+            we&rsquo;ll take care of the rest.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link

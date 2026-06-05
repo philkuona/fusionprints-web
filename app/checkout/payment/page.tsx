@@ -134,7 +134,7 @@ function PaymentScreen() {
 
       {/* Virtualised-provider notice */}
       <p className="mt-3 rounded-lg bg-amber/10 px-3 py-2 text-xs text-ink-soft">
-        Demo payment — no real charge is made. A live payment gateway will replace this step.
+        Demo payment. No real charge is made. A live payment gateway will replace this step.
       </p>
 
       {(phase === "review" || phase === "creating") && (

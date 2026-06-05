@@ -1323,7 +1323,7 @@ function SummaryView({
             <p className="flex items-center gap-2 text-sm font-semibold text-ink">
               Add a frame or mount <span className="rounded bg-ink/8 px-1.5 text-[10px] font-medium text-ink-mute">coming soon</span>
             </p>
-            <p className="mt-1 text-sm text-ink-mute">Finish your prints with a frame, mount, or gift box — coming after launch.</p>
+            <p className="mt-1 text-sm text-ink-mute">Finish your prints with a frame, mount, or gift box. Coming after launch.</p>
           </div>
         </div>
 

@@ -3,9 +3,9 @@ import Image from "next/image";
 import { Container } from "@/components/ui/container";
 
 export const metadata: Metadata = {
-  title: "About — FusionPrints",
+  title: "About | FusionPrints",
   description:
-    "Premium photo printing, done in-house. From everyday snapshots to large-format wall art — printed, checked, and delivered with care.",
+    "Premium photo printing, done in-house. From everyday snapshots to large-format wall art. Printed, checked, and delivered with care.",
 };
 
 const WA = "https://wa.me/263781387466";
@@ -23,7 +23,7 @@ const PROMISES = [
   },
   {
     title: "Colour correction included",
-    body: "Our team reviews every image before it prints. If something looks off, we fix it — at no extra charge.",
+    body: "Our team reviews every image before it prints. If something looks off, we fix it, at no extra charge.",
   },
   {
     title: "Quick turnaround",
@@ -31,7 +31,7 @@ const PROMISES = [
   },
   {
     title: "Honest quality checks",
-    body: "If a photo isn’t sharp enough for the size you’ve chosen, we’ll tell you before you pay — not after.",
+    body: "If a photo isn’t sharp enough for the size you’ve chosen, we’ll tell you before you pay, not after.",
   },
 ];
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
             We print what matters.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-            A photo and poster printing service built on one idea — the moments
+            A photo and poster printing service built on one idea: the moments
             worth keeping deserve to be held, not lost in a camera roll.
           </p>
         </Container>
@@ -63,13 +63,13 @@ export default function AboutPage() {
                 What FusionPrints is
               </h2>
               <p className="mt-4 leading-relaxed text-ink-soft">
-                We print everything in-house — from classic 4×6 snapshots to
+                We print everything in-house, from classic 4×6 snapshots to
                 large-format wall art up to 16×20 inches. No outsourcing, no third
                 parties touching your photos.
               </p>
               <p className="mt-4 leading-relaxed text-ink-soft">
                 Order through WhatsApp for a fast, simple experience, or use our web
-                platform for full creative control — cropping, editing, and custom
+                platform for full creative control: cropping, editing, and custom
                 layouts before your photo goes to print.
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function AboutPage() {
             <div className="rounded-2xl border border-ink/10 bg-white p-6">
               <h3 className="font-semibold text-ink">Get in touch</h3>
               <p className="mt-2 text-sm text-ink-soft">
-                Questions, bulk orders, or anything else — message us on WhatsApp.
+                Questions, bulk orders, or anything else, message us on WhatsApp.
               </p>
               <a
                 href={WA}

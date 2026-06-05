@@ -70,7 +70,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
 
       {placed && (
         <p className="mt-4 rounded-xl bg-malachite/15 px-4 py-3 text-sm font-medium text-ink">
-          Thank you — your order is placed! Track its progress below.
+          Thank you! Your order is placed. Track its progress below.
         </p>
       )}
 

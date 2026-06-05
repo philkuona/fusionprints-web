@@ -4,9 +4,9 @@ import { Container } from "@/components/ui/container";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "How it works — FusionPrints",
+  title: "How it works | FusionPrints",
   description:
-    "Order premium photo prints in minutes — fast on WhatsApp, or with full creative control on the web.",
+    "Order premium photo prints in minutes. Fast on WhatsApp, or with full creative control on the web.",
 };
 
 const WA = "https://wa.me/263781387466";
@@ -82,7 +82,7 @@ const WHATSAPP_STEPS: Step[] = [
   {
     icon: <ChatIcon className="h-6 w-6 text-malachite-deep" />,
     title: "Send your photo",
-    body: "Message us your photo on WhatsApp. No app, no account — just a photo and a hello.",
+    body: "Message us your photo on WhatsApp. No app, no account, just a photo and a hello.",
   },
   {
     icon: <RulerIcon className="h-6 w-6 text-malachite-deep" />,
@@ -117,7 +117,7 @@ const WEB_STEPS: Step[] = [
 const FAQ = [
   {
     q: "What file types do you accept?",
-    a: "JPEG and PNG. For best results, send the original full-resolution photo — not a screenshot or a photo saved from social media.",
+    a: "JPEG and PNG. For best results, send the original full-resolution photo, not a screenshot or a photo saved from social media.",
   },
   {
     q: "How long does printing take?",
@@ -125,7 +125,7 @@ const FAQ = [
   },
   {
     q: "Do you deliver?",
-    a: "Yes. Choose delivery to your door, or collect your order in person — whichever suits you.",
+    a: "Yes. Choose delivery to your door, or collect your order in person, whichever suits you.",
   },
   {
     q: "What if my photo resolution is too low?",

@@ -8,7 +8,7 @@ function FieldRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between py-3">
       <span className="text-sm text-ink-mute">{label}</span>
-      <span className="text-right text-sm font-medium text-ink">{value || "—"}</span>
+      <span className="text-right text-sm font-medium text-ink">{value || "Not set"}</span>
     </div>
   );
 }
@@ -112,7 +112,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-ink">{profile.whatsappNumber || "—"}</span>
+                <span className="text-sm font-medium text-ink">{profile.whatsappNumber || "Not set"}</span>
                 <button
                   onClick={() => setEditingWhatsapp(true)}
                   className="cursor-pointer text-xs text-ink-mute underline-offset-2 transition-colors duration-200 hover:text-ink hover:underline"

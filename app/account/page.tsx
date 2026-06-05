@@ -93,7 +93,7 @@ export default function AccountPage() {
 
         {loaded && recent.length === 0 ? (
           <p className="mt-6 text-center text-sm text-ink-mute">
-            No photos yet —{" "}
+            No photos yet.{" "}
             <Link href="/account/photos" className="cursor-pointer underline underline-offset-2">
               upload some
             </Link>{" "}
