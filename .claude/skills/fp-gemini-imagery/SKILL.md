@@ -39,7 +39,9 @@ Generate a premium lifestyle photograph for a photo printing service website.
 
 DIVERSITY — this is the most important rule. FusionPrints serves a Zimbabwean market, so imagery must reflect Zimbabwe's population — NOT a generic global rotation. Every image set must reflect genuine human diversity across ALL of these dimensions:
 
-Race and ethnicity: Black African is the majority and should clearly dominate the image set. Include, as visible minorities, white, Indian, and Asian people, and at least one person with albinism (a Black African person with albinism — pale skin, light hair — depicted with dignity, candid and natural, never medical or othering). Do not default to a worldwide spread (Latin American, Middle Eastern, Caribbean, etc.) — keep it true to Zimbabwe. Representation should feel natural, not tokenistic.
+Race and ethnicity: Black African people are the majority and clearly dominate. Across a SET of images, also include — naturally and only occasionally — white, Indian, and Asian Zimbabweans, and (RARELY — at most once across a large set, and not in every set) a Black African person with albinism, shown with dignity and never as a focal statement. Do not default to a worldwide spread (Latin American, Middle Eastern, Caribbean, etc.) — keep it true to Zimbabwe.
+
+CRITICAL — balance representation ACROSS the set, never within every frame. Each individual image is ONE authentic, spontaneous moment: usually a single person, couple, or family of ONE ethnicity, the way a real gathering actually looks. Do NOT try to fit several ethnicities — or a person with albinism — into every picture. Forcing representation into each frame reads as pushing an agenda and looks staged; let it emerge naturally and unevenly across the whole set, like real life. When generating a SINGLE image, commit to one believable scene for that slot and let the broader set carry the diversity.
 
 Life occasions: FusionPrints serves every meaningful moment in life. Images across the site must cover: weddings, graduations, birthdays, newborn and baby moments, confirmations, baptisms, anniversaries, family reunions, everyday family life, couples, solo portraits, friendships, travel memories, and pet moments.
 
@@ -51,7 +53,7 @@ Setting: vary across living rooms, bedrooms, kitchens, gardens, outdoor spaces, 
 
 Subject type: rotate across — hands only (close-up), solo person, couple, family group, flat lay of prints, prints displayed on a wall, prints being gifted.
 
-BEFORE generating any set of images, plan the full matrix: write out each slot with its assigned occasion · race · age · gender · setting · subject type. Confirm no two slots share more than two of these attributes. Then generate.
+BEFORE generating any set of images, plan the full matrix: write out each slot with its assigned occasion · race · age · gender · setting · subject type. Assign ONE ethnicity per slot (most slots Black African; spread the minority ethnicities thinly across different slots; albinism at most once, and only if the set is large). Confirm no two slots share more than two attributes. Then generate each slot as a single natural scene — do not re-introduce "include all ethnicities / albinism" into an individual image's prompt.
 
 NEVER do this:
 - All images showing only hands
@@ -60,6 +62,7 @@ NEVER do this:
 - All images of the same life occasion
 - All close-ups with no environmental context
 - All images featuring the same age group
+- Forcing a person with albinism — or several ethnicities — into every (or most) images; representation is balanced across the set, never per-frame, or it reads as pushing an agenda
 - Images that feel like generic stock photography
 
 STYLE — every image must feel:
