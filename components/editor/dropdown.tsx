@@ -14,9 +14,10 @@ export interface DropdownOption {
  * platform (native select option lists use the OS font).
  *
  * The popover is positioned with viewport-clamped fixed coordinates so it can
- * never run off-screen, even when the trigger sits in a narrow column on a
- * phone (the menu is wider than its column there). It re-clamps on scroll and
- * resize so it tracks the trigger.
+ * never run off-screen: clamped horizontally (the menu is wider than its column
+ * on a phone) and flipped above the trigger when there isn't room below (these
+ * options sit near the bottom of the editor on mobile). It re-positions on
+ * scroll and resize so it tracks the trigger.
  */
 export function Dropdown({
   label,
@@ -35,6 +36,7 @@ export function Dropdown({
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Dismiss on tap/click outside.
   useEffect(() => {
@@ -46,9 +48,9 @@ export function Dropdown({
     return () => document.removeEventListener("pointerdown", onDoc);
   }, [open]);
 
-  // Position the menu under the trigger, clamped within the viewport. menuStyle
-  // is recomputed on every open, so it need not be cleared on close (the menu
-  // only renders while `open`).
+  // Position the menu relative to the trigger, clamped within the viewport.
+  // menuStyle is recomputed on every open, so it need not be cleared on close
+  // (the menu only renders while `open`).
   useEffect(() => {
     if (!open) return;
     const place = () => {
@@ -56,16 +58,27 @@ export function Dropdown({
       if (!t) return;
       const r = t.getBoundingClientRect();
       const gutter = 8;
-      const menuW = Math.min(240, window.innerWidth - gutter * 2);
-      // Anchor to the trigger's left, then clamp both edges to the viewport.
-      const left = Math.max(gutter, Math.min(r.left, window.innerWidth - menuW - gutter));
-      setMenuStyle({ position: "fixed", top: r.bottom + 4, left, width: menuW });
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const menuW = Math.min(240, vw - gutter * 2);
+      // Measure the rendered menu so we know whether it fits below the trigger.
+      const menuH = menuRef.current?.offsetHeight ?? 0;
+      const left = Math.max(gutter, Math.min(r.left, vw - menuW - gutter));
+      // Open downward by default; flip above the trigger if it would spill past
+      // the bottom and there is more room above (mobile finish bar sits low).
+      const spaceBelow = vh - r.bottom;
+      const flipUp = menuH > 0 && spaceBelow < menuH + gutter && r.top > spaceBelow;
+      const top = flipUp ? Math.max(gutter, r.top - 4 - menuH) : r.bottom + 4;
+      setMenuStyle({ position: "fixed", top, left, width: menuW, maxHeight: vh - gutter * 2 });
     };
     place();
+    // Re-run once the menu has rendered so its measured height drives the flip.
+    const raf = requestAnimationFrame(place);
     window.addEventListener("resize", place);
     // Capture phase so inner scroll containers (the editor panels) are caught too.
     window.addEventListener("scroll", place, true);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
@@ -91,11 +104,12 @@ export function Dropdown({
           </svg>
         </span>
       </button>
-      {open && menuStyle && (
+      {open && (
         <div
+          ref={menuRef}
           role="listbox"
-          style={menuStyle}
-          className="z-50 overflow-hidden rounded-xl border border-ink/10 bg-white py-1 shadow-lg shadow-ink/10"
+          style={menuStyle ?? { position: "fixed", left: -9999, top: -9999 }}
+          className="z-50 overflow-y-auto rounded-xl border border-ink/10 bg-white py-1 shadow-lg shadow-ink/10"
         >
           {options.map((o) => (
             <button
