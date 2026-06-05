@@ -227,28 +227,36 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     const popup = window.open(googlePhotosStartUrl(), "fp-gphotos", "width=520,height=720");
     setImporting(true);
     const startedAt = Date.now();
-    const timer = setInterval(async () => {
-      // Stop if the user closed the popup or we've waited too long (5 min).
+    let stopped = false;
+    // Non-overlapping poll: schedule the next check only AFTER the current one
+    // resolves, so a slow download can't trigger a second concurrent import.
+    const tick = async () => {
+      if (stopped) return;
       if (Date.now() - startedAt > 5 * 60 * 1000) {
-        clearInterval(timer);
+        stopped = true;
         setImporting(false);
         return;
       }
       try {
         const res = await pollGooglePhotos();
         if (res.status === "done") {
-          clearInterval(timer);
+          stopped = true;
           popup?.close();
           addImportedPhotos(res.photos ?? []);
           setImporting(false);
-        } else if (res.status === "error") {
-          clearInterval(timer);
+          return;
+        }
+        if (res.status === "error") {
+          stopped = true;
           setImporting(false);
+          return;
         }
       } catch {
         /* keep polling */
       }
-    }, 2500);
+      if (!stopped) setTimeout(tick, 2500);
+    };
+    setTimeout(tick, 2500);
   }
 
   /** Bring photos chosen from the existing library into the working selection. */
