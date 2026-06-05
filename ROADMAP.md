@@ -34,8 +34,8 @@ Next: **Phase 2.4 — Polish & Launch** (or the deferred 2.2 GATE, or wiring a r
 | 2.1.6 | 90-day expiry cron | Cron logs a dry-run deletion list on server |
 | 2.1.7 | Google sign-in / sign-up (OAuth), alongside existing email auth | Founder signs in with Google; session created; the customise auth-gate resumes the journey; email login still works |
 
-Status (2026-06-02): 2.1.1 ✅ · 2.1.2 ✅ · 2.1.3 ✅ · 2.1.5 ✅ (EXIF baked server-side) · 2.1.6 ✅ (daily job + `npm run cleanup:images`, dry-run by default).
-2.1.4 🟡 partial — resolution detection + a "Low-res" badge ship in the My Photos grid; the "warning before size selection" lands with the ordering journey (size selection lives there).
+Status (2026-06-05): 2.1.1 ✅ · 2.1.2 ✅ · 2.1.3 ✅ · 2.1.5 ✅ (EXIF baked server-side) · 2.1.6 ✅ (daily job + `npm run cleanup:images`, dry-run by default).
+2.1.4 ✅ done — resolution detection + low-res gate. One grader (`lib/editor/resolution.ts`) drives: a "Low-res" badge in the My Photos grid; per-size "Low-res"/"Soft" chips in the editor size picker (desktop sidebar + mobile modal) so the warning fires before size selection; and the crop modal banner (amber at warn, coral at bad) which now requires an explicit "Print anyway" confirmation to save a below-minimum crop.
 2.1.7 ✅ done — Google sign-in (server-side Authorization Code flow, mirrors QBO; no @fastify/oauth2), opens in an auto-closing popup. Auto-links to an existing email account. Live-tested (auto-link verified). See deploy checklist at the end for the production steps.
 
 Storage: Backblaze B2 bucket `fusionprints-images`. User-scoped keys.
