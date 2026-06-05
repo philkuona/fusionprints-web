@@ -227,7 +227,7 @@ export default function HowItWorksPage() {
         </div>
 
         {/* ── FAQ ────────────────────────────────────────────────────── */}
-        <div className="mt-20 border-t border-ink/8 pt-16">
+        <div id="faq" className="mt-20 scroll-mt-24 border-t border-ink/8 pt-16">
           <h2 className="font-fraunces text-3xl font-bold text-ink">
             Common questions
           </h2>
