@@ -6,9 +6,12 @@ Each phase gets a full drill-down at its own kickoff — this is name-level only
 
 ---
 
-## CURRENT STATUS
-Phase 2.0 — complete except 2.0.7 (in progress)
-Next up after 2.0.7 sign-off: Phase 2.1
+## CURRENT STATUS (updated 2026-06-04)
+Phase 2.0 ✅ · Phase 2.1 ✅ (2.1.4 partial — see below) · Phase 2.2 ✅ built (S0–S7),
+on staging — **GATE deferred** (no mid-range Android to hand; revisit via a real-device
+cloud, see note under Phase 2.2).
+Next up: **Phase 2.3 — Cart & Checkout.** Start Stripe + EcoCash applications NOW
+(external approval is on the critical path).
 
 ---
 
@@ -50,6 +53,15 @@ Note: Google auth powers the "must be logged in to customise" gate on the web or
 
 Primary: Konva.js. Fallback: Pintura (decision gate at end of 2.2).
 Risk: performance on mid-range Android phones in Zimbabwe.
+
+Status (2026-06-04): 2.2.1–2.2.7 ✅ built + on staging, plus heavy Mpix-style UX polish
+(configurator, crop modal, effects two-canvas filter, safe-area checkpoint, tablet layouts).
+**GATE DEFERRED** — no physical mid-range Android available. Plan: test via a real-device
+cloud (BrowserStack / LambdaTest — REAL devices, not emulators, since this is a perf gate),
+picking a budget Android (Galaxy A-series / Redmi). To make the gate measurable rather than
+subjective, add a dev-only perf overlay (FPS + slider→preview ms) behind `?perf=1` before the
+session. Konva→Pintura decision still rides on the pre-set criteria (slider p95 >100ms, pan/zoom
+<~30fps, or WebGL fails).
 
 ---
 
