@@ -77,7 +77,7 @@ export function AuthOAuth({ label }: { label: string }) {
       popupRef.current = null;
 
       if (data.ok) {
-        router.push("/account");
+        router.push("/");
         router.refresh();
       } else {
         setError(POPUP_ERRORS[data.error ?? "google"] ?? POPUP_ERRORS.google);

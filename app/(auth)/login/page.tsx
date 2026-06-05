@@ -46,7 +46,7 @@ function LoginForm() {
 
     try {
       await login({ email: form.email, password: form.password });
-      router.push("/account");
+      router.push("/");
     } catch (err) {
       const apiErr = err as ApiError;
       setStatus("error");
