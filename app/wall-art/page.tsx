@@ -8,17 +8,25 @@ import { FaqAccordion } from "@/components/catalog/faq-accordion";
 export const metadata: Metadata = {
   title: "Wall Art | FusionPrints",
   description:
-    "Large-format wall art up to 16×20, printed in-house on professional stock. The statement piece most labs won't touch.",
+    "Large-format wall art up to 16×20, printed in-house on professional stock and checked by hand. Ready in 24 hours.",
 };
 
 const WA = "https://wa.me/263781387466";
 const START = "/account/photos?size=11x14";
 
 const WALL_BLURB: Record<string, string> = {
-  "11x14": "Makes a statement.",
-  "12x18": "A proper feature.",
-  "16x20": "The centrepiece.",
+  "11x14": "Makes a statement above a side table or in a hallway.",
+  "12x18": "A proper feature, sized to anchor a room.",
+  "16x20": "The centrepiece. The first thing people notice.",
 };
+
+const BENEFITS = [
+  { label: "Big, up to 16×20", icon: <path d="M4 4h7v2H6v5H4V4zm16 16h-7v-2h5v-5h2v7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+  { label: "Printed in-house", icon: <path d="M6 9V4h12v5M6 18h12v3H6v-3zM4 9h16a2 2 0 012 2v4H2v-4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+  { label: "Ready in 24 hours", icon: <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></> },
+  { label: "Easy to hang", icon: <path d="M12 3v6m0 0l-3-2m3 2l3-2M5 21h14a2 2 0 002-2v-6H3v6a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+  { label: "Checked by hand", icon: <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+];
 
 const FAQS = [
   {
@@ -31,11 +39,15 @@ const FAQS = [
   },
   {
     q: "What finish works best for wall art?",
-    a: "Lustre. Its soft, low-glare sheen means no harsh reflections from windows or lights, and it resists fingerprints when you hang it. That's why it's our default for large prints.",
+    a: "Lustre. Its soft, low-glare sheen means no harsh reflections from windows or lights, and it resists fingerprints when you hang it. That is why it is our default for large prints.",
   },
   {
     q: "How do I prepare my photo for a large print?",
-    a: "Just send us the best version you have, ideally the original full-resolution file. Upload it here and we'll guide you through cropping for your chosen size, or message it to us on WhatsApp and we'll handle the rest.",
+    a: "Just send us the best version you have, ideally the original full-resolution file. Upload it here and we will guide you through cropping for your chosen size, or message it to us on WhatsApp and we will handle the rest.",
+  },
+  {
+    q: "Do you frame the prints?",
+    a: "Framing and mounting are on the way. For now we deliver the print itself, ready for the frame of your choice. Want a recommendation? Ask us on WhatsApp.",
   },
 ];
 
@@ -57,10 +69,7 @@ export default async function WallArtPage() {
               One image, given the room it deserves.
             </p>
             <div className="mt-8">
-              <Link
-                href={START}
-                className="inline-flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-              >
+              <Link href={START} className="inline-flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream">
                 Start with wall art
               </Link>
             </div>
@@ -71,20 +80,32 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
-      {/* 2. Size cards */}
+      {/* 2. Key benefits bar */}
+      <section className="border-b border-ink/8 bg-white py-6">
+        <Container>
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {BENEFITS.map((b) => (
+              <li key={b.label} className="flex items-center gap-2.5 text-sm font-medium text-ink">
+                <span className="shrink-0 text-malachite">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">{b.icon}</svg>
+                </span>
+                {b.label}
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
+      {/* 3. Pick your size */}
       <section className="bg-cream py-16">
         <Container>
           <h2 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Pick your statement</h2>
           <p className="mt-2 text-ink-soft">Three sizes, each one built to be looked at.</p>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {sizes.map((p) => (
-              <Link
-                key={p.sizeCode}
-                href={`/prints/${p.sizeCode}`}
-                className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white transition-colors duration-200 hover:border-ink/25"
-              >
+              <Link key={p.sizeCode} href={`/prints/${p.sizeCode}`} className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white transition-colors duration-200 hover:border-ink/25">
                 <div className="relative aspect-[4/3] bg-ink/5">
-                  <Image src={`/images/card-wall-${p.sizeCode}.jpg`} alt={`A ${p.displayLabel} wall art print`} fill sizes="(max-width: 768px) 100vw, 380px" className="object-cover" />
+                  <Image src={`/images/wa-card-${p.sizeCode}.jpg`} alt={`A ${p.displayLabel} wall art print in a room`} fill sizes="(max-width: 768px) 100vw, 380px" className="object-cover" />
                 </div>
                 <div className="p-5">
                   <h3 className="font-fraunces text-2xl font-bold text-ink">{p.labelInches}</h3>
@@ -103,7 +124,7 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
-      {/* 3. Quality callout */}
+      {/* 4. Quality callout + process */}
       <section className="bg-ink py-20">
         <Container className="text-center">
           <h2 className="mx-auto max-w-2xl font-fraunces text-4xl font-bold leading-tight text-cream sm:text-5xl">
@@ -116,15 +137,36 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
-      {/* 4. Finish guide */}
       <section className="bg-cream py-16">
         <Container>
+          <div className="grid gap-8 md:grid-cols-2">
+            {[
+              { img: "/images/wa-quality.jpg", alt: "Close-up of a large fine-art print showing rich detail", title: "Built to be looked at closely", body: "Professional paper, deep colour, and detail that holds up at arm's length. We check every large print by hand before it leaves us." },
+              { img: "/images/wa-hang.jpg", alt: "A person levelling a large framed print on a wall", title: "Easy to live with", body: "Sized to standard frames and simple to hang. Choose delivery to your door or collect it in person, usually within 24 hours." },
+            ].map((c) => (
+              <div key={c.title} className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
+                <div className="relative aspect-[16/9] bg-ink/5">
+                  <Image src={c.img} alt={c.alt} fill sizes="(max-width: 768px) 100vw, 560px" className="object-cover" />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-fraunces text-xl font-bold text-ink">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{c.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* 5. Finish guide */}
+      <section className="border-y border-ink/8 bg-white py-16">
+        <Container>
           <h2 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Glossy or lustre?</h2>
-          <p className="mt-2 max-w-xl text-ink-soft">For wall art we lean lustre, but here&rsquo;s how they compare.</p>
+          <p className="mt-2 max-w-xl text-ink-soft">For wall art we lean lustre, but here is how they compare.</p>
           <div className="mt-10 grid gap-8 sm:grid-cols-2">
             {[
-              { name: "Glossy", img: "/images/finish-glossy.jpg", alt: "Close-up of a glossy print catching the light", body: "Bright, punchy, and reflective. Colours pop and blacks look deep. Best behind glass or where light is soft." },
-              { name: "Lustre", img: "/images/finish-lustre.jpg", alt: "Close-up of a lustre print with a soft pearl sheen", body: "A soft, low-glare sheen that resists fingerprints and beats window reflections. Our default for wall art." },
+              { name: "Glossy", img: "/images/wa-finish-glossy.jpg", alt: "Close-up of a glossy large print catching the light", body: "Bright, punchy, and reflective. Colours pop and blacks look deep. Best where the light is soft or behind glass." },
+              { name: "Lustre", img: "/images/wa-finish-lustre.jpg", alt: "Close-up of a lustre large print with a soft pearl sheen", body: "A soft, low-glare sheen that beats window reflections and resists fingerprints. Our default for wall art." },
             ].map((f) => (
               <div key={f.name} className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
                 <div className="relative aspect-[16/9] bg-ink/5">
@@ -140,8 +182,8 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
-      {/* 5. FAQ */}
-      <section className="border-y border-ink/8 bg-white py-16">
+      {/* 6. FAQ */}
+      <section className="bg-cream py-16">
         <Container className="max-w-3xl">
           <h2 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Good questions</h2>
           <div className="mt-8">
@@ -150,25 +192,48 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
-      {/* 6. Bottom CTA */}
+      {/* 7. Trust block (in place of reviews) */}
+      <section className="border-y border-ink/8 bg-white py-16">
+        <Container>
+          <h2 className="font-fraunces text-3xl font-bold text-ink sm:text-4xl">Why trust us with the big one</h2>
+          <div className="mt-8 grid gap-8 sm:grid-cols-3">
+            {[
+              { t: "We print it ourselves", b: "No outsourcing. Your photo is printed and checked under our own roof, start to finish." },
+              { t: "Checked by hand", b: "Every large print is reviewed before it leaves us. We flag a low-res file before you pay, never after." },
+              { t: "We make it right", b: "If a print is not right when it reaches you, tell us and we will sort it out." },
+            ].map((c) => (
+              <div key={c.t}>
+                <span className="block h-1 w-10 rounded-full bg-malachite" />
+                <h3 className="mt-4 font-fraunces text-lg font-bold text-ink">{c.t}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{c.b}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* 8. Cross-sell */}
+      <section className="bg-cream py-12">
+        <Container className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+          <p className="text-lg text-ink-soft">Want something for the album or the desk?</p>
+          <Link href="/prints" className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-malachite-deep transition-colors duration-200 hover:text-ink">
+            Explore Photo Prints
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </Link>
+        </Container>
+      </section>
+
+      {/* 9. Bottom CTA */}
       <section className="bg-ink py-16">
         <Container className="text-center">
           <h2 className="mx-auto max-w-2xl font-fraunces text-4xl font-bold leading-tight text-cream sm:text-5xl">
             Ready to print?
           </h2>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href={START}
-              className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-            >
+            <Link href={START} className="flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream">
               Start with wall art
             </Link>
-            <a
-              href={WA}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10"
-            >
+            <a href={WA} target="_blank" rel="noopener noreferrer" className="flex h-12 cursor-pointer items-center rounded-full border border-cream/30 px-8 text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream hover:bg-cream/10">
               Order on WhatsApp
             </a>
           </div>

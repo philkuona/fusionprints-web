@@ -39,9 +39,8 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const isWallArt = product.productType === "poster";
-  const img = isWallArt
-    ? `/images/card-wall-${product.sizeCode}.jpg`
-    : `/images/card-prints-${product.sizeCode}.jpg`;
+  // Dedicated per-size image (not reused from the homepage cards).
+  const img = `/images/detail-${product.sizeCode}.jpg`;
   const perfectFor = PERFECT_FOR[product.sizeCode] ?? [];
 
   return (

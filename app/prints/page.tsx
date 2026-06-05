@@ -107,41 +107,24 @@ export default async function PhotoPrintsPage() {
         </Container>
       </section>
 
-      {/* 2. Trust strip */}
-      <section className="border-y border-ink/8 bg-white py-10">
+      {/* 2. Key benefits bar */}
+      <section className="border-y border-ink/8 bg-white py-6">
         <Container>
-          <div className="grid gap-8 sm:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              {
-                title: "We print it ourselves. Every single one.",
-                icon: (
-                  <path d="M6 9V4h12v5M6 18h12v3H6v-3zM6 14h12v4H6v-4zM6 9h12a2 2 0 012 2v3H4v-3a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                ),
-              },
-              {
-                title: "Blink and it's ready.",
-                icon: (
-                  <>
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                    <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </>
-                ),
-              },
-              {
-                title: "Ordering a print shouldn't feel like filing taxes.",
-                icon: (
-                  <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                ),
-              },
-            ].map((t) => (
-              <div key={t.title} className="flex items-start gap-3">
-                <span className="mt-0.5 shrink-0 text-malachite">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">{t.icon}</svg>
+              { label: "Printed in-house", icon: <path d="M6 9V4h12v5M6 18h12v3H6v-3zM4 9h16a2 2 0 012 2v4H2v-4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+              { label: "Ready in 24 hours", icon: <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></> },
+              { label: "Colour corrected by hand", icon: <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+              { label: "Free collection", icon: <path d="M3 7h13l1 5h4v4h-2a2 2 0 11-4 0H9a2 2 0 11-4 0H3V7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+            ].map((b) => (
+              <li key={b.label} className="flex items-center gap-2.5 text-sm font-medium text-ink">
+                <span className="shrink-0 text-malachite">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">{b.icon}</svg>
                 </span>
-                <p className="font-fraunces text-base font-bold text-ink">{t.title}</p>
-              </div>
+                {b.label}
+              </li>
             ))}
-          </div>
+          </ul>
         </Container>
       </section>
 
@@ -230,7 +213,18 @@ export default async function PhotoPrintsPage() {
         </Container>
       </section>
 
-      {/* 7. Bottom CTA */}
+      {/* 7. Cross-sell to Wall Art */}
+      <section className="bg-cream py-12">
+        <Container className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+          <p className="text-lg text-ink-soft">Got a photo that deserves a wall?</p>
+          <Link href="/wall-art" className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-malachite-deep transition-colors duration-200 hover:text-ink">
+            Explore Wall Art
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </Link>
+        </Container>
+      </section>
+
+      {/* 8. Bottom CTA */}
       <section className="bg-ink py-16">
         <Container className="text-center">
           <h2 className="mx-auto max-w-2xl font-fraunces text-4xl font-bold leading-tight text-cream sm:text-5xl">
