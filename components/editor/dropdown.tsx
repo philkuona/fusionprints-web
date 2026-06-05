@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 export interface DropdownOption {
   value: string;
@@ -12,6 +12,11 @@ export interface DropdownOption {
  * Small custom dropdown (button + popover) used for Paper / Border etc. Built
  * instead of a native <select> so the font + styling match the rest of the
  * platform (native select option lists use the OS font).
+ *
+ * The popover is positioned with viewport-clamped fixed coordinates so it can
+ * never run off-screen, even when the trigger sits in a narrow column on a
+ * phone (the menu is wider than its column there). It re-clamps on scroll and
+ * resize so it tracks the trigger.
  */
 export function Dropdown({
   label,
@@ -27,15 +32,43 @@ export function Dropdown({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Dismiss on tap/click outside.
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
+    const onDoc = (e: Event) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("pointerdown", onDoc);
+    return () => document.removeEventListener("pointerdown", onDoc);
+  }, [open]);
+
+  // Position the menu under the trigger, clamped within the viewport. menuStyle
+  // is recomputed on every open, so it need not be cleared on close (the menu
+  // only renders while `open`).
+  useEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const t = triggerRef.current;
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const gutter = 8;
+      const menuW = Math.min(240, window.innerWidth - gutter * 2);
+      // Anchor to the trigger's left, then clamp both edges to the viewport.
+      const left = Math.max(gutter, Math.min(r.left, window.innerWidth - menuW - gutter));
+      setMenuStyle({ position: "fixed", top: r.bottom + 4, left, width: menuW });
+    };
+    place();
+    window.addEventListener("resize", place);
+    // Capture phase so inner scroll containers (the editor panels) are caught too.
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
   }, [open]);
 
   const current = options.find((o) => o.value === value);
@@ -43,6 +76,7 @@ export function Dropdown({
   return (
     <div ref={ref} className={`relative ${className ?? ""}`}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
@@ -57,10 +91,11 @@ export function Dropdown({
           </svg>
         </span>
       </button>
-      {open && (
+      {open && menuStyle && (
         <div
           role="listbox"
-          className="absolute left-0 z-30 mt-1 w-[min(15rem,80vw)] overflow-hidden rounded-xl border border-ink/10 bg-white py-1 shadow-lg shadow-ink/10"
+          style={menuStyle}
+          className="z-50 overflow-hidden rounded-xl border border-ink/10 bg-white py-1 shadow-lg shadow-ink/10"
         >
           {options.map((o) => (
             <button
