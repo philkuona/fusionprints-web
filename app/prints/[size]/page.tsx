@@ -108,7 +108,7 @@ export default async function ProductPage({ params }: Props) {
           {/* CTAs */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href={`/account/photos?size=${product.sizeCode}`}
+              href={`/editor/new?size=${product.sizeCode}`}
               className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
             >
               Start printing

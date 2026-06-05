@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const WA = "https://wa.me/263781387466";
-const START = "/account/photos?size=11x14";
+const START = "/editor/new?size=11x14";
 
 const WALL_BLURB: Record<string, string> = {
   "11x14": "Makes a statement above a side table or in a hallway.",

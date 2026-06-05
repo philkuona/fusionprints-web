@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const WA = "https://wa.me/263781387466";
-const START = "/account/photos?size=4x6";
+const START = "/editor/new?size=4x6";
 
 const SIZE_BLURB: Record<string, string> = {
   "4x6": "The everyday classic.",

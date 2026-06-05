@@ -128,7 +128,9 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         setActivePhotoId(active);
         setActiveSizeCode(initialSize);
         setSelected(active ? new Set([active]) : new Set());
-        setStatus(list.length > 0 ? "ready" : "error");
+        // Zero photos is a valid state: the editor shows an upload prompt so the
+        // user can start straight from here. Only a catalog failure is an error.
+        setStatus("ready");
       } catch {
         if (!cancelled) setStatus("error");
       }
@@ -461,17 +463,101 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const activePhoto = photos.find((p) => p.id === activePhotoId) ?? null;
   const activeProduct = catalog.find((p) => p.sizeCode === activeSizeCode) ?? null;
 
-  if (status === "error" || !activePhoto || !activeProduct) {
+  if (status === "error" || !activeProduct) {
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-cream px-6 text-center">
-        <h1 className="font-fraunces text-2xl font-bold text-ink">Nothing to edit yet</h1>
-        <p className="mt-2 text-sm text-ink-mute">Upload a photo from My Photos to start making prints.</p>
-        <Link
-          href="/account/photos"
+        <h1 className="font-fraunces text-2xl font-bold text-ink">We couldn&rsquo;t load the editor</h1>
+        <p className="mt-2 text-sm text-ink-mute">Something went wrong loading the print sizes. Please try again.</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
           className="mt-6 inline-flex h-11 cursor-pointer items-center rounded-full bg-malachite px-6 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
         >
-          Go to My Photos
-        </Link>
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // No photos yet → upload-first empty state, right inside the editor, so the
+  // "Start printing" CTA lands here and the user uploads without a detour.
+  if (!activePhoto) {
+    const busy = uploading > 0 || importing;
+    const canImport = importConfig.googlePhotos || Boolean(importConfig.dropboxAppKey);
+    return (
+      <div className="flex h-[100dvh] flex-col bg-cream text-ink">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPT}
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) handleUpload(Array.from(e.target.files));
+            e.target.value = "";
+          }}
+        />
+        {/* Nav bar (matches the main editor) */}
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-ink/10 bg-ink px-4">
+          <Link href="/" aria-label="FusionPrints home" className="cursor-pointer">
+            <Logo variant="on-dark" height={28} />
+          </Link>
+          <nav className="flex items-center gap-5 text-xs font-medium text-cream">
+            <Link href="/account/photos" className="cursor-pointer transition-colors duration-200 hover:text-malachite">
+              My Photos
+            </Link>
+            <Link href="/account" className="cursor-pointer transition-colors duration-200 hover:text-malachite">
+              My Account
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-malachite/15 text-malachite-deep">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 16V4M12 4L7 9M12 4l5 5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <h1 className="mt-5 font-fraunces text-2xl font-bold text-ink">Add a photo to start printing</h1>
+          <p className="mt-2 max-w-sm text-sm text-ink-mute">
+            Upload a photo from your device{canImport ? " or import one" : ""}, then crop, adjust, and choose your
+            sizes.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={busy}
+            className="mt-6 inline-flex h-12 cursor-pointer items-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {uploading > 0 ? "Uploading…" : "Upload from device"}
+          </button>
+
+          {canImport && (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+              {importConfig.googlePhotos && (
+                <button
+                  type="button"
+                  onClick={importViaGoogle}
+                  disabled={busy}
+                  className="inline-flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {importing ? "Importing…" : "Google Photos"}
+                </button>
+              )}
+              {importConfig.dropboxAppKey && (
+                <button
+                  type="button"
+                  onClick={importViaDropbox}
+                  disabled={busy}
+                  className="inline-flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Dropbox
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
