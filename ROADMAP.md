@@ -7,11 +7,15 @@ Each phase gets a full drill-down at its own kickoff — this is name-level only
 ---
 
 ## CURRENT STATUS (updated 2026-06-04)
-Phase 2.0 ✅ · Phase 2.1 ✅ (2.1.4 partial — see below) · Phase 2.2 ✅ built (S0–S7),
-on staging — **GATE deferred** (no mid-range Android to hand; revisit via a real-device
-cloud, see note under Phase 2.2).
-Next up: **Phase 2.3 — Cart & Checkout.** Start Stripe + EcoCash applications NOW
-(external approval is on the critical path).
+Phase 2.0 ✅ · Phase 2.1 ✅ (2.1.4 partial) · Phase 2.2 ✅ built — **GATE deferred**
+(no mid-range Android; revisit via a real-device cloud + the `?perf` HUD).
+Phase 2.3 🟢 **in progress** — W0 (web-order schema + createWebOrder) ✅ · W1 (cart) ✅ ·
+W2 (checkout: fulfilment/address/totals) ✅ · W3 (virtualised payment + order creation) ✅ ·
+W4 (paid→print jobs, agent serves processed render) ✅ · W5 (order history + tracking) ✅ —
+full flow live-tested locally (editor→cart→checkout→pay→tracking, payment confirmed).
+**Payments are service-virtualised** (no real gateway yet — see memory payment-virtualization).
+Remaining: **W6** (order-confirmation/receipt email + polish), then deploy backend to prod
+(runs migrations 0011/0012) so the Vercel frontend can use it.
 
 ---
 
