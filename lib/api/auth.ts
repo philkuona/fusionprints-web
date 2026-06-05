@@ -29,6 +29,7 @@ async function apiRequest<T>(
   const res = await fetch(`${API}${path}`, {
     ...options,
     credentials: 'include',
+    cache: 'no-store', // never serve a stale /me (esp. right after logout)
     headers: { 'Content-Type': 'application/json', ...options.headers },
   });
   const data = await res.json();
