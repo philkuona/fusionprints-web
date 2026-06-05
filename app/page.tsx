@@ -101,7 +101,7 @@ const WALL_ART: Card[] = [
     dims: "Glossy & lustre",
     img: "/images/card-finish-guide.jpg",
     alt: "Two prints of the same landscape side by side, one glossy and one lustre, showing the difference in finish",
-    href: "/prints#wall-art",
+    href: "/wall-art",
   },
 ];
 
@@ -223,7 +223,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/prints#wall-art"
+              href="/wall-art"
               className="group hidden cursor-pointer items-center gap-2 text-sm font-semibold text-ink transition-colors duration-200 hover:text-malachite-deep sm:flex"
             >
               See all sizes

@@ -114,7 +114,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           return;
         }
         const active = list.find((p) => p.id === entryPhotoId)?.id ?? list[0]?.id ?? null;
+        // Pre-select the size carried over from the product page (?size=), if valid.
+        const wanted =
+          typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("size") : null;
         const initialSize =
+          (wanted && cat.find((p) => p.sizeCode === wanted)?.sizeCode) ||
           cat.find((p) => p.sizeCode === "4x6")?.sizeCode ||
           cat.find((p) => p.productType === "photo_print")?.sizeCode ||
           cat[0].sizeCode;

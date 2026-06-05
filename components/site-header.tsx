@@ -10,7 +10,8 @@ import { getMe, logoutUrl, type WebUser } from "@/lib/api/auth";
 import { cartCount, subscribeCart } from "@/lib/cart";
 
 const NAV = [
-  { label: "Prints", href: "/prints" },
+  { label: "Photo Prints", href: "/prints" },
+  { label: "Wall Art", href: "/wall-art" },
   { label: "How it works", href: "/how-it-works" },
   { label: "About", href: "/about" },
 ];

@@ -35,8 +35,17 @@ export default function PhotosPage() {
   // is too small for even our smallest print at recommended quality.
   const [lowResThreshold, setLowResThreshold] = useState<number | null>(null);
 
+  // Size carried over from a product page ("Start printing"), so the editor opens
+  // pre-set to that print size once a photo is chosen.
+  const [printSize, setPrintSize] = useState<string | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
+
+  useEffect(() => {
+    const readSize = () => setPrintSize(new URLSearchParams(window.location.search).get("size"));
+    readSize();
+  }, []);
 
   useEffect(() => {
     getPhotos()
@@ -182,6 +191,13 @@ export default function PhotosPage() {
           </button>
         )}
       </div>
+
+      {printSize && (
+        <p className="mt-5 rounded-xl bg-malachite/15 px-4 py-3 text-sm font-medium text-ink">
+          Printing at {printSize.replace("x", "×")}. Choose a photo below, or add a new one, then tap
+          {" "}<span className="font-semibold">Make prints</span> to start.
+        </p>
+      )}
 
       <input
         ref={inputRef}
@@ -372,7 +388,7 @@ export default function PhotosPage() {
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-ink/70 to-transparent p-2 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
                   <button
                     type="button"
-                    onClick={() => router.push(`/editor/${photo.id}`)}
+                    onClick={() => router.push(`/editor/${photo.id}${printSize ? `?size=${encodeURIComponent(printSize)}` : ""}`)}
                     className="pointer-events-auto flex h-8 cursor-pointer items-center rounded-full bg-malachite px-3 text-[11px] font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
                   >
                     Make prints

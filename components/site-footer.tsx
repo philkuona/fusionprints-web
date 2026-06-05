@@ -6,9 +6,8 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
   {
     heading: "Shop",
     links: [
-      { label: "Standard prints", href: "/prints" },
-      { label: "Wall art", href: "/prints#wall-art" },
-      { label: "Photo cards", href: "/prints#cards" },
+      { label: "Photo Prints", href: "/prints" },
+      { label: "Wall Art", href: "/wall-art" },
     ],
   },
   {
