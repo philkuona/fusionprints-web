@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
 
 const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
@@ -35,8 +34,7 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           {/* Brand block */}
           <div>
-            <Logo variant="on-dark" height={42} />
-            <p className="mt-5 font-fraunces text-2xl font-bold leading-snug text-malachite">
+            <p className="font-fraunces text-2xl font-bold leading-snug text-malachite">
               Hold the moment.
             </p>
           </div>
