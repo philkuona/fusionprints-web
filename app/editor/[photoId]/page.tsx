@@ -6,7 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "@/components/logo";
 import { AuthGuard } from "@/components/account/auth-guard";
-import { getPhotos, uploadPhoto, type Photo } from "@/lib/api/photos";
+import { getPhotos, uploadPhoto, type Photo, type UploadedPhoto } from "@/lib/api/photos";
+import {
+  importFromUrls,
+  chooseFromDropbox,
+  dropboxEnabled,
+  googlePhotosStartUrl,
+  pollGooglePhotos,
+} from "@/lib/api/imports";
 import { getCatalog, formatPrice, type CatalogProduct } from "@/lib/api/catalog";
 import { type Orientation, orientedAspect, defaultOrientation, borderInchesForSize } from "@/lib/editor/sizes";
 import { type Rect } from "@/lib/edit/crop-math";
@@ -90,6 +97,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
   const [myPhotosOpen, setMyPhotosOpen] = useState(false);
   const [committing, setCommitting] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -165,6 +173,70 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         .finally(() => setUploading((n) => Math.max(0, n - 1)));
     }
   }, []);
+
+  /** Add freshly-imported photos (Google Photos / Dropbox) to the strip + selection. */
+  const addImportedPhotos = useCallback((created: UploadedPhoto[]) => {
+    if (created.length === 0) return;
+    const mapped: Photo[] = created.map((c) => ({
+      id: c.id,
+      storageUrl: c.storageUrl,
+      originalFilename: null,
+      widthPx: c.widthPx,
+      heightPx: c.heightPx,
+      fileSizeBytes: c.fileSizeBytes,
+      format: c.format,
+      uploadedAt: new Date().toISOString(),
+    }));
+    setPhotos((prev) => [...mapped, ...prev]);
+    setActivePhotoId(mapped[0].id);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      mapped.forEach((m) => next.add(m.id));
+      return next;
+    });
+  }, []);
+
+  async function importViaDropbox() {
+    try {
+      const files = await chooseFromDropbox();
+      if (files.length === 0) return;
+      setImporting(true);
+      const created = await importFromUrls(files);
+      addImportedPhotos(created);
+    } catch {
+      /* surfaced via empty result; keep silent */
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  function importViaGoogle() {
+    const popup = window.open(googlePhotosStartUrl(), "fp-gphotos", "width=520,height=720");
+    setImporting(true);
+    const startedAt = Date.now();
+    const timer = setInterval(async () => {
+      // Stop if the user closed the popup or we've waited too long (5 min).
+      if (Date.now() - startedAt > 5 * 60 * 1000) {
+        clearInterval(timer);
+        setImporting(false);
+        return;
+      }
+      try {
+        const res = await pollGooglePhotos();
+        if (res.status === "done") {
+          clearInterval(timer);
+          popup?.close();
+          addImportedPhotos(res.photos ?? []);
+          setImporting(false);
+        } else if (res.status === "error") {
+          clearInterval(timer);
+          setImporting(false);
+        }
+      } catch {
+        /* keep polling */
+      }
+    }, 2500);
+  }
 
   /** Bring photos chosen from the existing library into the working selection. */
   function addFromMyPhotos(ids: string[]) {
@@ -493,7 +565,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                 aria-expanded={uploadMenuOpen}
                 className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-semibold text-cream transition-colors duration-200 hover:bg-ink/85"
               >
-                {uploading > 0 ? "Uploading…" : "Add photos"}
+                {uploading > 0 ? "Uploading…" : importing ? "Importing…" : "Add photos"}
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -520,7 +592,10 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
                         <path d="M12 16V4M12 4L7 9M12 4l5 5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Upload from device
+                      <span className="flex flex-col">
+                        <span>Upload from device</span>
+                        <span className="text-[11px] text-ink-mute">Photos, camera roll &amp; files</span>
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -537,6 +612,37 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       </svg>
                       Choose from My Photos
                     </button>
+                    <div className="my-1 border-t border-ink/8" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setUploadMenuOpen(false);
+                        importViaGoogle();
+                      }}
+                      className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
+                        <path d="M12 11v3.5h5a5 5 0 1 1-1.3-4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      </svg>
+                      Google Photos
+                    </button>
+                    {dropboxEnabled() && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setUploadMenuOpen(false);
+                          importViaDropbox();
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
+                          <path d="M7 3l5 3-5 3-5-3 5-3zm10 0l5 3-5 3-5-3 5-3zM2 12l5-3 5 3-5 3-5-3zm10 0l5-3 5 3-5 3-5-3zm-5 5l5-3 5 3-5 3-5-3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                        </svg>
+                        Dropbox
+                      </button>
+                    )}
                   </div>
                 </>
               )}
