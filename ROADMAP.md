@@ -6,16 +6,19 @@ Each phase gets a full drill-down at its own kickoff — this is name-level only
 
 ---
 
-## CURRENT STATUS (updated 2026-06-04)
+## CURRENT STATUS (updated 2026-06-05)
 Phase 2.0 ✅ · Phase 2.1 ✅ (2.1.4 partial) · Phase 2.2 ✅ built — **GATE deferred**
 (no mid-range Android; revisit via a real-device cloud + the `?perf` HUD).
-Phase 2.3 🟢 **in progress** — W0 (web-order schema + createWebOrder) ✅ · W1 (cart) ✅ ·
-W2 (checkout: fulfilment/address/totals) ✅ · W3 (virtualised payment + order creation) ✅ ·
-W4 (paid→print jobs, agent serves processed render) ✅ · W5 (order history + tracking) ✅ —
-full flow live-tested locally (editor→cart→checkout→pay→tracking, payment confirmed).
-**Payments are service-virtualised** (no real gateway yet — see memory payment-virtualization).
-Remaining: **W6** (order-confirmation/receipt email + polish), then deploy backend to prod
-(runs migrations 0011/0012) so the Vercel frontend can use it.
+Phase 2.3 ✅ **complete (deployed to prod)** — W0 web-order schema + createWebOrder ·
+W1 cart · W2 checkout (fulfilment/address/totals) · W3 virtualised payment + order creation ·
+W4 paid→print jobs (agent serves the processed render) · W5 order history + tracking ·
+W6 order-confirmation email (Resend). Full flow live-tested. **Payments are
+service-virtualised** until a real ZW gateway is wired (see memory payment-virtualization);
+that swap is the only payment work left in 2.3.
+Also shipped: cloud photo import (Google Photos Picker + Dropbox, runtime-gated),
+homepage hero redesign + regen, copy cleanup (no em dashes, locked promises),
+bulletproof logout, deletable photos used in orders.
+Next: **Phase 2.4 — Polish & Launch** (or the deferred 2.2 GATE, or wiring a real payment gateway).
 
 ---
 
