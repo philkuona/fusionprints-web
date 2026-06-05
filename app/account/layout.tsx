@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { Container } from "@/components/ui/container";
-import { logout, type WebUser } from "@/lib/api/auth";
+import { logoutUrl, type WebUser } from "@/lib/api/auth";
 
 const NAV = [
   {
@@ -54,10 +54,10 @@ const NAV = [
 function AccountSidebar({ user }: { user: WebUser }) {
   const pathname = usePathname();
 
-  const handleLogout = async () => {
-    await logout().catch(() => {});
-    // Hard navigation so the header fully resets against the destroyed session.
-    window.location.href = "/";
+  const handleLogout = () => {
+    // Top-level navigation to the backend logout (destroys session, clears
+    // cookie, redirects home) — reliable regardless of SPA state or caching.
+    window.location.href = logoutUrl();
   };
 
   return (

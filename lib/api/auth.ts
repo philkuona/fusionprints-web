@@ -67,6 +67,14 @@ export function logout() {
   });
 }
 
+/**
+ * Backend logout URL for a top-level browser navigation. This is the reliable
+ * way to sign out: the session cookie rides the navigation, the server destroys
+ * the session + clears the cookie, then 302-redirects home — no dependence on
+ * fetch/SPA state/cache.
+ */
+export const logoutUrl = () => `${API}/web/api/auth/logout`;
+
 export function getMe() {
   return apiRequest<WebUser>('/web/api/auth/me');
 }

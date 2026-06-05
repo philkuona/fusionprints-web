@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
-import { getMe, logout, type WebUser } from "@/lib/api/auth";
+import { getMe, logoutUrl, type WebUser } from "@/lib/api/auth";
 import { cartCount, subscribeCart } from "@/lib/cart";
 
 const NAV = [
@@ -69,11 +69,10 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [menuOpen]);
 
-  const handleLogout = async () => {
-    await logout().catch(() => {});
-    // Hard navigation: fully re-initialise the app against the now-destroyed
-    // session so no stale client state or cached /me can keep the header signed in.
-    window.location.href = "/";
+  const handleLogout = () => {
+    // Top-level navigation to the backend logout, which destroys the session,
+    // clears the cookie, and redirects home — bulletproof across browsers.
+    window.location.href = logoutUrl();
   };
 
   return (
