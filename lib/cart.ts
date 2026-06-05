@@ -1,23 +1,30 @@
 /**
- * Client-side cart (Phase 2.2 placeholder). Persists staged print line items to
- * localStorage so the editor's "Add to Cart" has somewhere to go. The real
- * server-backed cart + checkout + payment are Phase 2.3 — this is intentionally
- * minimal and will be replaced.
+ * Client-side cart (Phase 2.3). Staged print line items live in localStorage;
+ * the server-side order is created at checkout. Each item carries the editor's
+ * print-ready render (processedImageId/processedUrl) when the photo was edited,
+ * so checkout can place the order against the exact render the customer saw.
+ *
+ * Mutations dispatch a "fp-cart-change" event so the header badge and cart page
+ * stay in sync (and "storage" keeps multiple tabs consistent).
  */
 
 export interface CartItem {
   id: string; // `${photoId}:${sizeCode}`
   photoId: string;
-  storageUrl: string;
+  storageUrl: string; // original photo (preview fallback)
   sizeCode: string;
   label: string; // e.g. "8×10 in"
   qty: number;
   unitPriceUsd: number;
   paper?: string; // "glossy" | "satin" | "lustre"
-  border?: boolean; // 1/2" white border
+  border?: boolean; // white border selected
+  orientation?: string; // "portrait" | "landscape" | "square"
+  processedImageId?: string; // processed_images.id from the editor's Save
+  processedUrl?: string; // print-ready render preview
 }
 
 const KEY = "fp_cart_v1";
+const EVENT = "fp-cart-change";
 
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -29,17 +36,52 @@ export function getCart(): CartItem[] {
   }
 }
 
-/** Append items, merging quantities for any matching id already in the cart. */
+function writeCart(items: CartItem[]): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event(EVENT));
+}
+
+/** Append items, merging quantities (and refreshing details) for matching ids. */
 export function addToCart(items: CartItem[]): void {
-  if (typeof window === "undefined" || items.length === 0) return;
+  if (items.length === 0) return;
   const byId = new Map(getCart().map((i) => [i.id, i]));
   for (const item of items) {
     const existing = byId.get(item.id);
-    byId.set(item.id, existing ? { ...existing, qty: existing.qty + item.qty } : item);
+    byId.set(item.id, existing ? { ...existing, ...item, qty: existing.qty + item.qty } : item);
   }
-  window.localStorage.setItem(KEY, JSON.stringify([...byId.values()]));
+  writeCart([...byId.values()]);
+}
+
+/** Set an item's quantity. A quantity of 0 (or less) removes it. */
+export function setCartQty(id: string, qty: number): void {
+  if (qty <= 0) return removeFromCart(id);
+  writeCart(getCart().map((i) => (i.id === id ? { ...i, qty } : i)));
+}
+
+export function removeFromCart(id: string): void {
+  writeCart(getCart().filter((i) => i.id !== id));
+}
+
+export function clearCart(): void {
+  writeCart([]);
 }
 
 export function cartCount(): number {
   return getCart().reduce((n, i) => n + i.qty, 0);
+}
+
+export function cartSubtotal(): number {
+  return getCart().reduce((sum, i) => sum + i.qty * i.unitPriceUsd, 0);
+}
+
+/** Subscribe to cart changes (same-tab writes + cross-tab storage events). */
+export function subscribeCart(cb: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
 }

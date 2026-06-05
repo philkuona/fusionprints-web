@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "@/components/logo";
@@ -42,6 +43,7 @@ interface LineItem {
   autoEnhance?: boolean;
   filterId?: FilterId;
   processedUrl?: string; // server-rendered print-ready preview after Save
+  processedImageId?: string; // processed_images.id from the server applier
 }
 
 const keyOf = (photoId: string, sizeCode: string) => `${photoId}:${sizeCode}`;
@@ -52,6 +54,7 @@ export default function EditorPage({ params }: { params: Promise<{ photoId: stri
 }
 
 function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
+  const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -243,6 +246,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         autoEnhance: parts.autoEnhance,
         filterId: parts.filterId,
         processedUrl: result.processedUrl,
+        processedImageId: result.id,
       };
       return next;
     });
@@ -265,13 +269,15 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         unitPriceUsd: priceOf(it.sizeCode),
         paper: paperByKey[k] ?? (isPhoto ? "glossy" : "lustre"),
         border: borderByKey[k] ?? false,
+        orientation: it.orientation,
+        processedImageId: it.processedImageId,
+        processedUrl: it.processedUrl,
       };
     });
     if (cartItems.length === 0) return;
     addToCart(cartItems);
-    setAddedNote(`Added ${totalPrints} print${totalPrints === 1 ? "" : "s"} to your cart.`);
     setItems({});
-    setView("editor");
+    router.push("/cart");
   }
 
   /** Enter crop mode — show the safe-area checkpoint once per browser session. */

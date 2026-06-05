@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
 import { getMe, logout, type WebUser } from "@/lib/api/auth";
+import { cartCount, subscribeCart } from "@/lib/cart";
 
 const NAV = [
   { label: "Prints", href: "/prints" },
@@ -34,7 +35,15 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false); // account dropdown
   const [user, setUser] = useState<WebUser | null>(null);
   const [checked, setChecked] = useState(false); // has the first auth check resolved?
+  const [cart, setCart] = useState(0); // total prints in the cart
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Keep the cart badge in sync with localStorage (same-tab + cross-tab).
+  useEffect(() => {
+    const sync = () => setCart(cartCount());
+    sync();
+    return subscribeCart(sync);
+  }, []);
 
   // Re-check the session on mount and on every navigation, so the header
   // reflects login/logout without a full page reload.
@@ -95,6 +104,20 @@ export function SiteHeader() {
 
         {/* Desktop account actions */}
         <div className="hidden items-center gap-3 md:flex">
+          <Link
+            href="/cart"
+            aria-label={cart > 0 ? `Cart, ${cart} ${cart === 1 ? "print" : "prints"}` : "Cart"}
+            className="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-ink transition-colors duration-200 hover:bg-ink/5"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {cart > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-coral px-1 text-[11px] font-bold text-cream">
+                {cart}
+              </span>
+            )}
+          </Link>
           {!checked ? (
             // Reserve space during the auth check to avoid a logged-in/out flash.
             <div className="h-11 w-11 animate-pulse rounded-full bg-ink/5" />
@@ -171,14 +194,30 @@ export function SiteHeader() {
           )}
         </div>
 
-        {/* Mobile toggle — 44×44px touch target */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-label="Toggle menu"
-          className="-mr-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-md text-ink transition-colors duration-200 hover:bg-ink/5 md:hidden"
-        >
+        {/* Mobile cart + toggle */}
+        <div className="flex items-center gap-1 md:hidden">
+          <Link
+            href="/cart"
+            aria-label={cart > 0 ? `Cart, ${cart} ${cart === 1 ? "print" : "prints"}` : "Cart"}
+            className="relative flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-md text-ink transition-colors duration-200 hover:bg-ink/5"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {cart > 0 && (
+              <span className="absolute right-1 top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-coral px-1 text-[11px] font-bold text-cream">
+                {cart}
+              </span>
+            )}
+          </Link>
+          {/* Toggle — 44×44px touch target */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-label="Toggle menu"
+            className="-mr-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-md text-ink transition-colors duration-200 hover:bg-ink/5"
+          >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             {open ? (
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -186,7 +225,8 @@ export function SiteHeader() {
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             )}
           </svg>
-        </button>
+          </button>
+        </div>
       </Container>
 
       {/* Mobile panel */}
