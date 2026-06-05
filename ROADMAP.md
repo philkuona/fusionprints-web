@@ -177,7 +177,8 @@ is Phase 2.4.6). Prod host: Hetzner `178.104.67.122`, app at `/home/fusionprints
 - [x] Prod `.env`: `WEB_URL=https://app.fusionprints.co.zw`, `PUBLIC_URL=https://api.fusionprints.co.zw`, `GOOGLE_*`/`RESEND_API_KEY`/`B2_*` set. Backup at `/home/fusionprints/app/.env.bak.*`.
 - [x] Set a strong `ADMIN_SESSION_SECRET` (was EMPTY → was using the public dev fallback; security fix).
 - [x] CORS allows `https://app.fusionprints.co.zw` (in code) + via `WEB_URL`.
-- [ ] **Frontend on Vercel** → custom domain `app.fusionprints.co.zw`, env `NEXT_PUBLIC_API_URL=https://api.fusionprints.co.zw`; DNS CNAME `app` → Vercel. (founder)
+- [x] **Frontend on Vercel** → `app.fusionprints.co.zw` live (auto-deploys from main; same registrable domain as the API → cookies work). Verified serving 2026-06-04.
+- [x] **Backend prod deploy (2.3):** W0/W3/W4/W5 + migrations `0011` (web-order schema) + `0012` (virtual provider) applied to PROD DB on 2026-06-04; `/web/api/checkout` + `/web/api/orders` live (401 unauth).
 - [ ] **Google sign-in on prod:** register redirect URI `https://api.fusionprints.co.zw/web/api/auth/google/callback` in Google Cloud Console. (founder — email signup+verify already works via Resend.)
 
 **Real launch (Phase 2.4) — when the web app replaces the apex landing page:** repoint
