@@ -8,8 +8,6 @@ import { Logo } from "@/components/logo";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { getPhotos, uploadPhoto, type Photo, type UploadedPhoto } from "@/lib/api/photos";
 import {
-  importFromUrls,
-  chooseFromDropbox,
   getImportConfig,
   type ImportConfig,
   googlePhotosStartUrl,
@@ -104,7 +102,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [myPhotosOpen, setMyPhotosOpen] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [importConfig, setImportConfig] = useState<ImportConfig>({ googlePhotos: false, dropboxAppKey: null });
+  const [importConfig, setImportConfig] = useState<ImportConfig>({ googlePhotos: false });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -203,7 +201,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     }
   }, []);
 
-  /** Add freshly-imported photos (Google Photos / Dropbox) to the strip + selection. */
+  /** Add freshly-imported photos (Google Photos) to the strip + selection. */
   const addImportedPhotos = useCallback((created: UploadedPhoto[]) => {
     if (created.length === 0) return;
     const mapped: Photo[] = created.map((c) => ({
@@ -225,21 +223,6 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       return next;
     });
   }, []);
-
-  async function importViaDropbox() {
-    if (!importConfig.dropboxAppKey) return;
-    try {
-      const files = await chooseFromDropbox(importConfig.dropboxAppKey);
-      if (files.length === 0) return;
-      setImporting(true);
-      const created = await importFromUrls(files);
-      addImportedPhotos(created);
-    } catch {
-      /* surfaced via empty result; keep silent */
-    } finally {
-      setImporting(false);
-    }
-  }
 
   function importViaGoogle() {
     const popup = window.open(googlePhotosStartUrl(), "fp-gphotos", "width=520,height=720");
@@ -499,7 +482,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   // "Start printing" CTA lands here and the user uploads without a detour.
   if (!activePhoto) {
     const busy = uploading > 0 || importing;
-    const canImport = importConfig.googlePhotos || Boolean(importConfig.dropboxAppKey);
+    const canImport = importConfig.googlePhotos;
     return (
       <div className="flex h-[100dvh] flex-col bg-cream text-ink">
         <input
@@ -551,26 +534,14 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
 
           {canImport && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
-              {importConfig.googlePhotos && (
-                <button
-                  type="button"
-                  onClick={importViaGoogle}
-                  disabled={busy}
-                  className="inline-flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {importing ? "Importing…" : "Google Photos"}
-                </button>
-              )}
-              {importConfig.dropboxAppKey && (
-                <button
-                  type="button"
-                  onClick={importViaDropbox}
-                  disabled={busy}
-                  className="inline-flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Dropbox
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={importViaGoogle}
+                disabled={busy}
+                className="inline-flex h-10 cursor-pointer items-center rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {importing ? "Importing…" : "Google Photos"}
+              </button>
             </div>
           )}
 
@@ -762,7 +733,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       </svg>
                       Choose from My Photos
                     </button>
-                    {(importConfig.googlePhotos || importConfig.dropboxAppKey) && <div className="my-1 border-t border-ink/8" />}
+                    {importConfig.googlePhotos && <div className="my-1 border-t border-ink/8" />}
                     {importConfig.googlePhotos && (
                       <button
                         type="button"
@@ -777,22 +748,6 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                           <path d="M12 11v3.5h5a5 5 0 1 1-1.3-4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                         </svg>
                         Google Photos
-                      </button>
-                    )}
-                    {importConfig.dropboxAppKey && (
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setUploadMenuOpen(false);
-                          importViaDropbox();
-                        }}
-                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2.5 text-left text-sm text-ink transition-colors duration-200 hover:bg-ink/5"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-ink-mute">
-                          <path d="M7 3l5 3-5 3-5-3 5-3zm10 0l5 3-5 3-5-3 5-3zM2 12l5-3 5 3-5 3-5-3zm10 0l5-3 5 3-5 3-5-3zm-5 5l5-3 5 3-5 3-5-3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                        </svg>
-                        Dropbox
                       </button>
                     )}
                   </div>
