@@ -80,7 +80,11 @@ export default function EditorPage({ params }: { params: Promise<{ photoId: stri
 
 function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const router = useRouter();
+  // `photos` = the working set for THIS journey (the strip). `library` = the
+  // user's full saved library, used only as the source for the "Choose from My
+  // Photos" picker so prior work never auto-fills a new journey.
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [library, setLibrary] = useState<Photo[]>([]);
   const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -114,7 +118,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           setStatus("error");
           return;
         }
-        const active = list.find((p) => p.id === entryPhotoId)?.id ?? list[0]?.id ?? null;
+        // Every journey starts fresh: the working strip is empty unless the user
+        // arrived for a specific photo (e.g. "Make prints" from My Photos). The
+        // full library is kept only as a source for the "Choose from My Photos"
+        // picker — it is never auto-loaded into the strip or pre-selected.
+        const matched = list.find((p) => p.id === entryPhotoId) ?? null;
         // Pre-select the size carried over from the product page (?size=), if valid.
         const wanted =
           typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("size") : null;
@@ -123,11 +131,12 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           cat.find((p) => p.sizeCode === "4x6")?.sizeCode ||
           cat.find((p) => p.productType === "photo_print")?.sizeCode ||
           cat[0].sizeCode;
-        setPhotos(list);
+        setLibrary(list);
+        setPhotos(matched ? [matched] : []);
         setCatalog(cat);
-        setActivePhotoId(active);
+        setActivePhotoId(matched?.id ?? null);
         setActiveSizeCode(initialSize);
-        setSelected(active ? new Set([active]) : new Set());
+        setSelected(matched ? new Set([matched.id]) : new Set());
         // Zero photos is a valid state: the editor shows an upload prompt so the
         // user can start straight from here. Only a catalog failure is an error.
         setStatus("ready");
@@ -185,6 +194,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
             uploadedAt: new Date().toISOString(),
           };
           setPhotos((prev) => [photo, ...prev]);
+          setLibrary((prev) => [photo, ...prev]); // keep the picker source current
           setActivePhotoId(photo.id);
           setSelected((prev) => new Set(prev).add(photo.id));
         })
@@ -207,6 +217,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       uploadedAt: new Date().toISOString(),
     }));
     setPhotos((prev) => [...mapped, ...prev]);
+    setLibrary((prev) => [...mapped, ...prev]); // keep the picker source current
     setActivePhotoId(mapped[0].id);
     setSelected((prev) => {
       const next = new Set(prev);
@@ -266,9 +277,14 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     setTimeout(tick, 2500);
   }
 
-  /** Bring photos chosen from the existing library into the working selection. */
+  /** Bring photos chosen from the library into this journey's working strip. */
   function addFromMyPhotos(ids: string[]) {
     if (ids.length === 0) return;
+    const picked = library.filter((p) => ids.includes(p.id));
+    setPhotos((prev) => {
+      const have = new Set(prev.map((p) => p.id));
+      return [...picked.filter((p) => !have.has(p.id)), ...prev];
+    });
     setSelected(new Set(ids));
     setActivePhotoId(ids[0]);
     setMyPhotosOpen(false);
@@ -557,7 +573,27 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               )}
             </div>
           )}
+
+          {/* Saved library is available, but never auto-loaded into a new journey. */}
+          {library.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setMyPhotosOpen(true)}
+              className="mt-5 cursor-pointer text-sm font-medium text-malachite-deep underline underline-offset-4 transition-colors duration-200 hover:text-ink"
+            >
+              Or choose from your saved photos
+            </button>
+          )}
         </div>
+
+        {myPhotosOpen && (
+          <MyPhotosModal
+            photos={library}
+            initialSelected={selected}
+            onClose={() => setMyPhotosOpen(false)}
+            onAdd={addFromMyPhotos}
+          />
+        )}
       </div>
     );
   }
@@ -1002,7 +1038,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       {/* Choose-from-library picker (the "From My Photos" upload option) */}
       {myPhotosOpen && (
         <MyPhotosModal
-          photos={photos}
+          photos={library}
           initialSelected={selected}
           onClose={() => setMyPhotosOpen(false)}
           onAdd={addFromMyPhotos}
