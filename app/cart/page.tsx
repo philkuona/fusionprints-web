@@ -90,9 +90,6 @@ export default function CartPage() {
                         .filter(Boolean)
                         .join(" · ") || "Standard finish"}
                     </p>
-                    {!item.processedImageId && (
-                      <p className="mt-1 text-xs text-amber">Not yet edited — fitted at checkout</p>
-                    )}
                   </div>
                   <button
                     type="button"

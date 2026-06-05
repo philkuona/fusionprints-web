@@ -16,6 +16,7 @@ import {
   type FilterId,
   type Rotation,
   EDIT_SCHEMA_VERSION,
+  ZERO_ADJUSTMENTS,
 } from "@/lib/edit/payload-schema";
 import { applyEdit } from "@/lib/api/editor";
 import { addToCart, type CartItem } from "@/lib/cart";
@@ -48,6 +49,21 @@ interface LineItem {
 
 const keyOf = (photoId: string, sizeCode: string) => `${photoId}:${sizeCode}`;
 
+/**
+ * Centered cover crop (normalized [0,1]) of a source image to a target aspect —
+ * exactly what the configurator preview shows via object-cover. Used to generate
+ * a default print-ready render for items the customer chose not to edit.
+ */
+function defaultCoverCrop(srcW: number, srcH: number, aspectW: number, aspectH: number) {
+  const sa = srcW / srcH;
+  const ta = aspectW / aspectH;
+  let w = 1;
+  let h = 1;
+  if (sa > ta) w = ta / sa; // source wider → crop the sides
+  else h = sa / ta; // source taller → crop top/bottom
+  return { x: (1 - w) / 2, y: (1 - h) / 2, width: w, height: h };
+}
+
 export default function EditorPage({ params }: { params: Promise<{ photoId: string }> }) {
   const { photoId } = use(params);
   return <AuthGuard>{() => <EditorScreen entryPhotoId={photoId} />}</AuthGuard>;
@@ -73,6 +89,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [showIntro, setShowIntro] = useState(false);
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
   const [myPhotosOpen, setMyPhotosOpen] = useState(false);
+  const [committing, setCommitting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -254,30 +271,69 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     setAddedNote(null);
   }
 
-  function commitToCart() {
-    const cartItems: CartItem[] = Object.values(items).map((it) => {
-      const photo = photos.find((p) => p.id === it.photoId);
-      const k = keyOf(it.photoId, it.sizeCode);
-      const isPhoto = catalog.find((p) => p.sizeCode === it.sizeCode)?.productType === "photo_print";
-      return {
-        id: k,
-        photoId: it.photoId,
-        storageUrl: photo?.storageUrl ?? "",
-        sizeCode: it.sizeCode,
-        label: labelOf(it.sizeCode),
-        qty: it.qty,
-        unitPriceUsd: priceOf(it.sizeCode),
-        paper: paperByKey[k] ?? (isPhoto ? "glossy" : "lustre"),
-        border: borderByKey[k] ?? false,
-        orientation: it.orientation,
-        processedImageId: it.processedImageId,
-        processedUrl: it.processedUrl,
-      };
-    });
-    if (cartItems.length === 0) return;
-    addToCart(cartItems);
-    setItems({});
-    router.push("/cart");
+  async function commitToCart() {
+    if (committing) return;
+    const list = Object.values(items);
+    if (list.length === 0) return;
+    setCommitting(true);
+    setAddedNote(null);
+    try {
+      const cartItems: CartItem[] = [];
+      for (const it of list) {
+        const k = keyOf(it.photoId, it.sizeCode);
+        const photo = photos.find((p) => p.id === it.photoId);
+        const isPhoto = catalog.find((p) => p.sizeCode === it.sizeCode)?.productType === "photo_print";
+        const paper = paperByKey[k] ?? (isPhoto ? "glossy" : "lustre");
+        const border = borderByKey[k] ?? false;
+
+        let processedImageId = it.processedImageId;
+        let processedUrl = it.processedUrl;
+
+        // Customer didn't open the editor for this size → render the default
+        // (centered cover crop) so they can check out without forced editing.
+        if (!processedImageId && photo) {
+          const [aw, ah] = orientedAspect(it.sizeCode, it.orientation);
+          const crop = defaultCoverCrop(photo.widthPx ?? 1, photo.heightPx ?? 1, aw, ah);
+          const result = await applyEdit({
+            schemaVersion: EDIT_SCHEMA_VERSION,
+            sourceImageId: it.photoId,
+            sizeCode: it.sizeCode,
+            crop: { ...crop, orientation: it.orientation },
+            rotate: 0,
+            flipH: false,
+            flipV: false,
+            adjustments: ZERO_ADJUSTMENTS,
+            autoEnhance: false,
+            filterId: "none",
+            border,
+            paper,
+          });
+          processedImageId = result.id;
+          processedUrl = result.processedUrl;
+        }
+
+        cartItems.push({
+          id: k,
+          photoId: it.photoId,
+          storageUrl: photo?.storageUrl ?? "",
+          sizeCode: it.sizeCode,
+          label: labelOf(it.sizeCode),
+          qty: it.qty,
+          unitPriceUsd: priceOf(it.sizeCode),
+          paper,
+          border,
+          orientation: it.orientation,
+          processedImageId,
+          processedUrl,
+        });
+      }
+      addToCart(cartItems);
+      setItems({});
+      router.push("/cart");
+    } catch {
+      setAddedNote("Couldn't prepare your prints. Please try again.");
+      setCommitting(false);
+    }
   }
 
   /** Enter crop mode — show the safe-area checkpoint once per browser session. */
@@ -412,6 +468,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           onEdit={editItem}
           onDelete={(photoId, sizeCode) => setQty(photoId, sizeCode, 0)}
           onCommit={commitToCart}
+          committing={committing}
         />
       ) : (
         <>
@@ -1079,6 +1136,7 @@ function SummaryView({
   onEdit,
   onDelete,
   onCommit,
+  committing,
 }: {
   items: LineItem[];
   photos: Photo[];
@@ -1089,6 +1147,7 @@ function SummaryView({
   onEdit: (photoId: string, sizeCode: string) => void;
   onDelete: (photoId: string, sizeCode: string) => void;
   onCommit: () => void;
+  committing: boolean;
 }) {
   const totalPrints = items.reduce((n, it) => n + it.qty, 0);
   return (
@@ -1154,10 +1213,10 @@ function SummaryView({
           <button
             type="button"
             onClick={onCommit}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || committing}
             className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:bg-malachite/40 disabled:text-ink/50 enabled:cursor-pointer"
           >
-            Add to cart
+            {committing ? "Preparing…" : "Add to cart"}
           </button>
         </aside>
       </div>
