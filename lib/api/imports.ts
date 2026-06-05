@@ -3,15 +3,24 @@
 import type { UploadedPhoto } from "@/lib/api/photos";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-export const DROPBOX_APP_KEY = process.env.NEXT_PUBLIC_DROPBOX_APP_KEY ?? "";
 
-/**
- * Google Photos is gated off by default: the option only appears once the Google
- * Cloud setup (Picker API + scope on the consent screen) is done, otherwise the
- * popup would error at Google. Set NEXT_PUBLIC_GOOGLE_PHOTOS_ENABLED=1 to show it.
- */
-export const googlePhotosEnabled = () =>
-  (process.env.NEXT_PUBLIC_GOOGLE_PHOTOS_ENABLED ?? "") === "1";
+// ── Runtime config (which options are available) ─────────────────────────────
+// Served by the backend so options appear without a frontend rebuild — set
+// GOOGLE_PHOTOS_IMPORT_ENABLED / DROPBOX_APP_KEY in the backend env.
+export interface ImportConfig {
+  googlePhotos: boolean;
+  dropboxAppKey: string | null;
+}
+
+export async function getImportConfig(): Promise<ImportConfig> {
+  try {
+    const res = await fetch(`${API}/web/api/imports/config`, { credentials: "include" });
+    if (!res.ok) return { googlePhotos: false, dropboxAppKey: null };
+    return (await res.json()) as ImportConfig;
+  } catch {
+    return { googlePhotos: false, dropboxAppKey: null };
+  }
+}
 
 // ── Shared: import from URLs (Dropbox direct links) ──────────────────────────
 export async function importFromUrls(
@@ -66,10 +75,8 @@ declare global {
   }
 }
 
-export const dropboxEnabled = () => Boolean(DROPBOX_APP_KEY);
-
 let dropboxLoad: Promise<void> | null = null;
-function loadDropbox(): Promise<void> {
+function loadDropbox(appKey: string): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
   if (window.Dropbox) return Promise.resolve();
   if (dropboxLoad) return dropboxLoad;
@@ -77,7 +84,7 @@ function loadDropbox(): Promise<void> {
     const s = document.createElement("script");
     s.src = "https://www.dropbox.com/static/api/2/dropins.js";
     s.id = "dropboxjs";
-    s.setAttribute("data-app-key", DROPBOX_APP_KEY);
+    s.setAttribute("data-app-key", appKey);
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("dropbox load failed"));
     document.body.appendChild(s);
@@ -86,8 +93,8 @@ function loadDropbox(): Promise<void> {
 }
 
 /** Open the Dropbox Chooser; resolves to the selected files' direct links. */
-export async function chooseFromDropbox(): Promise<{ url: string; filename: string }[]> {
-  await loadDropbox();
+export async function chooseFromDropbox(appKey: string): Promise<{ url: string; filename: string }[]> {
+  await loadDropbox(appKey);
   return new Promise((resolve) => {
     if (!window.Dropbox) return resolve([]);
     window.Dropbox.choose({

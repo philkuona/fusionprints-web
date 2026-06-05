@@ -10,8 +10,8 @@ import { getPhotos, uploadPhoto, type Photo, type UploadedPhoto } from "@/lib/ap
 import {
   importFromUrls,
   chooseFromDropbox,
-  dropboxEnabled,
-  googlePhotosEnabled,
+  getImportConfig,
+  type ImportConfig,
   googlePhotosStartUrl,
   pollGooglePhotos,
 } from "@/lib/api/imports";
@@ -99,6 +99,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [myPhotosOpen, setMyPhotosOpen] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [importConfig, setImportConfig] = useState<ImportConfig>({ googlePhotos: false, dropboxAppKey: null });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,6 +132,16 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       cancelled = true;
     };
   }, [entryPhotoId]);
+
+  useEffect(() => {
+    let active = true;
+    getImportConfig().then((c) => {
+      if (active) setImportConfig(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const priceOf = useCallback(
     (sizeCode: string) => catalog.find((p) => p.sizeCode === sizeCode)?.unitPriceUsd ?? 0,
@@ -198,8 +209,9 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   }, []);
 
   async function importViaDropbox() {
+    if (!importConfig.dropboxAppKey) return;
     try {
-      const files = await chooseFromDropbox();
+      const files = await chooseFromDropbox(importConfig.dropboxAppKey);
       if (files.length === 0) return;
       setImporting(true);
       const created = await importFromUrls(files);
@@ -613,8 +625,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                       </svg>
                       Choose from My Photos
                     </button>
-                    {(googlePhotosEnabled() || dropboxEnabled()) && <div className="my-1 border-t border-ink/8" />}
-                    {googlePhotosEnabled() && (
+                    {(importConfig.googlePhotos || importConfig.dropboxAppKey) && <div className="my-1 border-t border-ink/8" />}
+                    {importConfig.googlePhotos && (
                       <button
                         type="button"
                         role="menuitem"
@@ -630,7 +642,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
                         Google Photos
                       </button>
                     )}
-                    {dropboxEnabled() && (
+                    {importConfig.dropboxAppKey && (
                       <button
                         type="button"
                         role="menuitem"
