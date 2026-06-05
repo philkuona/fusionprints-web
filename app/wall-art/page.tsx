@@ -182,6 +182,28 @@ export default async function WallArtPage() {
         </Container>
       </section>
 
+      {/* Framing teaser */}
+      <section className="bg-cream py-12">
+        <Container className="flex flex-col items-center gap-4 rounded-2xl border border-ink/10 bg-white p-6 text-center sm:flex-row sm:text-left">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-malachite/15 text-malachite-deep">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+              <rect x="8" y="8" width="8" height="8" rx="0.5" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+          </span>
+          <div className="flex-1">
+            <span className="inline-flex rounded-full bg-malachite/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-malachite-deep">
+              Coming soon
+            </span>
+            <h2 className="mt-2 font-fraunces text-2xl font-bold text-ink">Framing &amp; mounting</h2>
+            <p className="mt-1 max-w-xl text-sm text-ink-soft">
+              Ready-to-hang framing and mounting are on the way, so your wall art arrives finished.
+              For now we deliver the print itself, ready for the frame of your choice.
+            </p>
+          </div>
+        </Container>
+      </section>
+
       {/* 6. FAQ */}
       <section className="bg-cream py-16">
         <Container className="max-w-3xl">
