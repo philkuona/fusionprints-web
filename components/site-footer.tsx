@@ -77,7 +77,7 @@ export function SiteFooter() {
               Hold the moment.
             </p>
             <p className="mt-3 max-w-xs text-sm text-ink-soft">
-              Premium photo prints and wall art, printed in-house and ready in 24 hours.
+              Premium photo prints and wall art, made from the photos you love.
             </p>
             <div className="mt-5 flex gap-2.5">
               {SOCIALS.map((s) => (
@@ -132,9 +132,8 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-2 border-t border-ink/10 pt-6 text-xs text-ink-mute sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 border-t border-ink/10 pt-6 text-xs text-ink-mute">
           <p>&copy; {year} Fusion Prints Pvt Ltd. All rights reserved.</p>
-          <p>Printed in-house. Ready in 24 hours.</p>
         </div>
       </Container>
     </footer>
