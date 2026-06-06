@@ -102,7 +102,7 @@ Dependencies:
 | 2.4.5 | Beta with 10–20 waitlist customers | Beta cohort completes a real order |
 | 2.4.6 | Soft launch + marketing push | Landing page replaced by web app |
 
-Status (2026-06-06): 2.4.1 🟡 in progress — metadataBase + default title/description, openGraph + twitter cards, `app/robots.ts` (disallows app/account flows), `app/sitemap.ts` (static routes + all per-size product pages), and a branded `public/og.png` (1200×630) are live. Base URL is env-driven (`NEXT_PUBLIC_SITE_URL`, defaults to app host) → set to the apex at launch. Remaining for 2.4.1: JSON-LD structured data + a real Lighthouse SEO run.
+Status (2026-06-06): 2.4.1 ✅ built — metadataBase + default title/description, openGraph + twitter cards, `app/robots.ts` (disallows app/account flows), `app/sitemap.ts` (static routes + all per-size product pages), branded `public/og.png` (1200×630), and JSON-LD structured data (Organization + WebSite on home; Product + Offer + BreadcrumbList on each /prints/[size]) are all live. Base URL env-driven (`NEXT_PUBLIC_SITE_URL`, defaults to app host) → set to the apex at launch. Only a real Lighthouse SEO ≥95 run remains to formally close the gate.
 
 OG images: generated via Gemini (sole image source rule applies).
 Hosting at launch: Hetzner VPS alongside backend. Move to Vercel post-launch.
