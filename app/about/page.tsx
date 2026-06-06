@@ -63,7 +63,7 @@ export default function AboutPage() {
                 What FusionPrints is
               </h2>
               <p className="mt-4 leading-relaxed text-ink-soft">
-                We print everything in-house, from classic 4×6 snapshots to
+                We do everything ourselves, from classic 4×6 snapshots to
                 large-format wall art up to 16×20 inches. No outsourcing, no third
                 parties touching your photos.
               </p>

@@ -158,8 +158,7 @@ export default function HomePage() {
                 Hold the moment.
               </h1>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg lg:text-sm">
-                Prints and wall art made from the photos you love. Printed in-house,
-                checked by hand, on paper worth keeping.
+                Prints and wall art made from the photos you love, on paper worth keeping.
               </p>
               <div className="mt-7 flex flex-wrap gap-3 lg:flex-col">
                 <Link

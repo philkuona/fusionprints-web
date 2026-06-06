@@ -22,8 +22,8 @@ const WALL_BLURB: Record<string, string> = {
 
 const BENEFITS = [
   { label: "Big, up to 16×20", icon: <path d="M4 4h7v2H6v5H4V4zm16 16h-7v-2h5v-5h2v7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
-  { label: "Printed in-house", icon: <path d="M6 9V4h12v5M6 18h12v3H6v-3zM4 9h16a2 2 0 012 2v4H2v-4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
-  { label: "Ready in 24 hours", icon: <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></> },
+  { label: "Pro photo stock", icon: <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z M14 3v5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+  { label: "Lustre finish", icon: <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /> },
   { label: "Easy to hang", icon: <path d="M12 3v6m0 0l-3-2m3 2l3-2M5 21h14a2 2 0 002-2v-6H3v6a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
   { label: "Checked by hand", icon: <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
 ];
@@ -65,7 +65,7 @@ export default async function WallArtPage() {
               Your wall deserves this.
             </h1>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-cream/75">
-              Large-format prints on professional stock, printed in-house and checked by hand.
+              Large-format prints on professional stock, checked by hand.
               One image, given the room it deserves.
             </p>
             <div className="mt-8">

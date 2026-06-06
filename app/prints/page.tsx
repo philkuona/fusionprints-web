@@ -81,8 +81,7 @@ export default async function PhotoPrintsPage() {
               Photo Prints
             </h1>
             <p className="mt-5 max-w-md text-lg leading-relaxed text-ink-soft">
-              The photos you love, off your phone and into your hands. Printed in-house,
-              checked by hand, ready in a day.
+              The photos you love, off your phone and into your hands.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
@@ -112,8 +111,8 @@ export default async function PhotoPrintsPage() {
         <Container>
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              { label: "Printed in-house", icon: <path d="M6 9V4h12v5M6 18h12v3H6v-3zM4 9h16a2 2 0 012 2v4H2v-4a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
-              { label: "Ready in 24 hours", icon: <><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" /><path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></> },
+              { label: "On premium paper", icon: <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z M14 3v5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
+              { label: "Glossy or satin finish", icon: <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /> },
               { label: "Colour corrected by hand", icon: <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
               { label: "Free collection", icon: <path d="M3 7h13l1 5h4v4h-2a2 2 0 11-4 0H9a2 2 0 11-4 0H3V7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
             ].map((b) => (
