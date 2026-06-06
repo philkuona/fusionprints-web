@@ -25,6 +25,30 @@ export const PUBLIC_ROUTES = [
   "/terms",
 ];
 
+/** Public social profiles (schema.org sameAs). */
+export const SOCIAL_LINKS = [
+  "https://instagram.com/fusionprints.zw",
+  "https://facebook.com/fusionprints",
+];
+
+/** Organization + WebSite JSON-LD for the homepage. */
+export const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  description: SITE_DESCRIPTION,
+  sameAs: SOCIAL_LINKS,
+};
+
+export const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+};
+
 /** App/private route prefixes that must not be indexed. */
 export const PRIVATE_PREFIXES = [
   "/account",

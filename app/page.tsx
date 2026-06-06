@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { HeroCarousel } from "@/components/home/hero-carousel";
+import { JsonLd } from "@/components/json-ld";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "FusionPrints. Hold the moment.",
@@ -140,6 +142,8 @@ function CollectionCard({ c, ring = false }: { c: Card; ring?: boolean }) {
 export default function HomePage() {
   return (
     <div>
+      <JsonLd data={organizationJsonLd} />
+      <JsonLd data={websiteJsonLd} />
       {/* ── Hero — brand card (25%) + themed slideshow (75%). Full-bleed on
           mobile/tablet; contained to the content width on desktop. ─────── */}
       <section className="bg-cream lg:py-8">

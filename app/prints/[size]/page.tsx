@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProduct, formatPrice } from "@/lib/api/catalog";
 import { Container } from "@/components/ui/container";
+import { JsonLd } from "@/components/json-ld";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const WA = "https://wa.me/263781387466";
 
@@ -42,9 +44,36 @@ export default async function ProductPage({ params }: Props) {
   // Dedicated per-size image (not reused from the homepage cards).
   const img = `/images/detail-${product.sizeCode}.jpg`;
   const perfectFor = PERFECT_FOR[product.sizeCode] ?? [];
+  const productUrl = `${SITE_URL}/prints/${product.sizeCode}`;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: `${product.labelInches} ${isWallArt ? "wall art" : "photo"} print`,
+    description: `A ${product.displayLabel} ${isWallArt ? "wall art" : "photo"} print from ${SITE_NAME}.`,
+    image: `${SITE_URL}${img}`,
+    brand: { "@type": "Brand", name: SITE_NAME },
+    offers: {
+      "@type": "Offer",
+      price: product.unitPriceUsd.toFixed(2),
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: productUrl,
+    },
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: isWallArt ? "Wall Art" : "Photo Prints", item: `${SITE_URL}${isWallArt ? "/wall-art" : "/prints"}` },
+      { "@type": "ListItem", position: 2, name: product.labelInches, item: productUrl },
+    ],
+  };
 
   return (
     <Container className="py-12">
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       {/* Breadcrumb */}
       <nav className="mb-8 flex items-center gap-2 text-sm text-ink-mute">
         <Link
