@@ -25,6 +25,7 @@ export interface CheckoutInput {
   fulfillmentMethod: "collection" | "delivery";
   deliveryZone?: string;
   addressId?: string | null;
+  phone: string;
 }
 
 export interface CheckoutResult {

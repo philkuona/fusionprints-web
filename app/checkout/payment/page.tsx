@@ -20,7 +20,7 @@ export default function PaymentPage() {
 function PaymentScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null } | null>(null);
+  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null; phone?: string } | null>(null);
   const [ready, setReady] = useState(false);
 
   const [phase, setPhase] = useState<Phase>("review");
@@ -54,6 +54,10 @@ function PaymentScreen() {
       setError("Your checkout details are missing. Please go back to checkout.");
       return;
     }
+    if (!selection.phone) {
+      setError("A contact number is required. Please go back to checkout and add one.");
+      return;
+    }
     setPhase("creating");
     setError("");
     try {
@@ -67,6 +71,7 @@ function PaymentScreen() {
         fulfillmentMethod: selection.fulfillmentMethod,
         deliveryZone: selection.deliveryZone,
         addressId: selection.addressId ?? null,
+        phone: selection.phone,
       });
       setOrderNumber(res.orderNumber);
       window.sessionStorage.setItem(PENDING_KEY, res.orderNumber);

@@ -41,6 +41,10 @@ function CheckoutScreen() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [zone, setZone] = useState<string>("harare_cbd");
   const [showForm, setShowForm] = useState(false);
+  const [phone, setPhone] = useState("");
+
+  // Mirror the backend rule so the UI blocks before a 400.
+  const phoneValid = /^\+?[1-9]\d{7,14}$/.test(phone.trim());
 
   useEffect(() => {
     const sync = () => {
@@ -75,6 +79,7 @@ function CheckoutScreen() {
 
   const canContinue =
     items.length > 0 &&
+    phoneValid &&
     (fulfillment === "collection" || (Boolean(selectedAddressId) && Boolean(zone)));
 
   function onContinue() {
@@ -83,6 +88,7 @@ function CheckoutScreen() {
       fulfillmentMethod: fulfillment,
       deliveryZone: fulfillment === "delivery" ? zone : "collection",
       addressId: fulfillment === "delivery" ? selectedAddressId : null,
+      phone: phone.trim(),
     };
     window.localStorage.setItem(CHECKOUT_KEY, JSON.stringify(selection));
     router.push("/checkout/payment");
@@ -134,6 +140,22 @@ function CheckoutScreen() {
                 sub="We bring it to you"
               />
             </div>
+          </section>
+
+          {/* Contact number — required so we can reach you about the order */}
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-mute">Contact number</h2>
+            <input
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+263 77 123 4567"
+              className="mt-3 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 focus:border-malachite"
+            />
+            <p className="mt-2 text-xs text-ink-mute">
+              We&rsquo;ll message you on WhatsApp when your order is ready, or if there&rsquo;s any issue.
+            </p>
           </section>
 
           {fulfillment === "collection" ? (
