@@ -56,6 +56,42 @@ interface LineItem {
 
 const keyOf = (photoId: string, sizeCode: string) => `${photoId}:${sizeCode}`;
 
+// Cap photos per editing project — bounds upload load (B2 storage + Vercel image
+// optimisation) and keeps a single order manageable.
+const MAX_PHOTOS_PER_PROJECT = 30;
+
+interface UploadProgress {
+  id: string;
+  name: string;
+  progress: number; // 0-100
+  status: "uploading" | "done" | "error";
+}
+
+/** Floating panel showing per-file upload progress + success/error. */
+function UploadProgressPanel({ uploads }: { uploads: UploadProgress[] }) {
+  if (uploads.length === 0) return null;
+  return (
+    <div className="fixed bottom-4 right-4 z-50 w-72 space-y-2">
+      {uploads.map((u) => (
+        <div key={u.id} className="rounded-xl border border-ink/10 bg-white p-3 shadow-lg shadow-ink/10">
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="truncate font-medium text-ink">{u.name}</span>
+            <span className={u.status === "error" ? "text-coral" : u.status === "done" ? "text-malachite-deep" : "text-ink-mute"}>
+              {u.status === "error" ? "Failed" : u.status === "done" ? "✓ Uploaded" : `${u.progress}%`}
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
+            <div
+              className={`h-full rounded-full transition-all duration-200 ${u.status === "error" ? "bg-coral" : "bg-malachite"}`}
+              style={{ width: `${u.status === "error" ? 100 : u.progress}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Centered cover crop (normalized [0,1]) of a source image to a target aspect —
  * exactly what the configurator preview shows via object-cover. Used to generate
@@ -93,7 +129,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [paperByKey, setPaperByKey] = useState<Record<string, "glossy" | "satin">>({});
   const [borderByKey, setBorderByKey] = useState<Record<string, boolean>>({});
   const [focused, setFocused] = useState(false);
-  const [uploading, setUploading] = useState(0);
+  const [uploads, setUploads] = useState<UploadProgress[]>([]);
+  const uploading = uploads.filter((u) => u.status === "uploading").length;
   const [addedNote, setAddedNote] = useState<string | null>(null);
   const [view, setView] = useState<"editor" | "summary">("editor");
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
@@ -175,35 +212,72 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const subtotal = Object.values(items).reduce((sum, it) => sum + it.qty * priceOf(it.sizeCode), 0);
   const totalPrints = Object.values(items).reduce((n, it) => n + it.qty, 0);
 
-  const handleUpload = useCallback((files: File[]) => {
-    const imgs = files.filter((f) => f.type.startsWith("image/") || ACCEPT.includes(f.type));
-    for (const file of imgs) {
-      setUploading((n) => n + 1);
-      uploadPhoto(file)
-        .then((created) => {
-          const photo: Photo = {
-            id: created.id,
-            storageUrl: created.storageUrl,
-            originalFilename: file.name,
-            widthPx: created.widthPx,
-            heightPx: created.heightPx,
-            fileSizeBytes: created.fileSizeBytes,
-            format: created.format,
-            uploadedAt: new Date().toISOString(),
-          };
-          setPhotos((prev) => [photo, ...prev]);
-          setLibrary((prev) => [photo, ...prev]); // keep the picker source current
-          setActivePhotoId(photo.id);
-          setSelected((prev) => new Set(prev).add(photo.id));
+  const handleUpload = useCallback(
+    (files: File[]) => {
+      const imgs = files.filter((f) => f.type.startsWith("image/") || ACCEPT.includes(f.type));
+      if (imgs.length === 0) return;
+
+      // Enforce the per-project cap (counts the current working strip).
+      const remaining = MAX_PHOTOS_PER_PROJECT - photos.length;
+      if (remaining <= 0) {
+        setAddedNote(`You can add up to ${MAX_PHOTOS_PER_PROJECT} photos per project. Remove some to add more.`);
+        return;
+      }
+      const toUpload = imgs.slice(0, remaining);
+      if (toUpload.length < imgs.length) {
+        setAddedNote(`Added ${toUpload.length} of ${imgs.length}. ${MAX_PHOTOS_PER_PROJECT}-photo limit per project.`);
+      }
+
+      for (const file of toUpload) {
+        const uid = `${file.name}-${file.size}-${file.lastModified}`;
+        setUploads((prev) => [
+          ...prev.filter((u) => u.id !== uid),
+          { id: uid, name: file.name, progress: 0, status: "uploading" },
+        ]);
+        uploadPhoto(file, {
+          onProgress: (p) =>
+            setUploads((prev) => prev.map((u) => (u.id === uid ? { ...u, progress: p } : u))),
         })
-        .catch(() => {})
-        .finally(() => setUploading((n) => Math.max(0, n - 1)));
-    }
-  }, []);
+          .then((created) => {
+            const photo: Photo = {
+              id: created.id,
+              storageUrl: created.storageUrl,
+              originalFilename: file.name,
+              widthPx: created.widthPx,
+              heightPx: created.heightPx,
+              fileSizeBytes: created.fileSizeBytes,
+              format: created.format,
+              uploadedAt: new Date().toISOString(),
+            };
+            setPhotos((prev) => [photo, ...prev]);
+            setLibrary((prev) => [photo, ...prev]); // keep the picker source current
+            setActivePhotoId(photo.id);
+            setSelected((prev) => new Set(prev).add(photo.id));
+            // Show the success tick, then dismiss the row.
+            setUploads((prev) => prev.map((u) => (u.id === uid ? { ...u, progress: 100, status: "done" } : u)));
+            setTimeout(() => setUploads((prev) => prev.filter((u) => u.id !== uid)), 2500);
+          })
+          .catch(() => {
+            setUploads((prev) => prev.map((u) => (u.id === uid ? { ...u, status: "error" } : u)));
+            setTimeout(() => setUploads((prev) => prev.filter((u) => u.id !== uid)), 6000);
+          });
+      }
+    },
+    [photos.length],
+  );
 
   /** Add freshly-imported photos (Google Photos) to the strip + selection. */
   const addImportedPhotos = useCallback((created: UploadedPhoto[]) => {
     if (created.length === 0) return;
+    const remaining = MAX_PHOTOS_PER_PROJECT - photos.length;
+    if (remaining <= 0) {
+      setAddedNote(`You can add up to ${MAX_PHOTOS_PER_PROJECT} photos per project. Remove some to add more.`);
+      return;
+    }
+    if (created.length > remaining) {
+      setAddedNote(`Added ${remaining} of ${created.length}. ${MAX_PHOTOS_PER_PROJECT}-photo limit per project.`);
+      created = created.slice(0, remaining);
+    }
     const mapped: Photo[] = created.map((c) => ({
       id: c.id,
       storageUrl: c.storageUrl,
@@ -222,7 +296,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       mapped.forEach((m) => next.add(m.id));
       return next;
     });
-  }, []);
+  }, [photos.length]);
 
   function importViaGoogle() {
     const popup = window.open(googlePhotosStartUrl(), "fp-gphotos", "width=520,height=720");
@@ -263,13 +337,22 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   /** Bring photos chosen from the library into this journey's working strip. */
   function addFromMyPhotos(ids: string[]) {
     if (ids.length === 0) return;
+    const have = new Set(photos.map((p) => p.id));
     const picked = library.filter((p) => ids.includes(p.id));
-    setPhotos((prev) => {
-      const have = new Set(prev.map((p) => p.id));
-      return [...picked.filter((p) => !have.has(p.id)), ...prev];
-    });
-    setSelected(new Set(ids));
-    setActivePhotoId(ids[0]);
+    const newOnes = picked.filter((p) => !have.has(p.id));
+    const remaining = MAX_PHOTOS_PER_PROJECT - photos.length;
+    const toAdd = newOnes.slice(0, Math.max(0, remaining));
+    if (toAdd.length < newOnes.length) {
+      setAddedNote(
+        remaining <= 0
+          ? `You can add up to ${MAX_PHOTOS_PER_PROJECT} photos per project. Remove some to add more.`
+          : `Added ${toAdd.length} of ${newOnes.length}. ${MAX_PHOTOS_PER_PROJECT}-photo limit per project.`,
+      );
+    }
+    setPhotos((prev) => [...toAdd, ...prev]);
+    const inWorkingSet = ids.filter((id) => have.has(id) || toAdd.some((p) => p.id === id));
+    setSelected(new Set(inWorkingSet));
+    setActivePhotoId(inWorkingSet[0] ?? null);
     setMyPhotosOpen(false);
   }
 
@@ -485,6 +568,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     const canImport = importConfig.googlePhotos;
     return (
       <div className="flex h-[100dvh] flex-col bg-cream text-ink">
+        <UploadProgressPanel uploads={uploads} />
         <input
           ref={fileInputRef}
           type="file"
@@ -597,6 +681,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream text-ink">
       <PerfOverlay />
+      <UploadProgressPanel uploads={uploads} />
       {/* Promo / nav bar */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-ink/10 bg-ink px-4">
         <Link href="/" aria-label="FusionPrints home" className="cursor-pointer">
