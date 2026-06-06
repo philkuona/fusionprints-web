@@ -104,6 +104,8 @@ Dependencies:
 
 Status (2026-06-06): 2.4.1 ✅ built — metadataBase + default title/description, openGraph + twitter cards, `app/robots.ts` (disallows app/account flows), `app/sitemap.ts` (static routes + all per-size product pages), branded `public/og.png` (1200×630), and JSON-LD structured data (Organization + WebSite on home; Product + Offer + BreadcrumbList on each /prints/[size]) are all live. Base URL env-driven (`NEXT_PUBLIC_SITE_URL`, defaults to app host) → set to the apex at launch. Only a real Lighthouse SEO ≥95 run remains to formally close the gate.
 
+2.4.3 🟡 audited 2026-06-06 — mobile layout reviewed at the achievable headless floor (~476px) across home, prints, wall-art, product detail, about, login: all stack/wrap cleanly, no overflow. Purchase flows (cart, checkout) stack to one column on mobile; account nav uses overflow-x-auto; editor already mobile-hardened. Code review for sub-476 / 360px overflow risks (fixed widths, nowrap, long strings, oversized headings) found none. **Tooling caveat:** WSL→Windows headless Edge/Chrome won't render a CSS viewport below ~476px, so the formal "usable at 360px" gate still needs a real device / BrowserStack (same limitation as the 2.2 GATE). No fixes were required.
+
 OG images: generated via Gemini (sole image source rule applies).
 Hosting at launch: Hetzner VPS alongside backend. Move to Vercel post-launch.
 
