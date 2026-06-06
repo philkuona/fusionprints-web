@@ -21,6 +21,11 @@ const INTERVAL = 4800;
 export function HeroCarousel() {
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Only mount slides as they're needed (current + next), keeping shown ones
+  // mounted for the crossfade. The off-screen slides are opacity-0 but still in
+  // the viewport, so next/image can't lazy them — mounting on demand instead
+  // means the homepage loads ~2 heroes, not all 5.
+  const [shown, setShown] = useState<Set<number>>(() => new Set([0, 1 % SLIDES.length]));
 
   useEffect(() => {
     if (paused) return;
@@ -28,23 +33,38 @@ export function HeroCarousel() {
     return () => clearInterval(t);
   }, [paused]);
 
+  useEffect(() => {
+    const markShown = () =>
+      setShown((prev) => {
+        const next = (i + 1) % SLIDES.length;
+        if (prev.has(i) && prev.has(next)) return prev;
+        const set = new Set(prev);
+        set.add(i);
+        set.add(next);
+        return set;
+      });
+    markShown();
+  }, [i]);
+
   return (
     <div
       className="absolute inset-0 overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {SLIDES.map((s, idx) => (
-        <Image
-          key={s.src}
-          src={s.src}
-          alt={s.alt}
-          fill
-          priority={idx === 0}
-          sizes="(max-width: 1024px) 100vw, 60vw"
-          className={`object-cover transition-opacity duration-1000 ease-out ${idx === i ? "opacity-100" : "opacity-0"}`}
-        />
-      ))}
+      {SLIDES.map((s, idx) =>
+        shown.has(idx) || idx === i ? (
+          <Image
+            key={s.src}
+            src={s.src}
+            alt={s.alt}
+            fill
+            priority={idx === 0}
+            sizes="(max-width: 1024px) 100vw, 60vw"
+            className={`object-cover transition-opacity duration-1000 ease-out ${idx === i ? "opacity-100" : "opacity-0"}`}
+          />
+        ) : null,
+      )}
 
       {/* Left-edge wash so the carousel melts into the ink panel on desktop */}
       <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-ink/60 via-transparent to-transparent lg:block" />
