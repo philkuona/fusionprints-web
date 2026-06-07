@@ -2,7 +2,7 @@
 
 import { useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { uploadPhoto } from "@/lib/api/photos";
+import { uploadPhoto, getPhotos, type Photo } from "@/lib/api/photos";
 import { addToCart } from "@/lib/cart";
 import { BORDER_PRESETS, type CompositeProduct } from "@/lib/composite-products";
 import {
@@ -18,11 +18,32 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
   const [state, dispatch] = useReducer(editorReducer, product, initEditor);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [library, setLibrary] = useState<Photo[] | null>(null); // null = closed
+  const [libraryLoading, setLibraryLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const active = state.cells[state.activeCell];
   const multiCell = state.cells.length > 1;
 
   const pickPhoto = () => fileRef.current?.click();
+
+  async function openLibrary() {
+    setError(null);
+    setLibrary([]);
+    setLibraryLoading(true);
+    try {
+      setLibrary(await getPhotos());
+    } catch {
+      setLibrary(null);
+      setError("Couldn't load your photos. Make sure you're signed in.");
+    } finally {
+      setLibraryLoading(false);
+    }
+  }
+
+  function chooseFromLibrary(photo: Photo) {
+    dispatch({ type: "uploadDone", index: state.activeCell, imageId: photo.id, url: photo.storageUrl });
+    setLibrary(null);
+  }
 
   async function onFile(file: File) {
     const i = state.activeCell;
@@ -108,13 +129,22 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={pickPhoto}
-          className="flex h-11 cursor-pointer items-center justify-center rounded-full bg-malachite px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-        >
-          {active.url ? `Replace photo ${state.activeCell + 1}` : `Add photo ${state.activeCell + 1}`}
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={pickPhoto}
+            className="flex h-11 cursor-pointer items-center justify-center rounded-full bg-malachite px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+          >
+            {active.url ? `Replace photo ${state.activeCell + 1}` : `Add photo ${state.activeCell + 1}`}
+          </button>
+          <button
+            type="button"
+            onClick={openLibrary}
+            className="flex h-11 cursor-pointer items-center justify-center rounded-full border border-ink/20 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:border-ink/40 hover:bg-ink/5"
+          >
+            Choose from My Photos
+          </button>
+        </div>
 
         {/* Fill-all shortcut — put the active cell's photo in every cell. */}
         {multiCell && active.url && (
@@ -202,6 +232,47 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           Add to cart · ${product.priceUsd.toFixed(2)}
         </button>
       </div>
+
+      {/* My Photos picker */}
+      {library !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-0 sm:items-center sm:p-6"
+          onClick={() => setLibrary(null)}
+        >
+          <div
+            className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-cream p-5 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-fraunces text-lg font-bold text-ink">
+                Choose a photo for {multiCell ? `cell ${state.activeCell + 1}` : "your prints"}
+              </h3>
+              <button type="button" onClick={() => setLibrary(null)} aria-label="Close" className="cursor-pointer text-ink-mute hover:text-ink">✕</button>
+            </div>
+            {libraryLoading ? (
+              <p className="py-10 text-center text-sm text-ink-mute">Loading your photos…</p>
+            ) : library.length === 0 ? (
+              <p className="py-10 text-center text-sm text-ink-mute">
+                No photos in your library yet. Use “{active.url ? "Replace" : "Add"} photo” to upload one.
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {library.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => chooseFromLibrary(p)}
+                    className="relative aspect-square cursor-pointer overflow-hidden rounded-lg ring-1 ring-ink/10 transition-shadow hover:ring-2 hover:ring-malachite"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.storageUrl} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
