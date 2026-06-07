@@ -47,7 +47,9 @@ function PaymentScreen() {
   }, []);
 
   const subtotal = items.reduce((s, i) => s + i.qty * i.unitPriceUsd, 0);
-  const unedited = items.filter((i) => !i.processedImageId);
+  // Composite items (wallet/passport/mini) are complete via their layout — they
+  // have no single processedImageId, so don't flag them as "needs editing".
+  const unedited = items.filter((i) => i.productType !== "composite" && !i.processedImageId);
 
   async function startPayment() {
     if (!selection) {
@@ -62,12 +64,21 @@ function PaymentScreen() {
     setError("");
     try {
       const res = await createCheckout({
-        items: items.map((i) => ({
-          processedImageId: i.processedImageId as string,
-          sizeCode: i.sizeCode,
-          quantity: i.qty,
-          paper: i.paper ?? null,
-        })),
+        items: items.map((i) =>
+          i.productType === "composite"
+            ? {
+                sizeCode: i.sizeCode,
+                quantity: i.qty,
+                productType: "composite" as const,
+                layoutPayload: i.layoutPayload,
+              }
+            : {
+                processedImageId: i.processedImageId as string,
+                sizeCode: i.sizeCode,
+                quantity: i.qty,
+                paper: i.paper ?? null,
+              },
+        ),
         fulfillmentMethod: selection.fulfillmentMethod,
         deliveryZone: selection.deliveryZone,
         addressId: selection.addressId ?? null,

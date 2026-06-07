@@ -21,6 +21,10 @@ export interface CartItem {
   orientation?: string; // "portrait" | "landscape" | "square"
   processedImageId?: string; // processed_images.id from the editor's Save
   processedUrl?: string; // print-ready render preview
+  // Composite products (wallet/passport/mini): the per-cell layout from the
+  // composite editor. Carried through checkout into order_items.layout_payload.
+  productType?: "composite";
+  layoutPayload?: unknown;
 }
 
 const KEY = "fp_cart_v1";

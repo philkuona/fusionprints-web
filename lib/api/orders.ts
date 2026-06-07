@@ -14,10 +14,14 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export interface CheckoutItem {
-  processedImageId: string;
+  /** Standard prints: the editor's print-ready render. Absent for composites. */
+  processedImageId?: string;
   sizeCode: string;
   quantity: number;
   paper?: string | null;
+  /** Composite products (wallet/passport/mini). */
+  productType?: "composite";
+  layoutPayload?: unknown;
 }
 
 export interface CheckoutInput {
