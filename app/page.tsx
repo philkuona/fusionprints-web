@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { HeroCarousel } from "@/components/home/hero-carousel";
 import { JsonLd } from "@/components/json-ld";
+import { UpsellCard } from "@/components/upsell-card";
+import { UPSELL_CARDS } from "@/lib/upsell-cards";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -265,6 +267,27 @@ export default function HomePage() {
                   {p.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* ── Upsell — promoted products (Mini Prints, etc.) ───────────── */}
+      <section className="border-y border-ink/8 bg-white py-16">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="font-mono text-xs uppercase tracking-widest text-ink-mute">
+              Something a little different
+            </span>
+            <h2 className="mt-4 font-fraunces text-4xl font-bold leading-tight text-ink sm:text-5xl">
+              More ways to print
+            </h2>
+          </div>
+          <div className="mx-auto mt-12 flex max-w-5xl flex-wrap justify-center gap-6">
+            {UPSELL_CARDS.map((card) => (
+              <div key={card.id} className="w-full max-w-xs">
+                <UpsellCard card={card} />
               </div>
             ))}
           </div>
