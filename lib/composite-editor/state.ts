@@ -9,7 +9,10 @@
 import type { CompositeProduct, CompositeCell } from "@/lib/composite-products";
 
 export interface CellTransform {
-  /** Pan offset within the cell, in cell-fraction units (-1..1 ≈ edge to edge). */
+  /**
+   * Slack-relative pan ∈ [-1, 1]: 0 = centred, ±1 = photo edge flush with the
+   * cell edge. Aspect-independent, so it never reveals background. See coverFit.
+   */
   x: number;
   y: number;
   /** Zoom multiplier on top of cover-fit (1 = cover, >1 zoomed in). */
@@ -23,6 +26,9 @@ export interface CellState {
   imageId: string | null;
   /** Preview URL for the canvas + thumbnails. */
   url: string | null;
+  /** Natural source pixel dims — needed for cover-fit/pan math (null until known). */
+  natW: number | null;
+  natH: number | null;
   transform: CellTransform;
   borderId: string;
   /** Transient: a local upload is in flight. */
@@ -47,6 +53,8 @@ export function initEditor(product: CompositeProduct): CompositeEditorState {
     cells: Array.from({ length: cellCount }, () => ({
       imageId: null,
       url: null,
+      natW: null,
+      natH: null,
       transform: { ...IDENTITY_TRANSFORM },
       borderId: product.editor.defaultBorder,
       uploading: false,
@@ -58,9 +66,10 @@ export function initEditor(product: CompositeProduct): CompositeEditorState {
 export type EditorAction =
   | { type: "selectCell"; index: number }
   | { type: "uploadStart"; index: number }
-  | { type: "uploadDone"; index: number; imageId: string; url: string }
+  | { type: "uploadDone"; index: number; imageId: string; url: string; natW?: number | null; natH?: number | null }
   | { type: "uploadFail"; index: number }
-  | { type: "fillAll"; imageId: string; url: string }
+  | { type: "setNatural"; index: number; natW: number; natH: number }
+  | { type: "fillAll"; imageId: string; url: string; natW?: number | null; natH?: number | null }
   | { type: "setTransform"; index: number; transform: Partial<CellTransform> }
   | { type: "rotateCell"; index: number; dir: 1 | -1 }
   | { type: "resetCell"; index: number }
@@ -81,22 +90,40 @@ export function editorReducer(state: CompositeEditorState, action: EditorAction)
     case "uploadDone":
       return {
         ...state,
-        cells: patchCell(action.index, { imageId: action.imageId, url: action.url, uploading: false }),
+        cells: patchCell(action.index, {
+          imageId: action.imageId,
+          url: action.url,
+          natW: action.natW ?? null,
+          natH: action.natH ?? null,
+          transform: { ...IDENTITY_TRANSFORM }, // fresh photo → centred cover
+          uploading: false,
+        }),
       };
     case "uploadFail":
       return { ...state, cells: patchCell(action.index, { uploading: false }) };
+    case "setNatural":
+      return { ...state, cells: patchCell(action.index, { natW: action.natW, natH: action.natH }) };
     case "fillAll":
       return {
         ...state,
-        cells: cells.map((c) => ({ ...c, imageId: action.imageId, url: action.url, uploading: false })),
+        cells: cells.map((c) => ({
+          ...c,
+          imageId: action.imageId,
+          url: action.url,
+          natW: action.natW ?? null,
+          natH: action.natH ?? null,
+          transform: { ...IDENTITY_TRANSFORM },
+          uploading: false,
+        })),
       };
-    case "setTransform":
-      return {
-        ...state,
-        cells: patchCell(action.index, {
-          transform: { ...cells[action.index].transform, ...action.transform },
-        }),
-      };
+    case "setTransform": {
+      const t = { ...cells[action.index].transform, ...action.transform };
+      // Keep pan slack-relative and zoom >= cover.
+      t.x = Math.max(-1, Math.min(1, t.x));
+      t.y = Math.max(-1, Math.min(1, t.y));
+      t.scale = Math.max(1, t.scale);
+      return { ...state, cells: patchCell(action.index, { transform: t }) };
+    }
     case "rotateCell": {
       const cur = cells[action.index].transform.rotation;
       const next = (((cur + action.dir * 90) % 360) + 360) % 360 as 0 | 90 | 180 | 270;
@@ -109,7 +136,13 @@ export function editorReducer(state: CompositeEditorState, action: EditorAction)
     case "applyBorderToAll":
       return { ...state, cells: cells.map((c) => ({ ...c, borderId: action.borderId })) };
     case "setOrientation":
-      return { ...state, orientation: action.orientation };
+      // Cell aspect flips with orientation, so recentre the pan (keep zoom/rotation)
+      // — the old framing would otherwise jump to an unrelated region.
+      return {
+        ...state,
+        orientation: action.orientation,
+        cells: cells.map((c) => ({ ...c, transform: { ...c.transform, x: 0, y: 0 } })),
+      };
     default:
       return state;
   }

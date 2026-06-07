@@ -1,33 +1,55 @@
 "use client";
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { CompositeProduct, BorderPreset } from "@/lib/composite-products";
 import { BORDER_PRESETS } from "@/lib/composite-products";
 import type { CompositeEditorState } from "@/lib/composite-editor/state";
 import { activeCells, activeSheet } from "@/lib/composite-editor/state";
+import { coverFit, dragToPan, type CellRotation } from "@/lib/composite-editor/cell-fit";
 
 const borderById = (id: string): BorderPreset =>
   BORDER_PRESETS.find((b) => b.id === id) ?? BORDER_PRESETS[0];
 
 /**
- * Live preview of the composite sheet at print scale — positioned cells with
- * cover-fit photos (CSS transform = pan/zoom/rotate), per-cell borders, and
- * always-on dashed cut guides. Dragging the active cell pans its photo.
+ * Live preview of the composite sheet at print scale. Each cell's photo is
+ * placed with the shared coverFit() math (so it always covers — no white gaps —
+ * and matches what the print agent renders). Dragging the active cell pans its
+ * photo within the available slack; the zoom slider scales on top of cover.
  */
 export function CompositePreview({
   product,
   state,
   onSelectCell,
   onPan,
+  onNatural,
 }: {
   product: CompositeProduct;
   state: CompositeEditorState;
   onSelectCell: (i: number) => void;
   onPan: (i: number, x: number, y: number) => void;
+  onNatural: (i: number, natW: number, natH: number) => void;
 }) {
   const cells = activeCells(product, state);
   const sheet = activeSheet(product, state);
-  const dragRef = useRef<{ i: number; startX: number; startY: number; baseX: number; baseY: number } | null>(null);
+
+  // Measure the sheet's rendered px so cell/photo geometry is exact.
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [sheetPxW, setSheetPxW] = useState(0);
+  useLayoutEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const measure = () => setSheetPxW(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const sheetPxH = sheetPxW * (sheet.h / sheet.w);
+
+  const dragRef = useRef<
+    | { i: number; startX: number; startY: number; baseX: number; baseY: number; slackX: number; slackY: number }
+    | null
+  >(null);
 
   // Interior cut-line positions (inches) → percentages of the sheet.
   const xs = new Set<number>();
@@ -39,58 +61,81 @@ export function CompositePreview({
     if (c.y + c.height < sheet.h - 0.01) ys.add(c.y + c.height);
   }
 
-  const onPointerDown = (e: React.PointerEvent, i: number) => {
-    onSelectCell(i);
-    if (!state.cells[i].imageId) return;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    dragRef.current = {
-      i,
-      startX: e.clientX,
-      startY: e.clientY,
-      baseX: state.cells[i].transform.x,
-      baseY: state.cells[i].transform.y,
-    };
-  };
-  const onPointerMove = (e: React.PointerEvent, cellPxW: number, cellPxH: number) => {
-    const d = dragRef.current;
-    if (!d) return;
-    // Convert pixel drag to cell-fraction pan, clamp to a sane range.
-    const nx = Math.max(-0.5, Math.min(0.5, d.baseX + (e.clientX - d.startX) / cellPxW));
-    const ny = Math.max(-0.5, Math.min(0.5, d.baseY + (e.clientY - d.startY) / cellPxH));
-    onPan(d.i, nx, ny);
-  };
   const endDrag = () => {
     dragRef.current = null;
   };
 
   return (
     <div
-      className="relative mx-auto w-full overflow-hidden rounded-lg bg-white shadow-inner ring-1 ring-ink/10"
+      ref={sheetRef}
+      className="relative mx-auto w-full select-none overflow-hidden rounded-lg bg-white shadow-inner ring-1 ring-ink/10"
       style={{ aspectRatio: `${sheet.w} / ${sheet.h}`, maxWidth: sheet.w >= sheet.h ? 520 : 360 }}
     >
       {cells.map((cell, i) => {
         const cs = state.cells[i];
         const border = borderById(cs.borderId);
-        const borderPct = (border.widthInches / Math.min(cell.width, cell.height)) * 100;
         const active = state.activeCell === i;
+
+        // Cell + inner (border-subtracted) box in px.
+        const cellPxW = sheetPxW * (cell.width / sheet.w);
+        const cellPxH = sheetPxH * (cell.height / sheet.h);
+        const borderPx = border.id !== "none" ? border.widthInches * (sheetPxW / sheet.w) : 0;
+        const innerW = Math.max(1, cellPxW - borderPx * 2);
+        const innerH = Math.max(1, cellPxH - borderPx * 2);
+
+        const hasPhoto = !!cs.url && !!cs.natW && !!cs.natH;
+        const fit = hasPhoto
+          ? coverFit({
+              innerW,
+              innerH,
+              natW: cs.natW!,
+              natH: cs.natH!,
+              scale: cs.transform.scale,
+              panX: cs.transform.x,
+              panY: cs.transform.y,
+              rotation: cs.transform.rotation as CellRotation,
+            })
+          : null;
+
+        const onPointerDown = (e: React.PointerEvent) => {
+          onSelectCell(i);
+          if (!fit) return;
+          (e.target as HTMLElement).setPointerCapture(e.pointerId);
+          dragRef.current = {
+            i,
+            startX: e.clientX,
+            startY: e.clientY,
+            baseX: cs.transform.x,
+            baseY: cs.transform.y,
+            slackX: fit.slackX,
+            slackY: fit.slackY,
+          };
+        };
+        const onPointerMove = (e: React.PointerEvent) => {
+          const d = dragRef.current;
+          if (!d || d.i !== i) return;
+          const nx = d.baseX + dragToPan(e.clientX - d.startX, d.slackX);
+          const ny = d.baseY + dragToPan(e.clientY - d.startY, d.slackY);
+          onPan(i, Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+        };
+
+        const canPan = active && fit && (fit.slackX > 1 || fit.slackY > 1);
+
         return (
           <div
             key={i}
-            onPointerDown={(e) => onPointerDown(e, i)}
-            onPointerMove={(e) => {
-              const el = e.currentTarget;
-              onPointerMove(e, el.clientWidth, el.clientHeight);
-            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
-            className={`absolute cursor-pointer touch-none ${active ? "z-10" : ""}`}
+            className={`absolute touch-none ${active ? "z-10" : ""} ${canPan ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"}`}
             style={{
               left: `${(cell.x / sheet.w) * 100}%`,
               top: `${(cell.y / sheet.h) * 100}%`,
               width: `${(cell.width / sheet.w) * 100}%`,
               height: `${(cell.height / sheet.h) * 100}%`,
               background: border.id !== "none" ? border.color : "transparent",
-              padding: border.id !== "none" ? `${borderPct}%` : 0,
+              padding: borderPx,
             }}
           >
             <div className="relative h-full w-full overflow-hidden">
@@ -100,10 +145,25 @@ export function CompositePreview({
                   src={cs.url}
                   alt=""
                   draggable={false}
-                  className="absolute inset-0 h-full w-full select-none object-cover"
-                  style={{
-                    transform: `translate(${cs.transform.x * 100}%, ${cs.transform.y * 100}%) scale(${cs.transform.scale}) rotate(${cs.transform.rotation}deg)`,
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth && (cs.natW !== img.naturalWidth || cs.natH !== img.naturalHeight)) {
+                      onNatural(i, img.naturalWidth, img.naturalHeight);
+                    }
                   }}
+                  className="absolute max-w-none select-none object-cover"
+                  style={
+                    fit
+                      ? {
+                          width: `${fit.elemW}px`,
+                          height: `${fit.elemH}px`,
+                          left: `${fit.left}px`,
+                          top: `${fit.top}px`,
+                          transform: `rotate(${fit.rotation}deg)`,
+                          transformOrigin: "center",
+                        }
+                      : { inset: 0, width: "100%", height: "100%" }
+                  }
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center whitespace-pre-line bg-ink/5 text-center text-[11px] font-medium text-ink-mute">

@@ -41,7 +41,14 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
   }
 
   function chooseFromLibrary(photo: Photo) {
-    dispatch({ type: "uploadDone", index: state.activeCell, imageId: photo.id, url: photo.storageUrl });
+    dispatch({
+      type: "uploadDone",
+      index: state.activeCell,
+      imageId: photo.id,
+      url: photo.storageUrl,
+      natW: photo.widthPx,
+      natH: photo.heightPx,
+    });
     setLibrary(null);
   }
 
@@ -51,7 +58,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
     dispatch({ type: "uploadStart", index: i });
     try {
       const up = await uploadPhoto(file);
-      dispatch({ type: "uploadDone", index: i, imageId: up.id, url: up.storageUrl });
+      dispatch({ type: "uploadDone", index: i, imageId: up.id, url: up.storageUrl, natW: up.widthPx, natH: up.heightPx });
     } catch {
       dispatch({ type: "uploadFail", index: i });
       setError("Couldn't upload that photo. Make sure you're signed in and try again.");
@@ -90,9 +97,12 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           state={state}
           onSelectCell={(i) => dispatch({ type: "selectCell", index: i })}
           onPan={(i, x, y) => dispatch({ type: "setTransform", index: i, transform: { x, y } })}
+          onNatural={(i, natW, natH) => dispatch({ type: "setNatural", index: i, natW, natH })}
         />
         <p className="text-center text-xs text-ink-mute">
-          Faint dashed lines show where to cut. Tap a cell to choose its photo.
+          {active.url
+            ? "Drag the photo to position it, and zoom to fill the cell. Dashed lines show where to cut."
+            : "Faint dashed lines show where to cut. Tap a cell to choose its photo."}
         </p>
       </div>
 
@@ -150,7 +160,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
         {multiCell && active.url && (
           <button
             type="button"
-            onClick={() => dispatch({ type: "fillAll", imageId: active.imageId!, url: active.url! })}
+            onClick={() => dispatch({ type: "fillAll", imageId: active.imageId!, url: active.url!, natW: active.natW, natH: active.natH })}
             className="-mt-2 cursor-pointer text-xs font-semibold text-malachite-deep hover:underline"
           >
             Use this photo for all cells
