@@ -8,13 +8,8 @@ import { Logo } from "@/components/logo";
 import { Container } from "@/components/ui/container";
 import { getMe, logoutUrl, type WebUser } from "@/lib/api/auth";
 import { cartCount, subscribeCart } from "@/lib/cart";
-
-const NAV = [
-  { label: "Photo Prints", href: "/prints" },
-  { label: "Wall Art", href: "/wall-art" },
-  { label: "How it works", href: "/how-it-works" },
-  { label: "About", href: "/about" },
-];
+import { DesktopNav } from "@/components/mega-menu";
+import { NAVIGATION } from "@/lib/navigation";
 
 const ACCOUNT_MENU = [
   { label: "Profile", href: "/account/profile" },
@@ -32,6 +27,7 @@ function initials(email: string): string {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false); // mobile panel
+  const [mobileSection, setMobileSection] = useState<string | null>(null); // expanded mega section (mobile)
   const [menuOpen, setMenuOpen] = useState(false); // account dropdown
   const [user, setUser] = useState<WebUser | null>(null);
   const [checked, setChecked] = useState(false); // has the first auth check resolved?
@@ -87,18 +83,8 @@ export function SiteHeader() {
           <Logo variant="color" height={44} />
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="cursor-pointer text-sm font-medium text-ink-soft transition-colors duration-200 hover:text-ink"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Desktop nav (data-driven mega menus) */}
+        <DesktopNav />
 
         {/* Desktop account actions */}
         <div className="hidden items-center gap-3 md:flex">
@@ -231,16 +217,43 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-ink/10 bg-cream md:hidden">
           <Container className="flex flex-col gap-1 py-3">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="flex min-h-[44px] cursor-pointer items-center rounded-md px-2 text-base font-medium text-ink-soft transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {NAVIGATION.map((item) =>
+              item.href ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-[44px] cursor-pointer items-center rounded-md px-2 text-base font-medium text-ink-soft transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <div key={item.label}>
+                  <button
+                    type="button"
+                    onClick={() => setMobileSection((s) => (s === item.label ? null : item.label))}
+                    aria-expanded={mobileSection === item.label}
+                    className="flex min-h-[44px] w-full cursor-pointer items-center justify-between rounded-md px-2 text-base font-medium text-ink-soft transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+                  >
+                    {item.label}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className={`transition-transform duration-200 ${mobileSection === item.label ? "rotate-180" : ""}`}>
+                      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  {mobileSection === item.label &&
+                    item.megaMenu!.sections.flatMap((s) => s.items).map((sub) => (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={() => setOpen(false)}
+                        className="flex min-h-[44px] cursor-pointer items-center rounded-md pl-5 pr-2 text-sm font-medium text-ink-soft transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
+                </div>
+              ),
+            )}
 
             {user ? (
               <>
