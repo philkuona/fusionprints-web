@@ -4,8 +4,6 @@ import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { HeroCarousel } from "@/components/home/hero-carousel";
 import { JsonLd } from "@/components/json-ld";
-import { UpsellCard } from "@/components/upsell-card";
-import { UPSELL_CARDS } from "@/lib/upsell-cards";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -106,6 +104,30 @@ const WALL_ART: Card[] = [
     img: "/images/card-finish-guide.jpg",
     alt: "Two prints of the same landscape side by side, one glossy and one lustre, showing the difference in finish",
     href: "/wall-art",
+  },
+];
+
+const PHOTO_SETS: Card[] = [
+  {
+    size: "Wallet Prints",
+    dims: "Four 2 × 3",
+    img: "/images/composite-card-wallet.jpg",
+    alt: "A brown leather wallet open on a sunlit table with a small keepsake print of a couple in its photo window and matching wallet prints beside it",
+    href: "/prints/wallet",
+  },
+  {
+    size: "Mini Prints",
+    dims: "Two 3 × 4",
+    img: "/images/composite-card-mini.jpg",
+    alt: "Two small mini prints standing side by side on a warm surface, one of a young couple and one of laughing friends",
+    href: "/prints/mini",
+  },
+  {
+    size: "Passport Photos",
+    dims: "Six 2 × 2",
+    img: "/images/composite-card-passport.jpg",
+    alt: "A neat set of six identical square passport-style ID photos laid out in a grid on a bright desk",
+    href: "/prints/passport",
   },
 ];
 
@@ -243,6 +265,29 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ── Photo sets — composite products (Wallet / Mini / Passport) ── */}
+      <section className="bg-cream py-16">
+        <Container>
+          <div className="max-w-2xl">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-malachite-deep">
+              Photo sets
+            </p>
+            <h2 className="mt-4 font-fraunces text-4xl font-bold leading-tight text-ink sm:text-5xl">
+              More from a single sheet.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              Wallet keepsakes, mini prints, and passport photos &mdash; laid out
+              and cut for you, ready to share.
+            </p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-3 lg:gap-x-8">
+            {PHOTO_SETS.map((c) => (
+              <CollectionCard key={c.size} c={c} />
+            ))}
+          </div>
+        </Container>
+      </section>
+
       {/* ── Promise strip — typography, no images ────────────────────── */}
       <section className="bg-cream py-16">
         <Container>
@@ -267,27 +312,6 @@ export default function HomePage() {
                   {p.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">{p.body}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Upsell — promoted products (Mini Prints, etc.) ───────────── */}
-      <section className="border-y border-ink/8 bg-white py-16">
-        <Container>
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="font-mono text-xs uppercase tracking-widest text-ink-mute">
-              Something a little different
-            </span>
-            <h2 className="mt-4 font-fraunces text-4xl font-bold leading-tight text-ink sm:text-5xl">
-              More ways to print
-            </h2>
-          </div>
-          <div className="mx-auto mt-12 flex max-w-5xl flex-wrap justify-center gap-6">
-            {UPSELL_CARDS.map((card) => (
-              <div key={card.id} className="w-full max-w-xs">
-                <UpsellCard card={card} />
               </div>
             ))}
           </div>
