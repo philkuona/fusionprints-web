@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { Container } from "@/components/ui/container";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { formatPrice } from "@/lib/api/catalog";
@@ -43,8 +45,8 @@ function CheckoutScreen() {
   const [showForm, setShowForm] = useState(false);
   const [phone, setPhone] = useState("");
 
-  // Mirror the backend rule so the UI blocks before a 400.
-  const phoneValid = /^\+?[1-9]\d{7,14}$/.test(phone.trim());
+  // Valid international number (any country). The input emits E.164.
+  const phoneValid = !!phone && isValidPhoneNumber(phone);
 
   useEffect(() => {
     const sync = () => {
@@ -145,16 +147,20 @@ function CheckoutScreen() {
           {/* Contact number — required so we can reach you about the order */}
           <section>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-mute">Contact number</h2>
-            <input
-              type="tel"
-              inputMode="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+263 77 123 4567"
-              className="mt-3 w-full rounded-xl border border-ink/15 px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 focus:border-malachite"
+            <PhoneInput
+              international
+              defaultCountry="ZW"
+              value={phone || undefined}
+              onChange={(v) => setPhone(v ?? "")}
+              placeholder="77 123 4567"
+              numberInputProps={{
+                className: "w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-mute/60",
+              }}
+              className="fp-phone mt-3 flex items-center gap-2 rounded-xl border border-ink/15 px-4 py-3 transition-colors duration-200 focus-within:border-malachite"
             />
             <p className="mt-2 text-xs text-ink-mute">
-              We&rsquo;ll message you on WhatsApp when your order is ready, or if there&rsquo;s any issue.
+              We&rsquo;ll message you on WhatsApp when your order is ready, or if there&rsquo;s any issue. Outside
+              Zimbabwe? Pick your country &mdash; we print for customers anywhere.
             </p>
           </section>
 
