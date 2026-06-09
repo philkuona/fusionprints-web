@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui/container";
@@ -8,10 +8,12 @@ import { AuthGuard } from "@/components/account/auth-guard";
 import { formatPrice } from "@/lib/api/catalog";
 import { getCart, clearCart, type CartItem } from "@/lib/cart";
 import { createCheckout, confirmPayment } from "@/lib/api/orders";
+import { loadPayonifySdk, PAYONIFY_PUBLISHABLE_KEY, type PayonifyInstance } from "@/lib/payonify";
 
 type Phase = "review" | "creating" | "gateway" | "confirming" | "failed";
 
 const PENDING_KEY = "fp_pending_order";
+const CS_KEY = "fp_pending_cs"; // Payonify checkout client_secret (client-side by design)
 
 export default function PaymentPage() {
   return <AuthGuard>{() => <PaymentScreen />}</AuthGuard>;
@@ -25,31 +27,88 @@ function PaymentScreen() {
 
   const [phase, setPhase] = useState<Phase>("review");
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mountedSecretRef = useRef<string | null>(null); // guards against double-mount
+
   useEffect(() => {
-    const load = () => {
+    const init = () => {
       setItems(getCart());
       try {
         const raw = window.localStorage.getItem("fp_checkout_v1");
         if (raw) setSelection(JSON.parse(raw));
         const pending = window.sessionStorage.getItem(PENDING_KEY);
+        const cs = window.sessionStorage.getItem(CS_KEY);
         if (pending) {
           setOrderNumber(pending);
           setPhase("gateway");
+          if (cs && PAYONIFY_PUBLISHABLE_KEY) {
+            setClientSecret(cs);
+            setModalOpen(true);
+          }
         }
       } catch {
         /* ignore */
       }
       setReady(true);
     };
-    load();
+    init();
   }, []);
 
   const subtotal = items.reduce((s, i) => s + i.qty * i.unitPriceUsd, 0);
   // Composite items (wallet/passport/mini) are complete via their layout — they
   // have no single processedImageId, so don't flag them as "needs editing".
   const unedited = items.filter((i) => i.productType !== "composite" && !i.processedImageId);
+
+  function finishPaid(order: string) {
+    clearCart();
+    window.localStorage.removeItem("fp_checkout_v1");
+    window.sessionStorage.removeItem(PENDING_KEY);
+    window.sessionStorage.removeItem(CS_KEY);
+    router.push(`/account/orders/${order}?placed=1`);
+  }
+
+  // Mount the Payonify Drop-In once the modal is open and the container exists.
+  useEffect(() => {
+    if (!modalOpen || !clientSecret || !orderNumber) return;
+    const container = containerRef.current;
+    if (!container) return;
+    if (mountedSecretRef.current === clientSecret) return; // already mounted
+    if (!PAYONIFY_PUBLISHABLE_KEY) return; // guarded before opening the modal
+
+    let cancelled = false;
+    mountedSecretRef.current = clientSecret;
+    // Async work + SDK callbacks run after this effect returns, so their
+    // setState calls aren't "synchronous-in-effect".
+    void (async () => {
+      try {
+        const Payonify = await loadPayonifySdk();
+        if (cancelled) return;
+        const pay: PayonifyInstance = new Payonify({ publishableKey: PAYONIFY_PUBLISHABLE_KEY });
+        pay.onSuccess = () => finishPaid(orderNumber);
+        pay.onError = (err) => {
+          const msg = (err as { message?: string })?.message ?? "Payment failed. Please try again.";
+          setError(msg);
+        };
+        pay.onClose = () => {
+          setModalOpen(false);
+          mountedSecretRef.current = null; // allow a fresh mount on resume
+        };
+        pay.mount({ container, clientSecret });
+      } catch (e) {
+        mountedSecretRef.current = null;
+        setError((e as Error).message ?? "Couldn't load the payment form.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalOpen, clientSecret, orderNumber]);
 
   async function startPayment() {
     if (!selection) {
@@ -86,6 +145,17 @@ function PaymentScreen() {
       });
       setOrderNumber(res.orderNumber);
       window.sessionStorage.setItem(PENDING_KEY, res.orderNumber);
+      if (res.clientSecret) {
+        if (!PAYONIFY_PUBLISHABLE_KEY) {
+          setError("Payment isn't configured (missing publishable key). Please contact support.");
+          setPhase("review");
+          return;
+        }
+        // Real gateway (Payonify embedded) — open the Drop-In.
+        setClientSecret(res.clientSecret);
+        window.sessionStorage.setItem(CS_KEY, res.clientSecret);
+        setModalOpen(true);
+      }
       setPhase("gateway");
     } catch (e) {
       const msg = (e as { message?: string })?.message ?? "Couldn't start payment. Please try again.";
@@ -94,6 +164,7 @@ function PaymentScreen() {
     }
   }
 
+  // ── Mock provider (no clientSecret) confirm/decline ───────────────────────
   async function approve() {
     if (!orderNumber) return;
     setPhase("confirming");
@@ -101,10 +172,7 @@ function PaymentScreen() {
     try {
       const res = await confirmPayment(orderNumber, "success");
       if (res.status === "paid") {
-        clearCart();
-        window.localStorage.removeItem("fp_checkout_v1");
-        window.sessionStorage.removeItem(PENDING_KEY);
-        router.push(`/account/orders/${orderNumber}?placed=1`);
+        finishPaid(orderNumber);
         return;
       }
       setPhase("gateway");
@@ -144,14 +212,18 @@ function PaymentScreen() {
     );
   }
 
+  const isPayonify = !!clientSecret;
+
   return (
     <Container className="max-w-xl py-12">
       <h1 className="font-fraunces text-3xl font-bold text-ink">Payment</h1>
 
-      {/* Virtualised-provider notice */}
-      <p className="mt-3 rounded-lg bg-amber/10 px-3 py-2 text-xs text-ink-soft">
-        Demo payment. No real charge is made. A live payment gateway will replace this step.
-      </p>
+      {/* Mock-provider notice only (real gateway has no banner) */}
+      {!isPayonify && (
+        <p className="mt-3 rounded-lg bg-amber/10 px-3 py-2 text-xs text-ink-soft">
+          Demo payment. No real charge is made. A live payment gateway will replace this step.
+        </p>
+      )}
 
       {(phase === "review" || phase === "creating") && (
         <div className="mt-6 rounded-2xl border border-ink/10 bg-white p-5">
@@ -159,7 +231,7 @@ function PaymentScreen() {
             <span className="text-ink-soft">Total to pay</span>
             <span className="font-fraunces text-2xl font-bold text-ink">{formatPrice(subtotal)}</span>
           </div>
-          <p className="mt-1 text-xs text-ink-mute">Delivery, if any, is added after this demo step.</p>
+          <p className="mt-1 text-xs text-ink-mute">Delivery, if any, is added before payment.</p>
 
           {unedited.length > 0 && (
             <p className="mt-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral">
@@ -184,7 +256,27 @@ function PaymentScreen() {
         </div>
       )}
 
-      {(phase === "gateway" || phase === "confirming") && (
+      {/* Payonify gateway — Drop-In modal; this card shows when it's closed/paused */}
+      {phase === "gateway" && isPayonify && !modalOpen && (
+        <div className="mt-6 rounded-2xl border border-ink/10 bg-white p-5 text-center">
+          <p className="text-sm text-ink-soft">Payment not completed.</p>
+          {orderNumber && <p className="mt-1 font-mono text-sm text-ink">{orderNumber}</p>}
+          {error && <p className="mt-3 text-sm text-coral">{error}</p>}
+          <button
+            type="button"
+            onClick={() => { setError(""); setModalOpen(true); }}
+            className="mt-5 flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+          >
+            Resume payment
+          </button>
+          <Link href="/checkout" className="mt-2 flex h-11 w-full cursor-pointer items-center justify-center text-sm font-medium text-ink-soft transition-colors duration-200 hover:text-ink">
+            Back to checkout
+          </Link>
+        </div>
+      )}
+
+      {/* Mock gateway approve/decline (only when not Payonify) */}
+      {(phase === "gateway" || phase === "confirming") && !isPayonify && (
         <div className="mt-6 rounded-2xl border border-ink/10 bg-white p-5 text-center">
           <p className="text-sm text-ink-soft">Approve this payment to place order</p>
           {orderNumber && <p className="mt-1 font-mono text-sm text-ink">{orderNumber}</p>}
@@ -227,6 +319,31 @@ function PaymentScreen() {
           >
             Try again
           </button>
+        </div>
+      )}
+
+      {/* Payonify Drop-In modal — we provide the chrome, the SDK fills the container */}
+      {isPayonify && modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-cream p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="font-fraunces text-lg font-bold text-ink">Pay {formatPrice(subtotal)}</h2>
+                {orderNumber && <p className="font-mono text-xs text-ink-mute">{orderNumber}</p>}
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => { setModalOpen(false); mountedSecretRef.current = null; }}
+                className="cursor-pointer text-ink-mute transition-colors duration-200 hover:text-ink"
+              >
+                ✕
+              </button>
+            </div>
+            {error && <p className="mb-3 text-sm text-coral">{error}</p>}
+            {/* Payonify mounts the EcoCash / OneMoney / card form here */}
+            <div ref={containerRef} id="payonify-container" className="min-h-[180px]" />
+          </div>
         </div>
       )}
     </Container>

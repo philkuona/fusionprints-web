@@ -37,6 +37,10 @@ export interface CheckoutResult {
   reference: string;
   status: string;
   totalUsd: string;
+  /** Payment provider: "payonify" (embedded) or "virtual" (mock). */
+  provider?: string;
+  /** Present for embedded gateways — the browser mounts the Drop-In with it. */
+  clientSecret?: string | null;
 }
 
 export const createCheckout = (data: CheckoutInput) =>
