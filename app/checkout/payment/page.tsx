@@ -83,6 +83,8 @@ function PaymentScreen() {
         const pay: PayonifyInstance = new Payonify({ publishableKey: PAYONIFY_PUBLISHABLE_KEY });
         pay.onSuccess = () => finishPaid(orderNumber);
         pay.onError = (err) => {
+          // Full payload to the console so we can see Payonify's actual reason.
+          console.error("Payonify onError:", err);
           const msg = (err as { message?: string })?.message ?? "Payment failed. Please try again.";
           setError(msg);
         };
