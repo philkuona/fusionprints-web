@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/container";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { formatPrice } from "@/lib/api/catalog";
 import { getCart, clearCart, type CartItem } from "@/lib/cart";
-import { createCheckout, confirmPayment } from "@/lib/api/orders";
+import { createCheckout, confirmPayment, getOrder } from "@/lib/api/orders";
 import { loadPayonifySdk, PAYONIFY_PUBLISHABLE_KEY, type PayonifyInstance } from "@/lib/payonify";
 
 type Phase = "review" | "creating" | "gateway" | "confirming" | "failed";
@@ -104,6 +104,42 @@ function PaymentScreen() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalOpen, clientSecret, orderNumber]);
+
+  // While a Payonify payment is in progress, poll the order — the webhook is the
+  // source of truth. EcoCash confirms asynchronously (approved on the phone),
+  // so the SDK's immediate callbacks aren't reliable; when the order flips off
+  // pending_payment we treat it as paid and continue.
+  useEffect(() => {
+    const isPay = !!clientSecret;
+    if (phase !== "gateway" || !isPay || !orderNumber) return;
+    let active = true;
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
+      tries += 1;
+      try {
+        const o = await getOrder(orderNumber);
+        if (active && o.status && o.status !== "pending_payment") {
+          finishPaid(orderNumber);
+          return;
+        }
+      } catch {
+        /* transient — keep polling */
+      }
+      if (!active) return;
+      if (tries < 40) {
+        timer = setTimeout(tick, 3000); // ~2 min total
+      } else {
+        setError("We haven't received payment confirmation yet. If you completed payment, check My Orders shortly.");
+      }
+    };
+    timer = setTimeout(tick, 3000);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, clientSecret, orderNumber]);
 
   async function startPayment() {
     if (!selection) {
@@ -252,22 +288,36 @@ function PaymentScreen() {
         </div>
       )}
 
-      {/* Payonify gateway — Drop-In modal; this card shows when it's closed/paused */}
+      {/* Payonify gateway — Drop-In closed. While the order is still pending we
+          keep polling (EcoCash confirms asynchronously), showing "Confirming…".
+          Only after the poll times out (error set) do we offer to retry. */}
       {phase === "gateway" && isPayonify && !modalOpen && (
         <div className="mt-6 rounded-2xl border border-ink/10 bg-white p-5 text-center">
-          <p className="text-sm text-ink-soft">Payment not completed.</p>
-          {orderNumber && <p className="mt-1 font-mono text-sm text-ink">{orderNumber}</p>}
-          {error && <p className="mt-3 text-sm text-coral">{error}</p>}
-          <button
-            type="button"
-            onClick={() => { setError(""); setModalOpen(true); }}
-            className="mt-5 flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
-          >
-            Resume payment
-          </button>
-          <Link href="/checkout" className="mt-2 flex h-11 w-full cursor-pointer items-center justify-center text-sm font-medium text-ink-soft transition-colors duration-200 hover:text-ink">
-            Back to checkout
-          </Link>
+          {error ? (
+            <>
+              <p className="font-semibold text-ink">Payment not confirmed</p>
+              {orderNumber && <p className="mt-1 font-mono text-sm text-ink">{orderNumber}</p>}
+              <p className="mt-3 text-sm text-coral">{error}</p>
+              <button
+                type="button"
+                onClick={() => { setError(""); mountedSecretRef.current = null; setModalOpen(true); }}
+                className="mt-5 flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-malachite text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
+              >
+                Try payment again
+              </button>
+              <Link href="/account/orders" className="mt-2 flex h-11 w-full cursor-pointer items-center justify-center text-sm font-medium text-ink-soft transition-colors duration-200 hover:text-ink">
+                View My Orders
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-ink/10 border-t-malachite" />
+              <p className="mt-4 text-sm font-medium text-ink">Confirming your payment…</p>
+              <p className="mt-1 text-xs text-ink-mute">
+                If you approved on your phone (EcoCash), this takes a few seconds. Please don&rsquo;t close this page.
+              </p>
+            </>
+          )}
         </div>
       )}
 
