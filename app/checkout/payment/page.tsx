@@ -13,7 +13,6 @@ import { loadPayonifySdk, PAYONIFY_PUBLISHABLE_KEY, type PayonifyInstance } from
 type Phase = "review" | "creating" | "gateway" | "confirming" | "failed";
 
 const PENDING_KEY = "fp_pending_order";
-const CS_KEY = "fp_pending_cs"; // Payonify checkout client_secret (client-side by design)
 
 export default function PaymentPage() {
   return <AuthGuard>{() => <PaymentScreen />}</AuthGuard>;
@@ -30,6 +29,8 @@ function PaymentScreen() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
+  // Authoritative amount Payonify will charge (server-computed order total).
+  const [chargeUsd, setChargeUsd] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mountedSecretRef = useRef<string | null>(null); // guards against double-mount
@@ -40,16 +41,9 @@ function PaymentScreen() {
       try {
         const raw = window.localStorage.getItem("fp_checkout_v1");
         if (raw) setSelection(JSON.parse(raw));
-        const pending = window.sessionStorage.getItem(PENDING_KEY);
-        const cs = window.sessionStorage.getItem(CS_KEY);
-        if (pending) {
-          setOrderNumber(pending);
-          setPhase("gateway");
-          if (cs && PAYONIFY_PUBLISHABLE_KEY) {
-            setClientSecret(cs);
-            setModalOpen(true);
-          }
-        }
+        // Deliberately do NOT restore a prior checkout session: the cart may
+        // have changed since, so each payment attempt creates a fresh session
+        // for the current cart (a stale session charges the wrong amount).
       } catch {
         /* ignore */
       }
@@ -67,7 +61,6 @@ function PaymentScreen() {
     clearCart();
     window.localStorage.removeItem("fp_checkout_v1");
     window.sessionStorage.removeItem(PENDING_KEY);
-    window.sessionStorage.removeItem(CS_KEY);
     router.push(`/account/orders/${order}?placed=1`);
   }
 
@@ -144,6 +137,7 @@ function PaymentScreen() {
         phone: selection.phone,
       });
       setOrderNumber(res.orderNumber);
+      setChargeUsd(res.totalUsd); // authoritative charge amount for this order
       window.sessionStorage.setItem(PENDING_KEY, res.orderNumber);
       if (res.clientSecret) {
         if (!PAYONIFY_PUBLISHABLE_KEY) {
@@ -151,9 +145,9 @@ function PaymentScreen() {
           setPhase("review");
           return;
         }
-        // Real gateway (Payonify embedded) — open the Drop-In.
+        // Real gateway (Payonify embedded) — open a FRESH Drop-In for this order.
         setClientSecret(res.clientSecret);
-        window.sessionStorage.setItem(CS_KEY, res.clientSecret);
+        mountedSecretRef.current = null;
         setModalOpen(true);
       }
       setPhase("gateway");
@@ -328,7 +322,7 @@ function PaymentScreen() {
           <div className="w-full max-w-md rounded-2xl bg-cream p-5 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="font-fraunces text-lg font-bold text-ink">Pay {formatPrice(subtotal)}</h2>
+                <h2 className="font-fraunces text-lg font-bold text-ink">Pay {formatPrice(chargeUsd != null ? Number(chargeUsd) : subtotal)}</h2>
                 {orderNumber && <p className="font-mono text-xs text-ink-mute">{orderNumber}</p>}
               </div>
               <button
