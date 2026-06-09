@@ -75,6 +75,8 @@ export interface OrderItemDetail {
 export interface OrderDetail {
   orderNumber: string;
   status: string;
+  /** Latest payment attempt status (e.g. "pending" | "success" | "failed"). */
+  paymentStatus?: string | null;
   subtotalUsd: string;
   deliveryFeeUsd: string;
   totalUsd: string;
