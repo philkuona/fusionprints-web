@@ -30,7 +30,7 @@ export function CompositeProductView({ product }: { product: CompositeProduct })
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-ink/5 shadow-md">
           <Image
             src={`/images/composite-${product.slug}.jpg`}
-            alt={`${product.displayName} — ${product.tagline}`}
+            alt={`${product.displayName}: ${product.tagline}`}
             fill
             sizes="(max-width: 1024px) 100vw, 560px"
             className="object-cover"

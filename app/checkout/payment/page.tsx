@@ -125,7 +125,7 @@ function PaymentScreen() {
         }
         if (active && o.paymentStatus === "failed") {
           // Gateway reported a failed charge — stop waiting, let them retry.
-          setError("Your payment didn't go through. No charge was made — please try again.");
+          setError("Your payment didn't go through. No charge was made. Please try again.");
           return;
         }
       } catch {

@@ -4,7 +4,7 @@ import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
 
 export const metadata: Metadata = {
   title: "Mini Prints | FusionPrints",
-  description: "Two mini prints side by side on one sheet — design and order online.",
+  description: "Two mini prints side by side on one sheet. Design and order online.",
 };
 
 export default function Page() {

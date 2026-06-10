@@ -4,7 +4,7 @@ import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
 
 export const metadata: Metadata = {
   title: "Wallet Prints | FusionPrints",
-  description: "Four 2×3 wallet prints on one 4×6 sheet — design and order online.",
+  description: "Four 2×3 wallet prints on one 4×6 sheet. Design and order online.",
 };
 
 export default function Page() {

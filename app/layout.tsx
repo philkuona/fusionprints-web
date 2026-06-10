@@ -29,22 +29,22 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   // No template: existing per-page titles already include "| FusionPrints".
   // Pages without their own title fall back to this default.
-  title: `${SITE_NAME} — Hold the moment.`,
+  title: `${SITE_NAME}. Hold the moment.`,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Hold the moment.`,
+    title: `${SITE_NAME}. Hold the moment.`,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     locale: "en_ZW",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "FusionPrints — Hold the moment." }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "FusionPrints. Hold the moment." }],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Hold the moment.`,
+    title: `${SITE_NAME}. Hold the moment.`,
     description: SITE_DESCRIPTION,
     images: ["/og.png"],
   },

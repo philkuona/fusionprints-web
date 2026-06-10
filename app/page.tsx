@@ -276,7 +276,7 @@ export default function HomePage() {
               More from a single sheet.
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              Wallet keepsakes, mini prints, and passport photos &mdash; laid out
+              Wallet keepsakes, mini prints, and passport photos, laid out
               and cut for you, ready to share.
             </p>
           </div>

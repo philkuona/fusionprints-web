@@ -4,7 +4,7 @@ import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
 
 export const metadata: Metadata = {
   title: "Passport Photos | FusionPrints",
-  description: "Six 2×2 passport photos on one sheet — upload once, we lay them out.",
+  description: "Six 2×2 passport photos on one sheet. Upload once, we lay them out.",
 };
 
 export default function Page() {

@@ -80,7 +80,7 @@ export const COMPOSITE_PRODUCTS: Record<string, CompositeProduct> = {
     displayName: "Passport Photos",
     tagline: "Six ID photos, one sheet.",
     description:
-      "Six 2×2 inch passport-style photos on a single 4×6 sheet — standard ID size. Upload once and we lay out all six for you.",
+      "Six 2×2 inch passport-style photos on a single 4×6 sheet at standard ID size. Upload once and we lay out all six for you.",
     priceUsd: 3.0,
     uniquePhotos: 1,
     layout: {

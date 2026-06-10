@@ -20,10 +20,13 @@ type Fulfillment = "collection" | "delivery";
 
 // Delivery zones mirror the backend DELIVERY_FEES (config/catalog.ts). Not yet
 // exposed via API, so kept in sync here. `fee: null` = quoted separately.
+// Zone labels are configurable: prod sets NEXT_PUBLIC_BUSINESS_LOCATION_NAME
+// (e.g. "Harare"); unset → neutral labels so no location is hard-coded in copy.
+const CITY = process.env.NEXT_PUBLIC_BUSINESS_LOCATION_NAME?.trim();
 const ZONES: { key: string; label: string; fee: number | null }[] = [
-  { key: "harare_cbd", label: "Harare CBD", fee: 3 },
-  { key: "harare_greater", label: "Greater Harare", fee: 5 },
-  { key: "outside_harare", label: "Outside Harare (quoted)", fee: null },
+  { key: "harare_cbd", label: CITY ? `${CITY} CBD` : "City centre", fee: 3 },
+  { key: "harare_greater", label: CITY ? `Greater ${CITY}` : "Greater area", fee: 5 },
+  { key: "outside_harare", label: CITY ? `Outside ${CITY} (quoted)` : "Outside area (quoted)", fee: null },
 ];
 
 const CHECKOUT_KEY = "fp_checkout_v1";
@@ -160,7 +163,7 @@ function CheckoutScreen() {
             />
             <p className="mt-2 text-xs text-ink-mute">
               We&rsquo;ll message you on WhatsApp when your order is ready, or if there&rsquo;s any issue. Outside
-              Zimbabwe? Pick your country &mdash; we print for customers anywhere.
+              Zimbabwe? Pick your country and we print for customers anywhere.
             </p>
           </section>
 
@@ -279,7 +282,7 @@ function CheckoutScreen() {
             </div>
           </div>
           {fulfillment === "delivery" && zoneObj?.fee === null && (
-            <p className="mt-2 text-xs text-ink-mute">Delivery outside Harare is quoted separately after you order.</p>
+            <p className="mt-2 text-xs text-ink-mute">{CITY ? `Delivery outside ${CITY} is quoted separately after you order.` : "Delivery to outlying areas is quoted separately after you order."}</p>
           )}
           <button
             type="button"
