@@ -1,0 +1,65 @@
+{
+  "_readme": "Shared cell-fit parity fixtures. IDENTICAL copies live in fusionprints-web/tests/fixtures/ and fusionprints-agent/tests/fixtures/ — edit both together. Expected values are the exact floats of the canonical cover-fit math (cover = oriented-source * max(innerW/sW, innerH/sH) * max(1, scale); hidden = slack/2 * (1 - pan), pan clamped to [-1,1]). The web's coverFit() must match exactly; the agent's computeCellWindow() rounds to integer px and must match within 1px.",
+  "fixtures": [
+    {
+      "name": "landscape into square cell, centred cover",
+      "innerW": 300, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 1, "panX": 0, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 400, "coverH": 300, "slackX": 100, "slackY": 0, "hiddenLeft": 50, "hiddenTop": 0 }
+    },
+    {
+      "name": "zoom 1.5, pan hard right",
+      "innerW": 300, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 1.5, "panX": 1, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 600, "coverH": 450, "slackX": 300, "slackY": 150, "hiddenLeft": 0, "hiddenTop": 75 }
+    },
+    {
+      "name": "zoom 1.5, pan hard left",
+      "innerW": 300, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 1.5, "panX": -1, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 600, "coverH": 450, "slackX": 300, "slackY": 150, "hiddenLeft": 300, "hiddenTop": 75 }
+    },
+    {
+      "name": "portrait source rotated 90 into wide cell, panY 0.5",
+      "innerW": 600, "innerH": 300, "natW": 3000, "natH": 4000,
+      "scale": 1, "panX": 0, "panY": 0.5, "rotation": 90,
+      "expected": { "coverW": 600, "coverH": 450, "slackX": 0, "slackY": 150, "hiddenLeft": 0, "hiddenTop": 37.5 }
+    },
+    {
+      "name": "extreme panorama into tiny passport cell",
+      "innerW": 105, "innerH": 135, "natW": 12000, "natH": 2000,
+      "scale": 1, "panX": 0, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 810, "coverH": 135, "slackX": 705, "slackY": 0, "hiddenLeft": 352.5, "hiddenTop": 0 }
+    },
+    {
+      "name": "exact-fit square, zero slack",
+      "innerW": 300, "innerH": 300, "natW": 2000, "natH": 2000,
+      "scale": 1, "panX": 0, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 300, "coverH": 300, "slackX": 0, "slackY": 0, "hiddenLeft": 0, "hiddenTop": 0 }
+    },
+    {
+      "name": "rotation 180 keeps geometry, pan 0.25",
+      "innerW": 350, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 1, "panX": 0.25, "panY": 0, "rotation": 180,
+      "expected": { "coverW": 400, "coverH": 300, "slackX": 50, "slackY": 0, "hiddenLeft": 18.75, "hiddenTop": 0 }
+    },
+    {
+      "name": "scale below 1 clamps to cover",
+      "innerW": 300, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 0.5, "panX": 0, "panY": 0, "rotation": 0,
+      "expected": { "coverW": 400, "coverH": 300, "slackX": 100, "slackY": 0, "hiddenLeft": 50, "hiddenTop": 0 }
+    },
+    {
+      "name": "pan beyond range clamps to [-1,1]",
+      "innerW": 300, "innerH": 300, "natW": 4000, "natH": 3000,
+      "scale": 1, "panX": 2, "panY": -3, "rotation": 0,
+      "expected": { "coverW": 400, "coverH": 300, "slackX": 100, "slackY": 0, "hiddenLeft": 0, "hiddenTop": 0 }
+    },
+    {
+      "name": "rotation 270 with fractional cover",
+      "innerW": 300, "innerH": 450, "natW": 4000, "natH": 3000,
+      "scale": 1, "panX": 0, "panY": 0, "rotation": 270,
+      "expected": { "coverW": 337.5, "coverH": 450, "slackX": 37.5, "slackY": 0, "hiddenLeft": 18.75, "hiddenTop": 0 }
+    }
+  ]
+}
