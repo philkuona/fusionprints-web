@@ -15,19 +15,33 @@ function AddressCard({
 }) {
   const [deleting, setDeleting] = useState(false);
   const [settingDefault, setSettingDefault] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (!confirm("Remove this address?")) return;
+    setError(null);
     setDeleting(true);
-    await deleteAddress(address.id).catch(() => {});
-    onDelete(address.id);
+    try {
+      await deleteAddress(address.id);
+      onDelete(address.id);
+    } catch {
+      // Keep the card — pretending it's gone would resurrect it on reload.
+      setDeleting(false);
+      setError("Couldn't remove this address. Please try again.");
+    }
   };
 
   const handleSetDefault = async () => {
+    setError(null);
     setSettingDefault(true);
-    await setDefaultAddress(address.id).catch(() => {});
-    onSetDefault(address.id);
-    setSettingDefault(false);
+    try {
+      await setDefaultAddress(address.id);
+      onSetDefault(address.id);
+    } catch {
+      setError("Couldn't set this address as default. Please try again.");
+    } finally {
+      setSettingDefault(false);
+    }
   };
 
   return (
@@ -69,6 +83,7 @@ function AddressCard({
           {deleting ? "Removing…" : "Remove"}
         </button>
       </div>
+      {error && <p className="mt-2 text-xs text-coral">{error}</p>}
     </div>
   );
 }

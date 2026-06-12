@@ -31,6 +31,7 @@ export default function PhotosPage() {
   const [uploads, setUploads] = useState<PendingUpload[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Smallest "recommended" pixel count across the catalog. A photo below this
   // is too small for even our smallest print at recommended quality.
   const [lowResThreshold, setLowResThreshold] = useState<number | null>(null);
@@ -50,7 +51,7 @@ export default function PhotosPage() {
   useEffect(() => {
     getPhotos()
       .then(setPhotos)
-      .catch(() => {})
+      .catch(() => setErrorMessage("Couldn't load your photos. Please refresh the page."))
       .finally(() => setLoading(false));
 
     getCatalog()
@@ -134,26 +135,63 @@ export default function PhotosPage() {
     });
   }, []);
 
-  const handleDeleteOne = useCallback(async (id: string) => {
-    setPhotos((prev) => prev.filter((p) => p.id !== id));
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
+  /** Put failed-delete photos back at their original grid positions. */
+  const restorePhotos = useCallback((removed: { photo: Photo; index: number }[]) => {
+    setPhotos((prev) => {
+      const next = [...prev];
+      for (const { photo, index } of removed) {
+        next.splice(Math.min(index, next.length), 0, photo);
+      }
       return next;
     });
-    await deletePhoto(id).catch(() => {});
   }, []);
+
+  const handleDeleteOne = useCallback(
+    async (id: string) => {
+      const index = photos.findIndex((p) => p.id === id);
+      const photo = photos[index];
+      if (!photo) return;
+      setErrorMessage(null);
+      // Optimistic removal — restored below if the delete fails.
+      setPhotos((prev) => prev.filter((p) => p.id !== id));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      try {
+        await deletePhoto(id);
+      } catch {
+        restorePhotos([{ photo, index }]);
+        setErrorMessage("Couldn't delete that photo. Please try again.");
+      }
+    },
+    [photos, restorePhotos],
+  );
 
   const handleBulkDelete = useCallback(async () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     if (!confirm(`Delete ${ids.length} photo${ids.length === 1 ? "" : "s"}?`)) return;
+    setErrorMessage(null);
     setBulkDeleting(true);
+    const removed = photos
+      .map((photo, index) => ({ photo, index }))
+      .filter(({ photo }) => selected.has(photo.id));
     setPhotos((prev) => prev.filter((p) => !selected.has(p.id)));
     setSelected(new Set());
-    await Promise.all(ids.map((id) => deletePhoto(id).catch(() => {})));
+    const results = await Promise.allSettled(ids.map((id) => deletePhoto(id)));
+    const failed = new Set(ids.filter((_, i) => results[i].status === "rejected"));
+    if (failed.size > 0) {
+      restorePhotos(removed.filter(({ photo }) => failed.has(photo.id)));
+      setErrorMessage(
+        failed.size === 1
+          ? "Couldn't delete one photo. It's back in your library."
+          : `Couldn't delete ${failed.size} photos. They're back in your library.`,
+      );
+    }
     setBulkDeleting(false);
-  }, [selected]);
+  }, [selected, photos, restorePhotos]);
 
   const isLowRes = useCallback(
     (photo: Photo): boolean => {
@@ -413,6 +451,23 @@ export default function PhotosPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Error toast — failed loads/deletes surface here instead of vanishing */}
+      {errorMessage && (
+        <div
+          role="alert"
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-ink px-5 py-3 text-sm font-medium text-cream shadow-lg"
+        >
+          <span>{errorMessage}</span>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="-my-2 -mr-2 flex h-11 cursor-pointer items-center px-2 text-xs font-semibold uppercase tracking-wide text-cream/70 transition-colors duration-200 hover:text-cream"
+          >
+            Dismiss
+          </button>
         </div>
       )}
     </div>
