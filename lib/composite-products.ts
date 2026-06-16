@@ -130,7 +130,3 @@ export const COMPOSITE_PRODUCTS: Record<string, CompositeProduct> = {
     editor: { defaultBorder: "none" },
   },
 };
-
-export function compositeBySlug(slug: string): CompositeProduct | undefined {
-  return COMPOSITE_PRODUCTS[slug];
-}

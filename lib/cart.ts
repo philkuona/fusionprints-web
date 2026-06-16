@@ -75,10 +75,6 @@ export function cartCount(): number {
   return getCart().reduce((n, i) => n + i.qty, 0);
 }
 
-export function cartSubtotal(): number {
-  return getCart().reduce((sum, i) => sum + i.qty * i.unitPriceUsd, 0);
-}
-
 /** Subscribe to cart changes (same-tab writes + cross-tab storage events). */
 export function subscribeCart(cb: () => void): () => void {
   if (typeof window === "undefined") return () => {};

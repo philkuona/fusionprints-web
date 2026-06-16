@@ -36,12 +36,6 @@ export async function getProduct(sizeCode: string): Promise<CatalogProduct | und
   return catalog.find((p) => p.sizeCode === sizeCode);
 }
 
-/** Aspect ratio as a percentage (height/width * 100) for CSS padding-bottom trick */
-export function aspectRatioPct(product: CatalogProduct): number {
-  const [w, h] = product.sizeCode.split('x').map(Number);
-  return (h / w) * 100;
-}
-
 /** USD formatted */
 export function formatPrice(usd: number): string {
   return `USD ${usd.toFixed(2)}`;
