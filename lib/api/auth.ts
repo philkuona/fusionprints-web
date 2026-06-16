@@ -61,12 +61,6 @@ export function login(data: { email: string; password: string }) {
   });
 }
 
-export function logout() {
-  return apiRequest<{ success: boolean }>('/web/api/auth/logout', {
-    method: 'POST',
-  });
-}
-
 /**
  * Backend logout URL for a top-level browser navigation. This is the reliable
  * way to sign out: the session cookie rides the navigation, the server destroys

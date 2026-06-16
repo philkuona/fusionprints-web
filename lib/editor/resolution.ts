@@ -30,13 +30,3 @@ export function resLevelForArea(area: number | null, product: CatalogProduct): R
   const { min, rec } = thresholds(product);
   return area < min ? "bad" : area < rec ? "warn" : "ok";
 }
-
-/** Grade a whole photo (best case, ignoring crop) against a product. */
-export function resLevelForPhoto(
-  widthPx: number | null | undefined,
-  heightPx: number | null | undefined,
-  product: CatalogProduct,
-): ResLevel {
-  if (!widthPx || !heightPx) return "ok";
-  return resLevelForArea(widthPx * heightPx, product);
-}
