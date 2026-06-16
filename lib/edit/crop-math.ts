@@ -35,28 +35,6 @@ export function coverScale(
 }
 
 /**
- * Fit a frame of aspect `aspectW:aspectH` inside `stage`, centered, with padding.
- * Returns the frame rect in stage coordinates.
- */
-export function fitFrame(
-  stageW: number,
-  stageH: number,
-  aspectW: number,
-  aspectH: number,
-  pad = 16,
-): Rect {
-  const availW = Math.max(0, stageW - pad * 2);
-  const availH = Math.max(0, stageH - pad * 2);
-  let w = availW;
-  let h = (w * aspectH) / aspectW;
-  if (h > availH) {
-    h = availH;
-    w = (h * aspectW) / aspectH;
-  }
-  return { x: (stageW - w) / 2, y: (stageH - h) / 2, width: w, height: h };
-}
-
-/**
  * Fit a frame of aspect `aspectW:aspectH` inside `stage` with a CONSTANT height
  * (stageH minus padding) so the on-screen height stays the same across print
  * sizes; only the width changes with the aspect. If the resulting width would
