@@ -10,8 +10,8 @@ Remote runbook for bringing the **DNP DS620A** (dye-sub) and **Epson SureColor P
 - **Prod backend**: Hetzner, SSH `fusionprints@178.104.67.122`, app at `/home/fusionprints/app`.
 - **Web**: Vercel (auto-deploys on push to `main`).
 
-> Last updated 2026-06-17. As of now: code is **committed but UNPUSHED** (backend `1791229`,
-> agent `7086db7`) and **not deployed**; the mini-PC has offline queues **`FP5300`** (Epson P5300)
+> Last updated 2026-06-17. As of now: code is **pushed to `main`** (backend `1c466f7`,
+> agent `3a1612d`, web `6c08863`) but **not deployed** (prod backend still `62e4a24`, mini-PC still `c85af7f`); the mini-PC has offline queues **`FP5300`** (Epson P5300)
 > and **`FPDS620A`** (DNP DS620A) — both drivers installed, no hardware yet. Mini-PC `.env` still
 > names the old P900 and the old DNP name.
 
@@ -51,13 +51,13 @@ The names that must always agree, per printer:
 
 From the dev machine (WSL):
 ```bash
-cd ~/dev/fusionprints       && git push        # backend → 1791229
-cd ~/dev/fusionprints-agent && git push        # agent   → 7086db7
+cd ~/dev/fusionprints       && git push        # backend → 1c466f7
+cd ~/dev/fusionprints-agent && git push        # agent   → 3a1612d
 cd ~/dev/fusionprints       && npm run deploy   # deploy backend
 ```
 `deploy.sh` prints "✓ Migrations applied / ✓ Service restarted" **unconditionally** — verify directly:
 ```bash
-ssh fusionprints@178.104.67.122 'cd app && git rev-parse HEAD'    # == 1791229
+ssh fusionprints@178.104.67.122 'cd app && git rev-parse HEAD'    # == 1c466f7
 curl -s https://api.fusionprints.co.zw/health                     # {"status":"ok","database":"connected"}
 ```
 
@@ -65,7 +65,7 @@ On the mini-PC (PowerShell as Administrator):
 ```powershell
 Set-Location "C:\Users\Fusion Prints\dev\fusionprints-agent"
 Stop-Service FusionPrintsAgent
-git fetch origin; git reset --hard origin/main; git log --oneline -1   # == 7086db7
+git fetch origin; git reset --hard origin/main; git log --oneline -1   # == 3a1612d
 npm install; npm run build                                            # build REQUIRED (runs dist/)
 ```
 Then edit `.env` so both queue names match Windows:
