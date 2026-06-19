@@ -40,6 +40,15 @@ export function getCart(): CartItem[] {
   }
 }
 
+/**
+ * True if any cart item is a 5×7 print. Such orders are operator-gated (printed
+ * on swapped media) so the WHOLE order becomes next-working-day — surfaced as a
+ * pre-checkout notice. Keep the size code in sync with the catalog 5×7 product.
+ */
+export function hasFiveBySeven(items: CartItem[]): boolean {
+  return items.some((i) => i.sizeCode === "5x7");
+}
+
 function writeCart(items: CartItem[]): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(KEY, JSON.stringify(items));

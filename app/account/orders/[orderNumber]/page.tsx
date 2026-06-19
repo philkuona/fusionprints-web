@@ -82,6 +82,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
       </div>
       <p className="mt-1 text-xs text-ink-mute">Placed {formatDate(order.createdAt)}</p>
 
+      {/* Next-day availability for orders containing a 5×7 (exact date shown here,
+          post-placement). Hidden once the order is actually ready/closed. */}
+      {order.scheduledReadyAt && !order.readyAt && order.status !== "fulfilled" && order.status !== "cancelled" && (
+        <p className="mt-3 rounded-xl bg-malachite/15 px-4 py-3 text-sm text-ink">
+          ✨ Your order is special — it’ll be ready for {order.fulfillmentMethod === "delivery" ? "delivery" : "collection"} on {formatDate(order.scheduledReadyAt)}.
+        </p>
+      )}
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_18rem]">
         {/* Timeline + items */}
         <div className="space-y-8">

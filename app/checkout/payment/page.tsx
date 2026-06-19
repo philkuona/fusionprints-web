@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { AuthGuard } from "@/components/account/auth-guard";
 import { formatPrice } from "@/lib/api/catalog";
-import { getCart, clearCart, type CartItem } from "@/lib/cart";
+import { getCart, clearCart, hasFiveBySeven, type CartItem } from "@/lib/cart";
 import { createCheckout, confirmPayment, getOrder } from "@/lib/api/orders";
 import { loadPayonifySdk, PAYONIFY_PUBLISHABLE_KEY, type PayonifyInstance } from "@/lib/payonify";
 
@@ -269,6 +269,14 @@ function PaymentScreen() {
             <span className="font-fraunces text-2xl font-bold text-ink">{formatPrice(subtotal)}</span>
           </div>
           <p className="mt-1 text-xs text-ink-mute">Delivery, if any, is added before payment.</p>
+
+          {/* Next-day notice for orders with a 5×7 (whole order). Positive framing,
+              reason never exposed — final copy lives in the brand-copy layer. */}
+          {hasFiveBySeven(items) && (
+            <p className="mt-4 rounded-xl bg-malachite/15 px-4 py-3 text-sm text-ink">
+              ✨ Because your order is special, it’ll be ready the next day — we’ll let you know the moment it’s ready to collect or deliver.
+            </p>
+          )}
 
           {unedited.length > 0 && (
             <p className="mt-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral">

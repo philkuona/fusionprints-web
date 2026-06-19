@@ -85,6 +85,8 @@ export interface OrderDetail {
   createdAt: string;
   paidAt: string | null;
   readyAt: string | null;
+  /** For orders containing a 5×7: the promised next-working-day availability. */
+  scheduledReadyAt: string | null;
   shippedAt: string | null;
   fulfilledAt: string | null;
   items: OrderItemDetail[];
