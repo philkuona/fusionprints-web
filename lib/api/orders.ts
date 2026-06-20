@@ -90,11 +90,27 @@ export interface OrderDetail {
   scheduledReadyAt: string | null;
   shippedAt: string | null;
   fulfilledAt: string | null;
+  /** Whether the customer can still request to cancel this (paid) order. */
+  cancellable: boolean;
+  /** Cancellation request lifecycle: null | "requested" | "approved" | "declined". */
+  cancellationStatus: string | null;
+  cancellationRequestedAt: string | null;
+  /** Refund state once an approved cancellation is processed. */
+  refundStatus: string | null;
+  refundedAt: string | null;
+  refundAmountUsd: string | null;
   items: OrderItemDetail[];
 }
 
 export const getOrders = () => api<OrderSummary[]>("/web/api/orders");
 export const getOrder = (orderNumber: string) => api<OrderDetail>(`/web/api/orders/${orderNumber}`);
+
+/** Request cancellation of a paid order (admin reviews + refunds). */
+export const requestOrderCancellation = (orderNumber: string, reason?: string) =>
+  api<{ ok: boolean; status: string }>(`/web/api/orders/${orderNumber}/cancel-request`, {
+    method: "POST",
+    body: JSON.stringify({ reason: reason ?? "" }),
+  });
 
 /** Human label for an order status. */
 export function orderStatusLabel(status: string): string {
