@@ -16,7 +16,7 @@ export interface CartItem {
   label: string; // e.g. "8×10 in"
   qty: number;
   unitPriceUsd: number;
-  paper?: string; // "glossy" | "satin" | "lustre"
+  paper?: string; // "glossy" | "lustre"
   border?: boolean; // white border selected
   orientation?: string; // "portrait" | "landscape" | "square"
   processedImageId?: string; // processed_images.id from the editor's Save

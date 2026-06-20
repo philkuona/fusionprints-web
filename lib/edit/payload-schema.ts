@@ -38,7 +38,7 @@ export interface EditPayload {
   autoEnhance: boolean;
   filterId: FilterId;
   border: boolean;
-  paper: "glossy" | "satin" | "lustre";
+  paper: "glossy" | "lustre";
 }
 
 export const ZERO_ADJUSTMENTS: EditAdjustments = {

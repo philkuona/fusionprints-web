@@ -126,7 +126,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const [activeSizeCode, setActiveSizeCode] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [items, setItems] = useState<Record<string, LineItem>>({});
-  const [paperByKey, setPaperByKey] = useState<Record<string, "glossy" | "satin">>({});
+  const [paperByKey, setPaperByKey] = useState<Record<string, "glossy" | "lustre">>({});
   const [borderByKey, setBorderByKey] = useState<Record<string, boolean>>({});
   const [focused, setFocused] = useState(false);
   const [uploads, setUploads] = useState<UploadProgress[]>([]);
@@ -1258,7 +1258,7 @@ function cap(s: string): string {
 
 /**
  * Paper / Border / Frame options as dropdowns. Left-justified row on desktop;
- * full-width thirds on mobile. Paper = Glossy/Satin (photo prints); Border =
+ * full-width thirds on mobile. Paper = Glossy/Lustre (photo prints); Border =
  * None / ¼" white border; Frame = coming soon.
  */
 function FinishOptions({
@@ -1272,8 +1272,8 @@ function FinishOptions({
 }: {
   isPhotoPrint: boolean;
   finish: string;
-  activePaper: "glossy" | "satin";
-  onPaper: (p: "glossy" | "satin") => void;
+  activePaper: "glossy" | "lustre";
+  onPaper: (p: "glossy" | "lustre") => void;
   activeBorder: boolean;
   onBorder: (on: boolean) => void;
   borderInches: number | null;
@@ -1286,10 +1286,10 @@ function FinishOptions({
         <Dropdown
           label="Paper"
           value={activePaper}
-          onChange={(v) => onPaper(v as "glossy" | "satin")}
+          onChange={(v) => onPaper(v as "glossy" | "lustre")}
           options={[
             { value: "glossy", label: "Glossy" },
-            { value: "satin", label: "Satin" },
+            { value: "lustre", label: "Lustre" },
           ]}
           className={item}
         />
