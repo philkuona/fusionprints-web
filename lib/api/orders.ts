@@ -29,6 +29,8 @@ export interface CheckoutInput {
   fulfillmentMethod: "collection" | "delivery";
   deliveryZone?: string;
   addressId?: string | null;
+  /** Chosen pickup location for collection orders. */
+  collectionPointId?: string | null;
   phone: string;
   fullName: string;
 }

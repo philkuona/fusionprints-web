@@ -15,6 +15,7 @@ import {
   getAddresses,
   createAddress,
 } from "@/lib/api/addresses";
+import { type CollectionPoint, getCollectionPoints } from "@/lib/api/collection-points";
 
 type Fulfillment = "collection" | "delivery";
 
@@ -45,6 +46,8 @@ function CheckoutScreen() {
   const [addrLoading, setAddrLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [zone, setZone] = useState<string>("harare_cbd");
+  const [points, setPoints] = useState<CollectionPoint[]>([]);
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
@@ -60,6 +63,20 @@ function CheckoutScreen() {
     };
     sync();
     return subscribeCart(sync);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getCollectionPoints()
+      .then((list) => {
+        if (!active) return;
+        setPoints(list);
+        if (list[0]) setSelectedPointId(list[0].id); // default to the primary
+      })
+      .catch(() => active && setPoints([]));
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -88,7 +105,9 @@ function CheckoutScreen() {
     items.length > 0 &&
     nameValid &&
     phoneValid &&
-    (fulfillment === "collection" || (Boolean(selectedAddressId) && Boolean(zone)));
+    (fulfillment === "collection"
+      ? points.length <= 1 || Boolean(selectedPointId)
+      : Boolean(selectedAddressId) && Boolean(zone));
 
   function onContinue() {
     if (!canContinue) return;
@@ -96,6 +115,7 @@ function CheckoutScreen() {
       fulfillmentMethod: fulfillment,
       deliveryZone: fulfillment === "delivery" ? zone : "collection",
       addressId: fulfillment === "delivery" ? selectedAddressId : null,
+      collectionPointId: fulfillment === "collection" ? selectedPointId : null,
       phone: phone.trim(),
       fullName: fullName.trim(),
     };
@@ -186,9 +206,44 @@ function CheckoutScreen() {
           </section>
 
           {fulfillment === "collection" ? (
-            <section className="rounded-2xl border border-ink/10 bg-white p-5 text-sm text-ink-soft">
-              We&rsquo;ll send pickup details once your order is printed and ready. Collection is free.
-            </section>
+            points.length > 1 ? (
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-mute">Pickup location</h2>
+                <div className="mt-3 space-y-2">
+                  {points.map((p) => (
+                    <label
+                      key={p.id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition-colors duration-200 ${selectedPointId === p.id ? "border-malachite bg-malachite/10" : "border-ink/15 hover:border-ink/30"}`}
+                    >
+                      <input
+                        type="radio"
+                        name="collectionPoint"
+                        checked={selectedPointId === p.id}
+                        onChange={() => setSelectedPointId(p.id)}
+                        className="mt-1 h-4 w-4 cursor-pointer accent-malachite"
+                      />
+                      <span className="text-sm">
+                        <span className="font-medium text-ink">{p.name}</span>
+                        <span className="block text-ink-soft">{p.address}</span>
+                        {p.hours && <span className="block text-xs text-ink-mute">{p.hours}</span>}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <section className="rounded-2xl border border-ink/10 bg-white p-5 text-sm text-ink-soft">
+                {points[0] ? (
+                  <>
+                    Pick up from <span className="font-medium text-ink">{points[0].name}</span> — {points[0].address}
+                    {points[0].hours ? <span className="block text-xs text-ink-mute">{points[0].hours}</span> : null}
+                    <span className="mt-2 block">We&rsquo;ll message you the moment it&rsquo;s ready. Collection is free.</span>
+                  </>
+                ) : (
+                  "We'll send pickup details once your order is printed and ready. Collection is free."
+                )}
+              </section>
+            )
           ) : (
             <>
               {/* Delivery area */}
