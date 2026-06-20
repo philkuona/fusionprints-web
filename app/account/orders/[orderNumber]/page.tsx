@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/api/catalog";
-import { getOrder, orderStatusLabel, type OrderDetail } from "@/lib/api/orders";
+import { getOrder, orderStatusLabel, requestOrderCancellation, type OrderDetail } from "@/lib/api/orders";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -33,6 +33,26 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [placed, setPlaced] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  async function submitCancellation() {
+    if (!order) return;
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      await requestOrderCancellation(order.orderNumber, cancelReason.trim() || undefined);
+      setOrder({ ...order, cancellable: false, cancellationStatus: "requested" });
+      setShowCancel(false);
+    } catch (e) {
+      const msg = (e as { message?: string })?.message;
+      setCancelError(msg ?? "We couldn't submit your request. Please try again.");
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   useEffect(() => {
     const initPlaced = () => setPlaced(new URLSearchParams(window.location.search).get("placed") === "1");
@@ -147,6 +167,70 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
             <p className="font-medium text-ink">{order.fulfillmentMethod === "delivery" ? "Delivery" : "Collection"}</p>
             {order.deliveryAddress && <p className="mt-1 text-xs text-ink-soft">{order.deliveryAddress}</p>}
           </div>
+
+          {/* Cancellation + refund */}
+          {order.refundStatus === "succeeded" ? (
+            <div className="border-t border-ink/10 pt-3 text-sm">
+              <p className="font-medium text-ink">Refunded</p>
+              <p className="mt-1 text-xs text-ink-soft">
+                We&rsquo;ve refunded {formatPrice(Number(order.refundAmountUsd ?? order.totalUsd))}. It can take a few business days to reach your account.
+              </p>
+            </div>
+          ) : order.cancellationStatus === "requested" ? (
+            <div className="border-t border-ink/10 pt-3 text-sm">
+              <p className="font-medium text-ink">Cancellation requested</p>
+              <p className="mt-1 text-xs text-ink-soft">
+                We&rsquo;ve got your request and will review it shortly. If it&rsquo;s eligible, we&rsquo;ll refund you and let you know.
+              </p>
+            </div>
+          ) : order.cancellationStatus === "declined" ? (
+            <div className="border-t border-ink/10 pt-3 text-sm">
+              <p className="font-medium text-ink">Cancellation declined</p>
+              <p className="mt-1 text-xs text-ink-soft">
+                This order was already too far along to stop. Message us if you think that&rsquo;s a mistake.
+              </p>
+            </div>
+          ) : order.cancellable ? (
+            <div className="border-t border-ink/10 pt-3">
+              {showCancel ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-ink">Request cancellation</p>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    rows={2}
+                    maxLength={500}
+                    placeholder="Reason (optional)"
+                    className="w-full rounded-lg border border-ink/15 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-malachite"
+                  />
+                  {cancelError && <p className="text-xs text-coral">{cancelError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={submitCancellation}
+                      disabled={cancelling}
+                      className="cursor-pointer rounded-full bg-malachite px-4 py-2 text-sm font-semibold text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                      {cancelling ? "Submitting…" : "Submit request"}
+                    </button>
+                    <button
+                      onClick={() => { setShowCancel(false); setCancelError(null); }}
+                      disabled={cancelling}
+                      className="cursor-pointer rounded-full px-4 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+                    >
+                      Never mind
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowCancel(true)}
+                  className="cursor-pointer text-sm font-medium text-ink-soft underline-offset-2 hover:text-coral hover:underline"
+                >
+                  Request cancellation
+                </button>
+              )}
+            </div>
+          ) : null}
         </aside>
       </div>
     </div>
