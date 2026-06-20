@@ -274,7 +274,7 @@ function PaymentScreen() {
               reason never exposed — final copy lives in the brand-copy layer. */}
           {hasFiveBySeven(items) && (
             <p className="mt-4 rounded-xl bg-malachite/15 px-4 py-3 text-sm text-ink">
-              ✨ Because your order is special, it’ll be ready the next day — we’ll let you know the moment it’s ready to collect or deliver.
+              ✨ Your order is one of our special ones. We give these a little extra love in the studio, so it’ll be ready the next working day. We’ll let you know the moment it’s ready.
             </p>
           )}
 

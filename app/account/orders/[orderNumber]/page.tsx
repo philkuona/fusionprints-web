@@ -86,7 +86,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
           post-placement). Hidden once the order is actually ready/closed. */}
       {order.scheduledReadyAt && !order.readyAt && order.status !== "fulfilled" && order.status !== "cancelled" && (
         <p className="mt-3 rounded-xl bg-malachite/15 px-4 py-3 text-sm text-ink">
-          ✨ Your order is special — it’ll be ready for {order.fulfillmentMethod === "delivery" ? "delivery" : "collection"} on {formatDate(order.scheduledReadyAt)}.
+          ✨ Your order is one of our special ones, so it’s getting a little extra love. It’ll be ready for {order.fulfillmentMethod === "delivery" ? "delivery" : "collection"} on {formatDate(order.scheduledReadyAt)}.
         </p>
       )}
 
