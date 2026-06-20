@@ -188,9 +188,10 @@ export default function ProfilePage() {
         )}
       </SectionCard>
 
-      {/* Stubs */}
       <SectionCard title="Payment methods">
-        <p className="text-sm text-ink-mute">Payment methods will be available when checkout launches.</p>
+        <p className="text-sm text-ink-mute">
+          You pay securely at checkout &mdash; EcoCash, OneMoney, or card via Payonify. We don&rsquo;t store any card details on your account.
+        </p>
       </SectionCard>
     </div>
   );
