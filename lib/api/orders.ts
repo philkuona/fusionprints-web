@@ -30,6 +30,7 @@ export interface CheckoutInput {
   deliveryZone?: string;
   addressId?: string | null;
   phone: string;
+  fullName: string;
 }
 
 export interface CheckoutResult {

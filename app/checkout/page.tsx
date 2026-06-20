@@ -47,9 +47,11 @@ function CheckoutScreen() {
   const [zone, setZone] = useState<string>("harare_cbd");
   const [showForm, setShowForm] = useState(false);
   const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState("");
 
   // Valid international number (any country). The input emits E.164.
   const phoneValid = !!phone && isValidPhoneNumber(phone);
+  const nameValid = fullName.trim().length > 0;
 
   useEffect(() => {
     const sync = () => {
@@ -84,6 +86,7 @@ function CheckoutScreen() {
 
   const canContinue =
     items.length > 0 &&
+    nameValid &&
     phoneValid &&
     (fulfillment === "collection" || (Boolean(selectedAddressId) && Boolean(zone)));
 
@@ -94,6 +97,7 @@ function CheckoutScreen() {
       deliveryZone: fulfillment === "delivery" ? zone : "collection",
       addressId: fulfillment === "delivery" ? selectedAddressId : null,
       phone: phone.trim(),
+      fullName: fullName.trim(),
     };
     window.localStorage.setItem(CHECKOUT_KEY, JSON.stringify(selection));
     router.push("/checkout/payment");
@@ -145,6 +149,20 @@ function CheckoutScreen() {
                 sub="We bring it to you"
               />
             </div>
+          </section>
+
+          {/* Full name — required for the order + receipt */}
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-mute">Full name</h2>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your full name"
+              autoComplete="name"
+              className="mt-3 w-full rounded-xl border border-ink/15 bg-transparent px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-mute/60 focus:border-malachite"
+            />
+            <p className="mt-2 text-xs text-ink-mute">Goes on your receipt.</p>
           </section>
 
           {/* Contact number — required so we can reach you about the order */}

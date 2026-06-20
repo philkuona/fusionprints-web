@@ -21,7 +21,7 @@ export default function PaymentPage() {
 function PaymentScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null; phone?: string } | null>(null);
+  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null; phone?: string; fullName?: string } | null>(null);
   const [ready, setReady] = useState(false);
 
   const [phase, setPhase] = useState<Phase>("review");
@@ -155,6 +155,10 @@ function PaymentScreen() {
       setError("A contact number is required. Please go back to checkout and add one.");
       return;
     }
+    if (!selection.fullName) {
+      setError("Your full name is required. Please go back to checkout and add it.");
+      return;
+    }
     setPhase("creating");
     setError("");
     try {
@@ -178,6 +182,7 @@ function PaymentScreen() {
         deliveryZone: selection.deliveryZone,
         addressId: selection.addressId ?? null,
         phone: selection.phone,
+        fullName: selection.fullName,
       });
       setOrderNumber(res.orderNumber);
       setChargeUsd(res.totalUsd); // authoritative charge amount for this order
