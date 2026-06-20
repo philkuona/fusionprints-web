@@ -112,7 +112,7 @@ export default async function PhotoPrintsPage() {
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               { label: "On premium paper", icon: <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z M14 3v5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
-              { label: "Glossy or satin finish", icon: <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /> },
+              { label: "Glossy or lustre finish", icon: <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /> },
               { label: "Colour corrected by hand", icon: <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
               { label: "Free collection", icon: <path d="M3 7h13l1 5h4v4h-2a2 2 0 11-4 0H9a2 2 0 11-4 0H3V7z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /> },
             ].map((b) => (
@@ -185,8 +185,8 @@ export default async function PhotoPrintsPage() {
           <p className="mt-2 max-w-xl text-ink-soft">Both look great. It comes down to how you like your photos to feel.</p>
           <div className="mt-10 grid gap-8 sm:grid-cols-2">
             {[
-              { name: "Glossy", img: "/images/finish-glossy.jpg", alt: "Close-up of a glossy print catching the light", body: "Bright, punchy, and reflective. Colours pop and blacks look deep. Best for vivid shots you'll keep behind glass or in an album." },
-              { name: "Lustre", img: "/images/finish-lustre.jpg", alt: "Close-up of a lustre print with a soft pearl sheen", body: "A soft, low-glare sheen that resists fingerprints and looks good in any light. The easy, forgiving choice, and our default for most prints." },
+              { name: "Glossy", img: "/images/finish-glossy.jpg", alt: "Close-up of a glossy print catching the light", body: "Bright, punchy, and reflective, so colours pop and fine detail sings. Best for high-detail landscapes, travel shots, and photos kept in albums." },
+              { name: "Lustre", img: "/images/finish-lustre.jpg", alt: "Close-up of a lustre print with a soft pearl sheen", body: "A soft pearl sheen that resists glare and fingerprints and flatters skin tones. Best for wedding albums, portraits, and prints displayed on walls." },
             ].map((f) => (
               <div key={f.name} className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
                 <div className="relative aspect-[16/9] bg-ink/5">
