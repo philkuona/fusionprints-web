@@ -123,11 +123,12 @@ function PaymentScreen() {
           finishPaid(orderNumber); // webhook confirmed → paid
           return;
         }
-        if (active && o.paymentStatus === "failed") {
-          // Gateway reported a failed charge — stop waiting, let them retry.
-          setError("Your payment didn't go through. No charge was made. Please try again.");
-          return;
-        }
+        // NOTE: a `paymentStatus === "failed"` here is a failed ATTEMPT, not a
+        // dead session. EcoCash often fails then succeeds on the same checkout
+        // session, so we must NOT declare terminal failure (and must never claim
+        // "no charge was made" — a later success would make that false). The
+        // order status above is the source of truth; real-time attempt errors
+        // surface separately via the Drop-In's onError. So we just keep polling.
       } catch {
         /* transient — keep polling */
       }
@@ -135,7 +136,7 @@ function PaymentScreen() {
       if (tries < 40) {
         timer = setTimeout(tick, 3000); // ~2 min total
       } else {
-        setError("We haven't received payment confirmation yet. If you completed payment, check My Orders shortly.");
+        setError("We haven't confirmed your payment yet. If you completed it, your order will appear in My Orders shortly — and you won't be charged twice.");
       }
     };
     timer = setTimeout(tick, 3000);
