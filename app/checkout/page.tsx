@@ -32,6 +32,9 @@ const ZONES: { key: string; label: string; fee: number | null }[] = [
 
 const CHECKOUT_KEY = "fp_checkout_v1";
 
+// Mirrors the backend's recipientPhone regex (web/api/checkout contract).
+const RECIPIENT_PHONE_RE = /^\+?[1-9]\d{7,14}$/;
+
 export default function CheckoutPage() {
   return <AuthGuard>{() => <CheckoutScreen />}</AuthGuard>;
 }
@@ -52,9 +55,22 @@ function CheckoutScreen() {
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
 
+  // Gift / notify-both recipient (optional, collapsed by default).
+  const [isGift, setIsGift] = useState(false);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+
+  // Separate billing address (optional, collapsed by default).
+  const [billingDifferent, setBillingDifferent] = useState(false);
+  const [billingAddress, setBillingAddress] = useState("");
+
   // Valid international number (any country). The input emits E.164.
   const phoneValid = !!phone && isValidPhoneNumber(phone);
   const nameValid = fullName.trim().length > 0;
+
+  // Recipient phone is optional; only flag a non-empty value that doesn't match.
+  const recipientPhoneError =
+    isGift && recipientPhone.trim().length > 0 && !RECIPIENT_PHONE_RE.test(recipientPhone.trim());
 
   useEffect(() => {
     const sync = () => {
@@ -105,6 +121,7 @@ function CheckoutScreen() {
     items.length > 0 &&
     nameValid &&
     phoneValid &&
+    !recipientPhoneError &&
     (fulfillment === "collection"
       ? points.length <= 1 || Boolean(selectedPointId)
       : Boolean(selectedAddressId) && Boolean(zone));
@@ -118,6 +135,9 @@ function CheckoutScreen() {
       collectionPointId: fulfillment === "collection" ? selectedPointId : null,
       phone: phone.trim(),
       fullName: fullName.trim(),
+      recipientName: isGift && recipientName.trim() ? recipientName.trim() : undefined,
+      recipientPhone: isGift && recipientPhone.trim() ? recipientPhone.trim() : undefined,
+      billingAddress: billingDifferent && billingAddress.trim() ? billingAddress.trim() : undefined,
     };
     window.localStorage.setItem(CHECKOUT_KEY, JSON.stringify(selection));
     router.push("/checkout/payment");
@@ -203,6 +223,88 @@ function CheckoutScreen() {
               We&rsquo;ll message you on WhatsApp when your order is ready, or if there&rsquo;s any issue. Outside
               Zimbabwe? Pick your country and we print for customers anywhere.
             </p>
+          </section>
+
+          {/* Gift / notify-both recipient — optional, collapsed by default */}
+          <section>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={isGift}
+                onChange={(e) => setIsGift(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-malachite"
+              />
+              <span className="text-sm font-medium text-ink">This order is a gift / for someone else</span>
+            </label>
+
+            {isGift && (
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label htmlFor="recipientName" className="block text-xs font-semibold uppercase tracking-wide text-ink-mute">
+                    Recipient name
+                  </label>
+                  <input
+                    id="recipientName"
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Who's it for?"
+                    maxLength={120}
+                    className="mt-2 w-full rounded-xl border border-ink/15 bg-transparent px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-mute/60 focus:border-malachite"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="recipientPhone" className="block text-xs font-semibold uppercase tracking-wide text-ink-mute">
+                    Recipient WhatsApp number
+                  </label>
+                  <input
+                    id="recipientPhone"
+                    type="tel"
+                    inputMode="tel"
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                    placeholder="+263 77 123 4567"
+                    aria-invalid={recipientPhoneError}
+                    className={`mt-2 w-full rounded-xl border bg-transparent px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-mute/60 focus:border-malachite ${recipientPhoneError ? "border-coral" : "border-ink/15"}`}
+                  />
+                  {recipientPhoneError && (
+                    <p className="mt-2 text-xs text-coral">Enter a valid number, e.g. +263771234567.</p>
+                  )}
+                </div>
+                <p className="text-xs text-ink-mute">We&rsquo;ll keep them posted when the order&rsquo;s ready, too.</p>
+              </div>
+            )}
+          </section>
+
+          {/* Separate billing address — optional, collapsed by default */}
+          <section>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={billingDifferent}
+                onChange={(e) => setBillingDifferent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 cursor-pointer accent-malachite"
+              />
+              <span className="text-sm font-medium text-ink">Billing address is different from delivery</span>
+            </label>
+
+            {billingDifferent && (
+              <div className="mt-3">
+                <label htmlFor="billingAddress" className="block text-xs font-semibold uppercase tracking-wide text-ink-mute">
+                  Billing address
+                </label>
+                <textarea
+                  id="billingAddress"
+                  value={billingAddress}
+                  onChange={(e) => setBillingAddress(e.target.value)}
+                  placeholder="Name, street, suburb, city"
+                  rows={3}
+                  maxLength={400}
+                  className="mt-2 w-full resize-y rounded-xl border border-ink/15 bg-transparent px-4 py-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-ink-mute/60 focus:border-malachite"
+                />
+                <p className="mt-2 text-xs text-ink-mute">Used for card billing only.</p>
+              </div>
+            )}
           </section>
 
           {fulfillment === "collection" ? (
