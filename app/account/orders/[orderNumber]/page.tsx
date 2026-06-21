@@ -88,11 +88,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderNum
         ← Orders
       </Link>
 
-      {placed && (
-        <p className="mt-4 rounded-xl bg-malachite/15 px-4 py-3 text-sm font-medium text-ink">
-          Thank you! Your order is placed and a confirmation email is on its way. Track its progress below.
-        </p>
-      )}
+      {(() => {
+        // Status-aware banner (R2-5). Cancelled/ready/shipped/fulfilled override
+        // the just-placed message; otherwise show "placed" right after checkout.
+        const isDelivery = order.fulfillmentMethod === "delivery";
+        let banner: { text: string; tone: "good" | "bad" } | null = null;
+        if (order.status === "cancelled") {
+          banner = { tone: "bad", text: "This order was cancelled. If you’d paid, your refund is on its way — it can take a few business days to reflect." };
+        } else if (order.status === "fulfilled") {
+          banner = { tone: "good", text: isDelivery ? "Delivered — thank you for printing with us! 💚" : "Collected — thank you for printing with us! 💚" };
+        } else if (order.status === "ready_for_pickup" || order.status === "ready_for_collection") {
+          banner = { tone: "good", text: "Your prints are ready to collect! Bring your phone and show this page at the counter." };
+        } else if (order.status === "shipped") {
+          banner = { tone: "good", text: "Your order is out for delivery — our driver will be in touch shortly." };
+        } else if (placed) {
+          banner = { tone: "good", text: "Thank you! Your order is placed and a confirmation email is on its way. Track its progress below." };
+        }
+        return banner ? (
+          <p className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium text-ink ${banner.tone === "bad" ? "bg-coral/15" : "bg-malachite/15"}`}>
+            {banner.text}
+          </p>
+        ) : null;
+      })()}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-fraunces text-2xl font-bold text-ink">{order.orderNumber}</h1>
