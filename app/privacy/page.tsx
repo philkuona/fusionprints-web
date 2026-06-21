@@ -34,6 +34,15 @@ export default function PrivacyPage() {
       </section>
 
       <section className="mt-8 space-y-2">
+        <h2 className="font-fraunces text-xl font-bold text-ink">Card payments</h2>
+        <p className="text-ink-soft leading-relaxed">
+          We never collect or store your raw card details. Card payments are handled entirely by our
+          payment gateway, Payonify, which is PCI-compliant. We only receive a secure tokenised
+          reference and a confirmation that the payment succeeded — never your full card number.
+        </p>
+      </section>
+
+      <section className="mt-8 space-y-2">
         <h2 className="font-fraunces text-xl font-bold text-ink">Your photos</h2>
         <p className="text-ink-soft leading-relaxed">
           Uploaded photos are kept for 90 days so you can reorder, then they are removed
