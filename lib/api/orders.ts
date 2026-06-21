@@ -33,6 +33,11 @@ export interface CheckoutInput {
   collectionPointId?: string | null;
   phone: string;
   fullName: string;
+  /** Gift orders: notify the recipient too. */
+  recipientName?: string;
+  recipientPhone?: string;
+  /** Free-text billing address when it differs from delivery (card billing). */
+  billingAddress?: string;
 }
 
 export interface CheckoutResult {

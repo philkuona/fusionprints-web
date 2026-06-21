@@ -21,7 +21,7 @@ export default function PaymentPage() {
 function PaymentScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
-  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null; collectionPointId?: string | null; phone?: string; fullName?: string } | null>(null);
+  const [selection, setSelection] = useState<{ fulfillmentMethod: "collection" | "delivery"; deliveryZone?: string; addressId?: string | null; collectionPointId?: string | null; phone?: string; fullName?: string; recipientName?: string; recipientPhone?: string; billingAddress?: string } | null>(null);
   const [ready, setReady] = useState(false);
 
   const [phase, setPhase] = useState<Phase>("review");
@@ -185,6 +185,9 @@ function PaymentScreen() {
         collectionPointId: selection.collectionPointId ?? null,
         phone: selection.phone,
         fullName: selection.fullName,
+        ...(selection.recipientName ? { recipientName: selection.recipientName } : {}),
+        ...(selection.recipientPhone ? { recipientPhone: selection.recipientPhone } : {}),
+        ...(selection.billingAddress ? { billingAddress: selection.billingAddress } : {}),
       });
       setOrderNumber(res.orderNumber);
       setChargeUsd(res.totalUsd); // authoritative charge amount for this order
