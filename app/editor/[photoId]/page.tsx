@@ -27,6 +27,7 @@ import {
 } from "@/lib/edit/payload-schema";
 import { applyEdit } from "@/lib/api/editor";
 import { addToCart, type CartItem } from "@/lib/cart";
+import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
 import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal";
 import { Dropdown } from "@/components/editor/dropdown";
 import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
@@ -65,6 +66,8 @@ interface UploadProgress {
   name: string;
   progress: number; // 0-100
   status: "uploading" | "done" | "error";
+  /** Import sources (e.g. Google Photos) report no byte progress — show an animated bar. */
+  indeterminate?: boolean;
 }
 
 /** Floating panel showing per-file upload progress + success/error. */
@@ -77,13 +80,19 @@ function UploadProgressPanel({ uploads }: { uploads: UploadProgress[] }) {
           <div className="flex items-center justify-between gap-2 text-xs">
             <span className="truncate font-medium text-ink">{u.name}</span>
             <span className={u.status === "error" ? "text-coral" : u.status === "done" ? "text-malachite-deep" : "text-ink-mute"}>
-              {u.status === "error" ? "Failed" : u.status === "done" ? "✓ Uploaded" : `${u.progress}%`}
+              {u.status === "error"
+                ? "Failed"
+                : u.status === "done"
+                  ? "✓ Uploaded"
+                  : u.indeterminate
+                    ? "Importing…"
+                    : `${u.progress}%`}
             </span>
           </div>
           <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
             <div
-              className={`h-full rounded-full transition-all duration-200 ${u.status === "error" ? "bg-coral" : "bg-malachite"}`}
-              style={{ width: `${u.status === "error" ? 100 : u.progress}%` }}
+              className={`h-full rounded-full transition-all duration-200 ${u.status === "error" ? "bg-coral" : "bg-malachite"} ${u.status === "uploading" && u.indeterminate ? "animate-pulse" : ""}`}
+              style={{ width: `${u.status === "error" || (u.status === "uploading" && u.indeterminate) ? 100 : u.progress}%` }}
             />
           </div>
         </div>
@@ -301,6 +310,18 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   function importViaGoogle() {
     const popup = window.open(googlePhotosStartUrl(), "fp-gphotos", "width=520,height=720");
     setImporting(true);
+    // Surface the import in the same progress panel as device uploads. The
+    // backend poll reports no byte progress, so this row is indeterminate.
+    const importId = `gphotos-${Date.now()}`;
+    setUploads((prev) => [
+      ...prev,
+      { id: importId, name: "Google Photos", progress: 0, status: "uploading", indeterminate: true },
+    ]);
+    const finishImport = (status: "done" | "error") => {
+      setUploads((prev) => prev.map((u) => (u.id === importId ? { ...u, progress: 100, status } : u)));
+      setTimeout(() => setUploads((prev) => prev.filter((u) => u.id !== importId)), status === "error" ? 6000 : 2500);
+      setImporting(false);
+    };
     const startedAt = Date.now();
     let stopped = false;
     // Non-overlapping poll: schedule the next check only AFTER the current one
@@ -309,7 +330,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       if (stopped) return;
       if (Date.now() - startedAt > 5 * 60 * 1000) {
         stopped = true;
-        setImporting(false);
+        finishImport("error");
         return;
       }
       try {
@@ -318,12 +339,12 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           stopped = true;
           popup?.close();
           addImportedPhotos(res.photos ?? []);
-          setImporting(false);
+          finishImport("done");
           return;
         }
         if (res.status === "error") {
           stopped = true;
-          setImporting(false);
+          finishImport("error");
           return;
         }
       } catch {
@@ -903,6 +924,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               </p>
               <SizeGroup title="Photo prints" items={photoPrints} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
               <SizeGroup title="Wall art" items={wallArt} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
+              <PhotoSetsLinks />
             </aside>
 
             {/* Centre */}
@@ -1247,6 +1269,24 @@ function SizePickerModal({
             </div>
           ),
         )}
+        <div className="mb-2">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">Photo sets</p>
+          <div className="mt-2 grid grid-cols-1 gap-2">
+            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport].map((s) => (
+              <Link
+                key={s.slug}
+                href={`/prints/${s.slug}`}
+                className="flex min-h-[44px] items-center justify-between gap-2 rounded-xl border border-ink/15 px-3 py-2.5 text-left transition-colors duration-200 hover:border-ink/30"
+              >
+                <span className="flex flex-col">
+                  <span className="text-sm font-semibold text-ink">{s.displayName}</span>
+                  <span className="font-mono text-[11px] text-ink-mute">{s.tagline}</span>
+                </span>
+                <span aria-hidden="true" className="shrink-0 text-ink-mute">→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1449,6 +1489,35 @@ function SizeGroup({
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Discoverability links to the composite-product flows (Wallet / Mini / Passport).
+ * These multi-up sheets live on their own pages — this just surfaces them so
+ * customers in the single-photo editor can find them.
+ */
+function PhotoSetsLinks() {
+  const sets = [COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport];
+  return (
+    <div>
+      <p className="text-center font-mono text-[11px] font-bold uppercase tracking-widest text-ink-soft">Photo sets</p>
+      <div className="mt-2 grid grid-cols-1 gap-1.5">
+        {sets.map((s) => (
+          <Link
+            key={s.slug}
+            href={`/prints/${s.slug}`}
+            className="flex items-center gap-2 rounded-xl border border-ink/15 px-3 py-2 transition-colors duration-200 hover:border-malachite hover:bg-malachite/10"
+          >
+            <span className="flex min-h-[40px] flex-1 flex-col items-start text-left">
+              <span className="text-sm font-semibold text-ink">{s.displayName}</span>
+              <span className="font-mono text-[11px] text-ink-mute">{s.tagline}</span>
+            </span>
+            <span aria-hidden="true" className="shrink-0 text-ink-mute">→</span>
+          </Link>
+        ))}
       </div>
     </div>
   );
