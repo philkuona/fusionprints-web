@@ -102,29 +102,25 @@ export const COMPOSITE_PRODUCTS: Record<string, CompositeProduct> = {
     sizeCode: "mini_pair",
     slug: "mini",
     displayName: "Mini Prints",
-    tagline: "Two prints. One sheet.",
+    tagline: "Eight prints. One sheet.",
     description:
-      "Two mini prints side by side on one 4×6 sheet, 3×4 each. Cut down the middle for two prints to keep or share.",
+      "Eight little 2×1.5 mini prints on one 4×6 sheet, all from one photo. Cut along the guides for a set to keep, share, or stick anywhere.",
     priceUsd: 2.0,
-    uniquePhotos: 2,
-    // Default = landscape (composed 6×4, agent rotates 90° to print on 4×6).
+    uniquePhotos: 1,
+    // One photo, tiled 8-up (2 columns × 4 rows) on a portrait 4×6 sheet.
     layout: {
-      sheetWidth: 6,
-      sheetHeight: 4,
-      printRotation: 90,
-      cells: [
-        { x: 0, y: 0, width: 3, height: 4 },
-        { x: 3, y: 0, width: 3, height: 4 },
-      ],
-    },
-    // Portrait toggle = stacked on a 4×6 sheet.
-    portraitLayout: {
       sheetWidth: 4,
       sheetHeight: 6,
       printRotation: 0,
       cells: [
-        { x: 0, y: 0, width: 4, height: 3 },
-        { x: 0, y: 3, width: 4, height: 3 },
+        { x: 0, y: 0, width: 2, height: 1.5 },
+        { x: 2, y: 0, width: 2, height: 1.5 },
+        { x: 0, y: 1.5, width: 2, height: 1.5 },
+        { x: 2, y: 1.5, width: 2, height: 1.5 },
+        { x: 0, y: 3, width: 2, height: 1.5 },
+        { x: 2, y: 3, width: 2, height: 1.5 },
+        { x: 0, y: 4.5, width: 2, height: 1.5 },
+        { x: 2, y: 4.5, width: 2, height: 1.5 },
       ],
     },
     editor: { defaultBorder: "none" },
