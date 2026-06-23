@@ -45,12 +45,22 @@ export interface CompositeEditorState {
 
 export const IDENTITY_TRANSFORM: CellTransform = { x: 0, y: 0, scale: 1, rotation: 0 };
 
+/**
+ * Which photo slot fills a given print cell. uniquePhotos === 1 → one photo is
+ * duplicated across every cell (wallet/passport); otherwise photos map 1:1 to
+ * cells in order (mini). State is keyed by photo SLOT (uniquePhotos), not by
+ * cell, so the customer only ever provides as many photos as the product needs.
+ */
+export function slotForCell(product: CompositeProduct, cellIndex: number): number {
+  return product.uniquePhotos === 1 ? 0 : cellIndex;
+}
+
 export function initEditor(product: CompositeProduct): CompositeEditorState {
-  const cellCount = product.layout.cells.length;
+  const slotCount = product.uniquePhotos;
   return {
     productCode: product.sizeCode,
     orientation: "default",
-    cells: Array.from({ length: cellCount }, () => ({
+    cells: Array.from({ length: slotCount }, () => ({
       imageId: null,
       url: null,
       natW: null,
@@ -169,15 +179,23 @@ export function activeSheet(product: CompositeProduct, state: CompositeEditorSta
   return { w: product.layout.sheetWidth, h: product.layout.sheetHeight };
 }
 
-/** Serialise to the cart/order layout payload. */
-export function toLayoutPayload(state: CompositeEditorState) {
+/**
+ * Serialise to the cart/order layout payload. Expands the per-slot state out to
+ * one entry per PRINT CELL (wallet → 4 cells from 1 slot; mini → 2 cells from 2
+ * slots), which is the shape the backend + print agent consume.
+ */
+export function toLayoutPayload(product: CompositeProduct, state: CompositeEditorState) {
+  const cells = activeCells(product, state);
   return {
     orientation: state.orientation,
-    cells: state.cells.map((c, i) => ({
-      cellIndex: i,
-      imageId: c.imageId,
-      transform: c.transform,
-      border: c.borderId === "none" ? null : c.borderId,
-    })),
+    cells: cells.map((_, cellIndex) => {
+      const c = state.cells[slotForCell(product, cellIndex)];
+      return {
+        cellIndex,
+        imageId: c.imageId,
+        transform: c.transform,
+        border: c.borderId === "none" ? null : c.borderId,
+      };
+    }),
   };
 }

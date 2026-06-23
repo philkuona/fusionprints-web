@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { CompositeProduct, BorderPreset } from "@/lib/composite-products";
 import { BORDER_PRESETS } from "@/lib/composite-products";
 import type { CompositeEditorState } from "@/lib/composite-editor/state";
-import { activeCells, activeSheet } from "@/lib/composite-editor/state";
+import { activeCells, activeSheet, slotForCell } from "@/lib/composite-editor/state";
 import { coverFit, dragToPan, type CellRotation } from "@/lib/composite-editor/cell-fit";
 
 const borderById = (id: string): BorderPreset =>
@@ -72,9 +72,16 @@ export function CompositePreview({
       style={{ aspectRatio: `${sheet.w} / ${sheet.h}`, maxWidth: sheet.w >= sheet.h ? 520 : 360 }}
     >
       {cells.map((cell, i) => {
-        const cs = state.cells[i];
+        // Many cells can share one photo slot (wallet duplicates a single photo
+        // across all four). Resolve this cell's slot, then read its state.
+        const slot = slotForCell(product, i);
+        const cs = state.cells[slot];
         const border = borderById(cs.borderId);
-        const active = state.activeCell === i;
+        const single = product.uniquePhotos === 1;
+        // Editable = the active slot, or always (single-photo products have no
+        // per-cell selection — every cell shows the one photo).
+        const active = single || state.activeCell === slot;
+        const showRing = !single && state.activeCell === slot;
 
         // Cell + inner (border-subtracted) box in px.
         const cellPxW = sheetPxW * (cell.width / sheet.w);
@@ -98,11 +105,11 @@ export function CompositePreview({
           : null;
 
         const onPointerDown = (e: React.PointerEvent) => {
-          onSelectCell(i);
+          onSelectCell(slot);
           if (!fit) return;
           (e.target as HTMLElement).setPointerCapture(e.pointerId);
           dragRef.current = {
-            i,
+            i: slot,
             startX: e.clientX,
             startY: e.clientY,
             baseX: cs.transform.x,
@@ -113,10 +120,10 @@ export function CompositePreview({
         };
         const onPointerMove = (e: React.PointerEvent) => {
           const d = dragRef.current;
-          if (!d || d.i !== i) return;
+          if (!d || d.i !== slot) return;
           const nx = d.baseX + dragToPan(e.clientX - d.startX, d.slackX);
           const ny = d.baseY + dragToPan(e.clientY - d.startY, d.slackY);
-          onPan(i, Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+          onPan(slot, Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
         };
 
         const canPan = active && fit && (fit.slackX > 1 || fit.slackY > 1);
@@ -148,7 +155,7 @@ export function CompositePreview({
                   onLoad={(e) => {
                     const img = e.currentTarget;
                     if (img.naturalWidth && (cs.natW !== img.naturalWidth || cs.natH !== img.naturalHeight)) {
-                      onNatural(i, img.naturalWidth, img.naturalHeight);
+                      onNatural(slot, img.naturalWidth, img.naturalHeight);
                     }
                   }}
                   className="absolute max-w-none select-none object-cover"
@@ -167,12 +174,12 @@ export function CompositePreview({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center whitespace-pre-line bg-ink/5 text-center text-[11px] font-medium text-ink-mute">
-                  {cs.uploading ? "Uploading…" : `Tap to add\nphoto ${i + 1}`}
+                  {cs.uploading ? "Uploading…" : single ? "Tap to add\na photo" : `Tap to add\nphoto ${slot + 1}`}
                 </div>
               )}
             </div>
             {/* Selection highlight — inset, so it never sits on the cut line. */}
-            {active && <div className="pointer-events-none absolute inset-0 z-10 ring-2 ring-inset ring-malachite" />}
+            {showRing && <div className="pointer-events-none absolute inset-0 z-10 ring-2 ring-inset ring-malachite" />}
           </div>
         );
       })}
