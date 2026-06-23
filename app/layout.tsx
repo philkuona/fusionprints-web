@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Outfit, DM_Mono } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
+import { CartSync } from "@/components/cart-sync";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 import "./globals.css";
 
@@ -61,6 +62,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${outfit.variable} ${dmMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <CartSync />
         <AppShell>{children}</AppShell>
       </body>
     </html>

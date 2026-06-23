@@ -30,6 +30,65 @@ export interface CartItem {
 const KEY = "fp_cart_v1";
 const EVENT = "fp-cart-change";
 
+// ===== Cross-device sync (server-backed cart for logged-in users) =====
+// The cart stays in localStorage; when the user is signed in we mirror it to
+// the backend so another device sees the same cart. Anonymous users are
+// untouched (local-only). See lib/api/cart.ts + backend /web/api/cart.
+
+let pushEnabled = false;
+let pushTimer: ReturnType<typeof setTimeout> | null = null;
+
+function schedulePush(): void {
+  if (!pushEnabled || typeof window === "undefined") return;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    pushTimer = null;
+    // Lazy import avoids a static cycle (api/cart imports the CartItem type).
+    import("@/lib/api/cart").then(({ putServerCart }) => putServerCart(getCart()).catch(() => {}));
+  }, 800);
+}
+
+/** Merge two carts by id, taking the higher quantity (idempotent on re-sync). */
+function mergeCarts(a: CartItem[], b: CartItem[]): CartItem[] {
+  const byId = new Map(a.map((i) => [i.id, i]));
+  for (const item of b) {
+    const ex = byId.get(item.id);
+    byId.set(item.id, ex ? { ...item, qty: Math.max(ex.qty, item.qty) } : item);
+  }
+  return [...byId.values()];
+}
+
+/**
+ * Reconcile the local cart with the signed-in user's saved server cart, then
+ * enable background pushes. Safe to call on every page load: it no-ops once
+ * sync is active, and a 401 (anonymous) leaves the cart local-only.
+ */
+export async function syncCartWithServer(): Promise<void> {
+  if (typeof window === "undefined" || pushEnabled) return;
+  let server: CartItem[];
+  try {
+    server = (await import("@/lib/api/cart").then((m) => m.getServerCart())).items;
+  } catch {
+    return; // not signed in / offline → keep the cart local-only
+  }
+  const local = getCart();
+  const merged = mergeCarts(server, local);
+  // Update the local view if it changed (pushEnabled still false → no echo).
+  if (JSON.stringify(merged) !== JSON.stringify(local)) writeCart(merged);
+  // Converge the server to the merged set, then turn on background pushes.
+  import("@/lib/api/cart").then(({ putServerCart }) => putServerCart(merged).catch(() => {}));
+  pushEnabled = true;
+}
+
+/** Stop syncing (e.g. on logout) so we don't push to a signed-out session. */
+export function stopCartSync(): void {
+  pushEnabled = false;
+  if (pushTimer) {
+    clearTimeout(pushTimer);
+    pushTimer = null;
+  }
+}
+
 export function getCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
@@ -53,6 +112,7 @@ function writeCart(items: CartItem[]): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(KEY, JSON.stringify(items));
   window.dispatchEvent(new Event(EVENT));
+  schedulePush();
 }
 
 /** Append items, merging quantities (and refreshing details) for matching ids. */
@@ -78,6 +138,16 @@ export function removeFromCart(id: string): void {
 
 export function clearCart(): void {
   writeCart([]);
+  // Flush immediately rather than waiting for the debounce, so a checkout
+  // reliably clears the server cart — otherwise another device could resurrect
+  // the just-ordered items on its next sync.
+  if (pushEnabled) {
+    if (pushTimer) {
+      clearTimeout(pushTimer);
+      pushTimer = null;
+    }
+    import("@/lib/api/cart").then(({ deleteServerCart }) => deleteServerCart().catch(() => {}));
+  }
 }
 
 export function cartCount(): number {
