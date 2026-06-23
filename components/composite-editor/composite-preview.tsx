@@ -174,7 +174,8 @@ export function CompositePreview({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center whitespace-pre-line bg-ink/5 text-center text-[11px] font-medium text-ink-mute">
-                  {cs.uploading ? "Uploading…" : single ? "Tap to add\na photo" : `Tap to add\nphoto ${slot + 1}`}
+                  {/* For single-photo sheets, prompt once (top-left) — the rest just show the empty paper. */}
+                  {cs.uploading ? "Uploading…" : single ? (i === 0 ? "Tap to\nadd a photo" : "") : `Tap to add\nphoto ${slot + 1}`}
                 </div>
               )}
             </div>
