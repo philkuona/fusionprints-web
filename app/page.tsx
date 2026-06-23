@@ -122,13 +122,8 @@ const PHOTO_SETS: Card[] = [
     alt: "Two small mini prints standing side by side on a warm surface, one of a young couple and one of laughing friends",
     href: "/prints/mini",
   },
-  {
-    size: "Passport Photos",
-    dims: "Six 2 × 2",
-    img: "/images/composite-card-passport.jpg",
-    alt: "A neat set of six identical square passport-style ID photos laid out in a grid on a bright desk",
-    href: "/prints/passport",
-  },
+  // Passport photos are temporarily stubbed — sizing varies by country/use-case.
+  // Re-add this card when the product is re-enabled.
 ];
 
 /* ── Collection card ───────────────────────────────────────────────── */
@@ -265,7 +260,7 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ── Photo sets — composite products (Wallet / Mini / Passport) ── */}
+      {/* ── Photo sets — composite products (Wallet / Mini) ── */}
       <section className="bg-cream py-16">
         <Container>
           <div className="max-w-2xl">
@@ -276,11 +271,11 @@ export default function HomePage() {
               More from a single sheet.
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              Wallet keepsakes, mini prints, and passport photos, laid out
-              and cut for you, ready to share.
+              Wallet keepsakes and mini prints, laid out and cut for you,
+              ready to share.
             </p>
           </div>
-          <div className="mt-12 grid grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-3 lg:gap-x-8">
+          <div className="mt-12 grid grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-2 lg:gap-x-8">
             {PHOTO_SETS.map((c) => (
               <CollectionCard key={c.size} c={c} />
             ))}

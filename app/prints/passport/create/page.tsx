@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import { CompositeEditorView } from "@/components/composite-editor/composite-editor-view";
-import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Design your Passport Photos | FusionPrints",
-};
-
+// Passport photos are temporarily stubbed — sizing varies by country/use-case.
+// Re-enable by restoring the CompositeEditorView render (see git history).
 export default function Page() {
-  return <CompositeEditorView product={COMPOSITE_PRODUCTS.passport} />;
+  redirect("/prints");
 }

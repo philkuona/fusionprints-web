@@ -38,7 +38,7 @@ export const NAVIGATION: NavItem[] = [
             { label: "Photo Prints", href: "/prints", description: "Classic single-photo prints, 4×6 to 8×10." },
             { label: "Wallet Prints", href: "/prints/wallet", description: "Four 2×3 keepsakes from one photo." },
             { label: "Mini Prints", href: "/prints/mini", description: "Two mini prints, side by side." },
-            { label: "Passport Photos", href: "/prints/passport", description: "Six 2×2 ID photos in a set." },
+            // Passport Photos temporarily stubbed — re-add when re-enabled.
           ],
         },
       ],
