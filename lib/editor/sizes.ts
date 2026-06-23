@@ -2,6 +2,16 @@ import type { Photo } from "@/lib/api/photos";
 
 export type Orientation = "portrait" | "landscape" | "square";
 
+/**
+ * Composite "set" products (wallet/mini): a single photo edited as ONE cell and
+ * printed N-up by the backend. The crop frame is the cell aspect, fixed
+ * regardless of orientation toggles (the backend renders at this fixed aspect).
+ */
+const COMPOSITE_ASPECT: Record<string, [number, number]> = {
+  wallet_4up: [2, 3],
+  mini_pair: [2, 1.5],
+};
+
 export function isSquareSize(sizeCode: string): boolean {
   const [a, b] = sizeCode.split("x").map(Number);
   return a === b;
@@ -9,6 +19,8 @@ export function isSquareSize(sizeCode: string): boolean {
 
 /** Oriented frame aspect (w, h) for a size + orientation. */
 export function orientedAspect(sizeCode: string, orientation: Orientation): [number, number] {
+  const fixed = COMPOSITE_ASPECT[sizeCode];
+  if (fixed) return fixed;
   const [a, b] = sizeCode.split("x").map(Number);
   const small = Math.min(a, b);
   const large = Math.max(a, b);
