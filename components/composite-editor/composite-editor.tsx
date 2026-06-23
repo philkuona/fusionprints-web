@@ -3,7 +3,7 @@
 import { useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { uploadPhoto, getPhotos, type Photo } from "@/lib/api/photos";
-import { addToCart } from "@/lib/cart";
+import { addToCart, type CartItem } from "@/lib/cart";
 import { BORDER_PRESETS, type CompositeProduct } from "@/lib/composite-products";
 import {
   editorReducer,
@@ -13,7 +13,15 @@ import {
 } from "@/lib/composite-editor/state";
 import { CompositePreview } from "./composite-preview";
 
-export function CompositeEditor({ product }: { product: CompositeProduct }) {
+export function CompositeEditor({
+  product,
+  onAdded,
+}: {
+  product: CompositeProduct;
+  /** When provided, the built cart item is handed back (to a shared order
+   * queue) instead of being added to the cart + redirecting to /cart. */
+  onAdded?: (item: CartItem) => void;
+}) {
   const router = useRouter();
   const [state, dispatch] = useReducer(editorReducer, product, initEditor);
   const [error, setError] = useState<string | null>(null);
@@ -72,19 +80,23 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
     }
     setAdding(true);
     const id = `composite:${product.sizeCode}:${Date.now()}`;
-    addToCart([
-      {
-        id,
-        photoId: state.cells[0].imageId!,
-        storageUrl: state.cells[0].url ?? "",
-        sizeCode: product.sizeCode,
-        label: product.displayName,
-        qty: 1,
-        unitPriceUsd: product.priceUsd,
-        productType: "composite",
-        layoutPayload: toLayoutPayload(product, state),
-      },
-    ]);
+    const item: CartItem = {
+      id,
+      photoId: state.cells[0].imageId!,
+      storageUrl: state.cells[0].url ?? "",
+      sizeCode: product.sizeCode,
+      label: product.displayName,
+      qty: 1,
+      unitPriceUsd: product.priceUsd,
+      productType: "composite",
+      layoutPayload: toLayoutPayload(product, state),
+    };
+    if (onAdded) {
+      // Hand it to the shared order queue (editor); no redirect.
+      onAdded(item);
+      return;
+    }
+    addToCart([item]);
     router.push("/cart");
   }
 
@@ -228,7 +240,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           disabled={adding}
           className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-ink px-6 text-sm font-semibold text-cream transition-colors duration-200 hover:bg-ink/90 disabled:opacity-60"
         >
-          Add to cart · ${product.priceUsd.toFixed(2)}
+          {onAdded ? "Add to order" : "Add to cart"} · ${product.priceUsd.toFixed(2)}
         </button>
       </div>
 

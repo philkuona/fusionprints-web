@@ -146,6 +146,9 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   // When set, the editor shows the composite (wallet/mini) surface instead of the
   // standard single-photo flow — same editor, just a different product shape.
   const [compositeSlug, setCompositeSlug] = useState<"wallet" | "mini" | null>(null);
+  // Composite (wallet/mini) items waiting in the same order queue as standard
+  // prints — added via the composite canvas, checked out together at the end.
+  const [pendingComposites, setPendingComposites] = useState<CartItem[]>([]);
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
@@ -229,8 +232,11 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         .reduce((n, it) => n + it.qty, 0),
     [items],
   );
-  const subtotal = Object.values(items).reduce((sum, it) => sum + it.qty * priceOf(it.sizeCode), 0);
-  const totalPrints = Object.values(items).reduce((n, it) => n + it.qty, 0);
+  const compositesSubtotal = pendingComposites.reduce((sum, c) => sum + c.qty * c.unitPriceUsd, 0);
+  const compositesCount = pendingComposites.reduce((n, c) => n + c.qty, 0);
+  const subtotal =
+    Object.values(items).reduce((sum, it) => sum + it.qty * priceOf(it.sizeCode), 0) + compositesSubtotal;
+  const totalPrints = Object.values(items).reduce((n, it) => n + it.qty, 0) + compositesCount;
 
   const handleUpload = useCallback(
     (files: File[]) => {
@@ -488,7 +494,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   async function commitToCart() {
     if (committing) return;
     const list = Object.values(items);
-    if (list.length === 0) return;
+    if (list.length === 0 && pendingComposites.length === 0) return;
     setCommitting(true);
     setAddedNote(null);
     try {
@@ -541,8 +547,10 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           processedUrl,
         });
       }
-      addToCart(cartItems);
+      // Composites ride the same cart commit as standard prints.
+      addToCart([...cartItems, ...pendingComposites]);
       setItems({});
+      setPendingComposites([]);
       router.push("/cart");
     } catch {
       setAddedNote("Couldn't prepare your prints. Please try again.");
@@ -582,8 +590,20 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
       <CompositeScreen
         product={COMPOSITE_PRODUCTS[compositeSlug]}
         activeSlug={compositeSlug}
+        queueCount={totalPrints}
         onPickComposite={setCompositeSlug}
         onExit={() => setCompositeSlug(null)}
+        onAddToOrder={(item) => {
+          // Drop into the shared order queue, then return to the editor where
+          // the top bar shows it alongside any standard prints.
+          setPendingComposites((prev) => [...prev, item]);
+          setCompositeSlug(null);
+          setAddedNote(`${item.label} added to your order.`);
+        }}
+        onReviewCart={() => {
+          setCompositeSlug(null);
+          setView("summary");
+        }}
       />
     );
   }
@@ -610,6 +630,38 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   // No photos yet → upload-first empty state, right inside the editor, so the
   // "Start printing" CTA lands here and the user uploads without a detour.
   if (!activePhoto) {
+    // Composite-only order (e.g. just wallet/mini, no strip photos) can still
+    // reach the review/checkout — the summary doesn't need an active photo.
+    if (view === "summary") {
+      return (
+        <div className="flex h-[100dvh] flex-col bg-cream text-ink">
+          <header className="flex shrink-0 items-center justify-between gap-2 border-b border-ink/10 bg-white px-4 py-2.5">
+            <button
+              type="button"
+              onClick={() => setView("editor")}
+              className="flex h-9 cursor-pointer items-center gap-1 rounded-full border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5"
+            >
+              ‹ Back to editing
+            </button>
+            <span className="font-mono text-xs text-ink">{formatPrice(subtotal)}</span>
+          </header>
+          <SummaryView
+            items={[]}
+            photos={photos}
+            labelOf={labelOf}
+            priceOf={priceOf}
+            subtotal={subtotal}
+            onChangeQty={setQty}
+            onEdit={editItem}
+            onDelete={(photoId, sizeCode) => setQty(photoId, sizeCode, 0)}
+            composites={pendingComposites}
+            onRemoveComposite={(id) => setPendingComposites((prev) => prev.filter((c) => c.id !== id))}
+            onCommit={commitToCart}
+            committing={committing}
+          />
+        </div>
+      );
+    }
     const busy = uploading > 0 || importing;
     const canImport = importConfig.googlePhotos;
     return (
@@ -683,6 +735,17 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               className="mt-5 cursor-pointer text-sm font-medium text-malachite-deep underline underline-offset-4 transition-colors duration-200 hover:text-ink"
             >
               Or choose from your saved photos
+            </button>
+          )}
+
+          {/* Items already queued (e.g. wallet/mini) → let them review & check out. */}
+          {totalPrints > 0 && (
+            <button
+              type="button"
+              onClick={() => setView("summary")}
+              className="mt-6 inline-flex h-11 cursor-pointer items-center rounded-full border border-ink/20 px-6 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5"
+            >
+              Review your order ({totalPrints})
             </button>
           )}
         </div>
@@ -791,6 +854,8 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
           onChangeQty={setQty}
           onEdit={editItem}
           onDelete={(photoId, sizeCode) => setQty(photoId, sizeCode, 0)}
+          composites={pendingComposites}
+          onRemoveComposite={(id) => setPendingComposites((prev) => prev.filter((c) => c.id !== id))}
           onCommit={commitToCart}
           committing={committing}
         />
@@ -1574,13 +1639,19 @@ function PhotoSetsCards({
 function CompositeScreen({
   product,
   activeSlug,
+  queueCount,
   onPickComposite,
   onExit,
+  onAddToOrder,
+  onReviewCart,
 }: {
   product: CompositeProduct;
   activeSlug: "wallet" | "mini";
+  queueCount: number;
   onPickComposite: (slug: "wallet" | "mini") => void;
   onExit: () => void;
+  onAddToOrder: (item: CartItem) => void;
+  onReviewCart: () => void;
 }) {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-cream text-ink">
@@ -1605,12 +1676,14 @@ function CompositeScreen({
           ← Print sizes
         </button>
         <h1 className="truncate font-fraunces text-base font-bold text-ink sm:text-lg">Design your {product.displayName}</h1>
-        <Link
-          href="/cart"
-          className="flex h-9 cursor-pointer items-center rounded-full px-3 text-sm font-medium text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+        <button
+          type="button"
+          onClick={onReviewCart}
+          disabled={queueCount === 0}
+          className="flex h-9 items-center rounded-full px-3 text-sm font-medium text-ink-mute transition-colors duration-200 enabled:cursor-pointer hover:bg-ink/5 hover:text-ink disabled:opacity-40"
         >
-          Cart
-        </Link>
+          Review &amp; cart{queueCount > 0 ? ` (${queueCount})` : ""}
+        </button>
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -1644,7 +1717,7 @@ function CompositeScreen({
           </div>
           <p className="mb-4 text-sm text-ink-soft">{product.description}</p>
           {/* key remounts the editor (and resets its reducer) when switching product. */}
-          <CompositeEditor key={product.sizeCode} product={product} />
+          <CompositeEditor key={product.sizeCode} product={product} onAdded={onAddToOrder} />
         </main>
       </div>
     </div>
@@ -1660,6 +1733,8 @@ function SummaryView({
   onChangeQty,
   onEdit,
   onDelete,
+  composites,
+  onRemoveComposite,
   onCommit,
   committing,
 }: {
@@ -1671,10 +1746,14 @@ function SummaryView({
   onChangeQty: (photoId: string, sizeCode: string, qty: number) => void;
   onEdit: (photoId: string, sizeCode: string) => void;
   onDelete: (photoId: string, sizeCode: string) => void;
+  composites: CartItem[];
+  onRemoveComposite: (id: string) => void;
   onCommit: () => void;
   committing: boolean;
 }) {
-  const totalPrints = items.reduce((n, it) => n + it.qty, 0);
+  const totalPrints =
+    items.reduce((n, it) => n + it.qty, 0) + composites.reduce((n, c) => n + c.qty, 0);
+  const isEmpty = items.length === 0 && composites.length === 0;
   return (
     <div className="mx-auto w-full min-h-0 max-w-5xl flex-1 overflow-auto p-4 sm:p-8">
       <h1 className="font-fraunces text-2xl font-bold text-ink">Review your prints</h1>
@@ -1684,7 +1763,23 @@ function SummaryView({
         {/* Left: line items + upsell */}
         <div className="space-y-4">
           <div className="divide-y divide-ink/8 rounded-2xl border border-ink/10 bg-white">
-            {items.length === 0 && <p className="p-6 text-center text-sm text-ink-mute">No prints selected yet.</p>}
+            {isEmpty && <p className="p-6 text-center text-sm text-ink-mute">No prints selected yet.</p>}
+            {composites.map((c) => (
+              <div key={c.id} className="flex items-center gap-4 p-4">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-ink/5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {c.storageUrl && <img src={c.storageUrl} alt="" className="h-full w-full object-cover" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-ink">{c.label}</p>
+                  <p className="font-mono text-xs text-ink-mute">one photo, printed as a set</p>
+                  <p className="mt-1 font-mono text-sm font-semibold text-ink">{formatPrice(c.qty * c.unitPriceUsd)}</p>
+                </div>
+                <button type="button" onClick={() => onRemoveComposite(c.id)} className="cursor-pointer rounded-full border border-coral/40 px-3 py-1 text-xs font-medium text-coral transition-colors duration-200 hover:bg-coral/10">
+                  Remove
+                </button>
+              </div>
+            ))}
             {items.map((it) => {
               const photo = photos.find((p) => p.id === it.photoId);
               const line = it.qty * priceOf(it.sizeCode);
@@ -1738,7 +1833,7 @@ function SummaryView({
           <button
             type="button"
             onClick={onCommit}
-            disabled={items.length === 0 || committing}
+            disabled={isEmpty || committing}
             className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream disabled:cursor-not-allowed disabled:bg-malachite/40 disabled:text-ink/50 enabled:cursor-pointer"
           >
             {committing ? "Preparing…" : "Add to cart"}
