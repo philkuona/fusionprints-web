@@ -1272,7 +1272,7 @@ function SizePickerModal({
         <div className="mb-2">
           <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">Photo sets</p>
           <div className="mt-2 grid grid-cols-1 gap-2">
-            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport].map((s) => (
+            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini].map((s) => (
               <Link
                 key={s.slug}
                 href={`/prints/${s.slug}`}
@@ -1500,7 +1500,7 @@ function SizeGroup({
  * customers in the single-photo editor can find them.
  */
 function PhotoSetsLinks() {
-  const sets = [COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport];
+  const sets = [COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini];
   return (
     <div>
       <p className="text-center font-mono text-[11px] font-bold uppercase tracking-widest text-ink-soft">Photo sets</p>
