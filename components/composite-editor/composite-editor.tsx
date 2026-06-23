@@ -31,6 +31,10 @@ export function CompositeEditor({
   const fileRef = useRef<HTMLInputElement>(null);
   const active = state.cells[state.activeCell];
   const multiCell = state.cells.length > 1;
+  // "What you get" copy — N prints of the cell size on one 4×6 sheet.
+  const sheetCells = product.layout.cells;
+  const sheetCount = sheetCells.length;
+  const cellSize = sheetCells[0] ? `${sheetCells[0].width}×${sheetCells[0].height}` : "";
 
   const pickPhoto = () => fileRef.current?.click();
 
@@ -75,7 +79,7 @@ export function CompositeEditor({
 
   function handleAddToCart() {
     if (!isComplete(state)) {
-      setError("Add a photo to every cell first.");
+      setError(multiCell ? "Add a photo to every slot first." : "Add a photo first.");
       return;
     }
     setAdding(true);
@@ -104,6 +108,9 @@ export function CompositeEditor({
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       {/* Preview */}
       <div className="flex flex-col items-center gap-4">
+        <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">
+          Your 4×6 sheet · {sheetCount} prints
+        </p>
         <CompositePreview
           product={product}
           state={state}
@@ -111,10 +118,10 @@ export function CompositeEditor({
           onPan={(i, x, y) => dispatch({ type: "setTransform", index: i, transform: { x, y } })}
           onNatural={(i, natW, natH) => dispatch({ type: "setNatural", index: i, natW, natH })}
         />
-        <p className="text-center text-xs text-ink-mute">
+        <p className="max-w-sm text-center text-xs text-ink-mute">
           {active.url
-            ? "Drag the photo to position it, and zoom to fill the cell. Dashed lines show where to cut."
-            : "Faint dashed lines show where to cut. Tap a cell to choose its photo."}
+            ? "Drag to reposition · zoom to fill · dashed lines show where we cut."
+            : "Add a photo to fill your sheet · dashed lines show where we cut."}
         </p>
       </div>
 
@@ -131,6 +138,15 @@ export function CompositeEditor({
             e.target.value = "";
           }}
         />
+
+        {/* What you get */}
+        <div className="rounded-xl border border-ink/10 bg-white p-3.5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">What you get</p>
+          <p className="mt-1 text-sm text-ink">
+            <span className="font-semibold">{sheetCount} prints</span>, {cellSize} in each — on one 4×6 sheet from a single photo.
+          </p>
+          <p className="mt-1 font-mono text-xs text-malachite-deep">${product.priceUsd.toFixed(2)} per sheet</p>
+        </div>
 
         {multiCell && (
           <div>
@@ -157,7 +173,9 @@ export function CompositeEditor({
             onClick={pickPhoto}
             className="flex h-11 cursor-pointer items-center justify-center rounded-full bg-malachite px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
           >
-            {active.url ? `Replace photo ${state.activeCell + 1}` : `Add photo ${state.activeCell + 1}`}
+            {active.url
+              ? multiCell ? `Replace photo ${state.activeCell + 1}` : "Replace photo"
+              : multiCell ? `Add photo ${state.activeCell + 1}` : "Add your photo"}
           </button>
           <button
             type="button"
@@ -202,15 +220,27 @@ export function CompositeEditor({
                 type="button"
                 onClick={() => dispatch({ type: "setBorder", index: state.activeCell, borderId: b.id })}
                 title={b.label}
-                className={`h-9 cursor-pointer rounded-lg border px-3 text-xs font-medium transition-colors duration-200 ${active.borderId === b.id ? "border-malachite ring-2 ring-malachite/40 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
+                className={`flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors duration-200 ${active.borderId === b.id ? "border-malachite ring-2 ring-malachite/40 text-ink" : "border-ink/15 text-ink-soft hover:border-ink/30"}`}
               >
+                <span
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 rounded-full border border-ink/20"
+                  style={{
+                    background:
+                      b.color === "transparent"
+                        ? "repeating-linear-gradient(45deg,#fff,#fff 3px,#e7e0d2 3px,#e7e0d2 6px)"
+                        : b.color,
+                  }}
+                />
                 {b.label}
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => dispatch({ type: "applyBorderToAll", borderId: active.borderId })} className="cursor-pointer text-xs font-semibold text-malachite-deep hover:underline">
-            Apply border to all cells
-          </button>
+          {multiCell && (
+            <button type="button" onClick={() => dispatch({ type: "applyBorderToAll", borderId: active.borderId })} className="cursor-pointer text-xs font-semibold text-malachite-deep hover:underline">
+              Apply border to all photos
+            </button>
+          )}
         </div>
 
         {/* Mini orientation toggle */}
