@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import { CompositeEditorView } from "@/components/composite-editor/composite-editor-view";
-import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Design your Mini Prints | FusionPrints",
-};
-
+// Mini prints are now designed in the unified editor (same flow as every other
+// product). This legacy /create route redirects into it.
 export default function Page() {
-  return <CompositeEditorView product={COMPOSITE_PRODUCTS.mini} />;
+  redirect("/editor/new?product=mini");
 }

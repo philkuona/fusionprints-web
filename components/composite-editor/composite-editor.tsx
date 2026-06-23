@@ -82,7 +82,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
         qty: 1,
         unitPriceUsd: product.priceUsd,
         productType: "composite",
-        layoutPayload: toLayoutPayload(state),
+        layoutPayload: toLayoutPayload(product, state),
       },
     ]);
     router.push("/cart");
@@ -122,7 +122,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
 
         {multiCell && (
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">Cells</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-mute">Photos</p>
             <div className="flex flex-wrap gap-2">
               {state.cells.map((c, i) => (
                 <button
@@ -156,21 +156,10 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           </button>
         </div>
 
-        {/* Fill-all shortcut — put the active cell's photo in every cell. */}
-        {multiCell && active.url && (
-          <button
-            type="button"
-            onClick={() => dispatch({ type: "fillAll", imageId: active.imageId!, url: active.url!, natW: active.natW, natH: active.natH })}
-            className="-mt-2 cursor-pointer text-xs font-semibold text-malachite-deep hover:underline"
-          >
-            Use this photo for all cells
-          </button>
-        )}
-
         {/* Per-cell transform */}
         {active.url && (
           <div className="space-y-3 rounded-xl border border-ink/10 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">Adjust this cell</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-mute">Adjust this photo</p>
             <label className="block text-sm text-ink-soft">
               Zoom
               <input
@@ -255,7 +244,7 @@ export function CompositeEditor({ product }: { product: CompositeProduct }) {
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-fraunces text-lg font-bold text-ink">
-                Choose a photo for {multiCell ? `cell ${state.activeCell + 1}` : "your prints"}
+                Choose a photo for {multiCell ? `photo ${state.activeCell + 1}` : "your prints"}
               </h3>
               <button type="button" onClick={() => setLibrary(null)} aria-label="Close" className="cursor-pointer text-ink-mute hover:text-ink">✕</button>
             </div>

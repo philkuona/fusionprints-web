@@ -63,7 +63,7 @@ export function CompositeProductView({ product }: { product: CompositeProduct })
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href={`/prints/${product.slug}/create`}
+              href={`/editor/new?product=${product.slug}`}
               className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-malachite px-8 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-malachite-deep hover:text-cream"
             >
               Start designing

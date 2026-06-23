@@ -27,7 +27,8 @@ import {
 } from "@/lib/edit/payload-schema";
 import { applyEdit } from "@/lib/api/editor";
 import { addToCart, type CartItem } from "@/lib/cart";
-import { COMPOSITE_PRODUCTS } from "@/lib/composite-products";
+import { COMPOSITE_PRODUCTS, type CompositeProduct } from "@/lib/composite-products";
+import { CompositeEditor } from "@/components/composite-editor/composite-editor";
 import { CropModal, type SavePayloadParts } from "@/components/editor/crop-modal";
 import { Dropdown } from "@/components/editor/dropdown";
 import { SafeAreaIntro } from "@/components/editor/safe-area-intro";
@@ -142,6 +143,9 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
   const uploading = uploads.filter((u) => u.status === "uploading").length;
   const [addedNote, setAddedNote] = useState<string | null>(null);
   const [view, setView] = useState<"editor" | "summary">("editor");
+  // When set, the editor shows the composite (wallet/mini) surface instead of the
+  // standard single-photo flow — same editor, just a different product shape.
+  const [compositeSlug, setCompositeSlug] = useState<"wallet" | "mini" | null>(null);
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [uploadMenuOpen, setUploadMenuOpen] = useState(false);
@@ -167,9 +171,16 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
         // full library is kept only as a source for the "Choose from My Photos"
         // picker — it is never auto-loaded into the strip or pre-selected.
         const matched = list.find((p) => p.id === entryPhotoId) ?? null;
+        // Deep-link straight into a composite product (?product=wallet|mini) — e.g.
+        // from the product pages or the WhatsApp bot's "design on web" link.
+        const params =
+          typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const wantedProduct = params?.get("product");
+        if (wantedProduct === "wallet" || wantedProduct === "mini") {
+          setCompositeSlug(wantedProduct);
+        }
         // Pre-select the size carried over from the product page (?size=), if valid.
-        const wanted =
-          typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("size") : null;
+        const wanted = params?.get("size") ?? null;
         const initialSize =
           (wanted && cat.find((p) => p.sizeCode === wanted)?.sizeCode) ||
           cat.find((p) => p.sizeCode === "4x6")?.sizeCode ||
@@ -563,6 +574,20 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
     );
   }
 
+  // Composite products (wallet/mini) render their own surface inside the editor
+  // shell — isolated from the single-photo flow below, which assumes an active
+  // photo. Switching back to a standard size clears compositeSlug.
+  if (compositeSlug && COMPOSITE_PRODUCTS[compositeSlug]) {
+    return (
+      <CompositeScreen
+        product={COMPOSITE_PRODUCTS[compositeSlug]}
+        activeSlug={compositeSlug}
+        onPickComposite={setCompositeSlug}
+        onExit={() => setCompositeSlug(null)}
+      />
+    );
+  }
+
   const activePhoto = photos.find((p) => p.id === activePhotoId) ?? null;
   const activeProduct = catalog.find((p) => p.sizeCode === activeSizeCode) ?? null;
 
@@ -924,7 +949,7 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
               </p>
               <SizeGroup title="Photo prints" items={photoPrints} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
               <SizeGroup title="Wall art" items={wallArt} activeSizeCode={activeSizeCode} activePhotoId={activePhoto.id} photoArea={activePhotoArea} lineItems={items} onSelect={setActiveSizeCode} onAdd={addSize} />
-              <PhotoSetsLinks />
+              <PhotoSetsCards onSelect={setCompositeSlug} />
             </aside>
 
             {/* Centre */}
@@ -1093,6 +1118,10 @@ function EditorScreen({ entryPhotoId }: { entryPhotoId: string }) {
             setActiveSizeCode(code);
             setSizeModalOpen(false);
           }}
+          onSelectComposite={(slug) => {
+            setCompositeSlug(slug);
+            setSizeModalOpen(false);
+          }}
           onClose={() => setSizeModalOpen(false)}
         />
       )}
@@ -1204,6 +1233,7 @@ function SizePickerModal({
   activeSizeCode,
   photoArea,
   onSelect,
+  onSelectComposite,
   onClose,
 }: {
   photoPrints: CatalogProduct[];
@@ -1211,6 +1241,7 @@ function SizePickerModal({
   activeSizeCode: string | null;
   photoArea: number | null;
   onSelect: (code: string) => void;
+  onSelectComposite: (slug: "wallet" | "mini") => void;
   onClose: () => void;
 }) {
   const groups = [
@@ -1272,18 +1303,19 @@ function SizePickerModal({
         <div className="mb-2">
           <p className="font-mono text-[11px] uppercase tracking-widest text-ink-mute">Photo sets</p>
           <div className="mt-2 grid grid-cols-1 gap-2">
-            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport].map((s) => (
-              <Link
+            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini].map((s) => (
+              <button
                 key={s.slug}
-                href={`/prints/${s.slug}`}
+                type="button"
+                onClick={() => onSelectComposite(s.slug as "wallet" | "mini")}
                 className="flex min-h-[44px] items-center justify-between gap-2 rounded-xl border border-ink/15 px-3 py-2.5 text-left transition-colors duration-200 hover:border-ink/30"
               >
                 <span className="flex flex-col">
                   <span className="text-sm font-semibold text-ink">{s.displayName}</span>
-                  <span className="font-mono text-[11px] text-ink-mute">{s.tagline}</span>
+                  <span className="font-mono text-[11px] text-ink-mute">{formatPrice(s.priceUsd)} · {s.tagline}</span>
                 </span>
                 <span aria-hidden="true" className="shrink-0 text-ink-mute">→</span>
-              </Link>
+              </button>
             ))}
           </div>
         </div>
@@ -1495,29 +1527,125 @@ function SizeGroup({
 }
 
 /**
- * Discoverability links to the composite-product flows (Wallet / Mini / Passport).
- * These multi-up sheets live on their own pages — this just surfaces them so
- * customers in the single-photo editor can find them.
+ * Composite-product cards (Wallet / Mini) shown right alongside the standard
+ * size cards. Selecting one switches the editor into composite mode for that
+ * product — same editor, same cart, no separate page.
  */
-function PhotoSetsLinks() {
-  const sets = [COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini, COMPOSITE_PRODUCTS.passport];
+function PhotoSetsCards({
+  onSelect,
+  activeSlug,
+}: {
+  onSelect: (slug: "wallet" | "mini") => void;
+  activeSlug?: "wallet" | "mini" | null;
+}) {
+  const sets = [COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini];
   return (
     <div>
       <p className="text-center font-mono text-[11px] font-bold uppercase tracking-widest text-ink-soft">Photo sets</p>
       <div className="mt-2 grid grid-cols-1 gap-1.5">
-        {sets.map((s) => (
-          <Link
-            key={s.slug}
-            href={`/prints/${s.slug}`}
-            className="flex items-center gap-2 rounded-xl border border-ink/15 px-3 py-2 transition-colors duration-200 hover:border-malachite hover:bg-malachite/10"
+        {sets.map((s) => {
+          const active = activeSlug === s.slug;
+          return (
+            <button
+              key={s.slug}
+              type="button"
+              onClick={() => onSelect(s.slug as "wallet" | "mini")}
+              className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors duration-200 ${active ? "border-malachite bg-malachite/10" : "border-ink/15 hover:border-malachite hover:bg-malachite/10"}`}
+            >
+              <span className="flex min-h-[40px] flex-1 flex-col items-start">
+                <span className="text-sm font-semibold text-ink">{s.displayName}</span>
+                <span className="font-mono text-[11px] text-ink-mute">{formatPrice(s.priceUsd)} · {s.tagline}</span>
+              </span>
+              <span aria-hidden="true" className="shrink-0 text-ink-mute">{active ? "✓" : "→"}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Composite editing surface inside the editor shell. Reuses the same chrome as
+ * the single-photo editor and the shared CompositeEditor body, so wallet/mini
+ * live in the same flow as every other product. The sidebar lets the customer
+ * switch between composite products or jump back to the standard print sizes.
+ */
+function CompositeScreen({
+  product,
+  activeSlug,
+  onPickComposite,
+  onExit,
+}: {
+  product: CompositeProduct;
+  activeSlug: "wallet" | "mini";
+  onPickComposite: (slug: "wallet" | "mini") => void;
+  onExit: () => void;
+}) {
+  return (
+    <div className="flex min-h-[100dvh] flex-col bg-cream text-ink">
+      {/* Nav bar (matches the main editor) */}
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-ink/10 bg-ink px-4">
+        <Link href="/" aria-label="FusionPrints home" className="cursor-pointer">
+          <Logo variant="on-dark" height={28} />
+        </Link>
+        <nav className="flex items-center gap-5 text-xs font-medium text-cream">
+          <Link href="/account/photos" className="cursor-pointer transition-colors duration-200 hover:text-malachite">My Photos</Link>
+          <Link href="/account" className="cursor-pointer transition-colors duration-200 hover:text-malachite">My Account</Link>
+        </nav>
+      </div>
+
+      {/* Top bar */}
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-ink/10 bg-white px-4 py-2.5">
+        <button
+          type="button"
+          onClick={onExit}
+          className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-3 text-sm font-medium text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+        >
+          ← Print sizes
+        </button>
+        <h1 className="truncate font-fraunces text-base font-bold text-ink sm:text-lg">Design your {product.displayName}</h1>
+        <Link
+          href="/cart"
+          className="flex h-9 cursor-pointer items-center rounded-full px-3 text-sm font-medium text-ink-mute transition-colors duration-200 hover:bg-ink/5 hover:text-ink"
+        >
+          Cart
+        </Link>
+      </header>
+
+      <div className="flex min-h-0 flex-1">
+        {/* Sidebar: product cards (desktop) */}
+        <aside className="hidden w-64 shrink-0 space-y-5 overflow-y-auto border-r border-ink/10 bg-white p-4 lg:block pointer-fine:w-[26rem]">
+          <p className="text-xs text-ink-mute">Pick a photo set, or head back to single prints.</p>
+          <PhotoSetsCards onSelect={onPickComposite} activeSlug={activeSlug} />
+          <button
+            type="button"
+            onClick={onExit}
+            className="w-full rounded-xl border border-ink/15 px-3 py-2 text-left text-sm font-semibold text-ink transition-colors duration-200 hover:border-malachite hover:bg-malachite/10"
           >
-            <span className="flex min-h-[40px] flex-1 flex-col items-start text-left">
-              <span className="text-sm font-semibold text-ink">{s.displayName}</span>
-              <span className="font-mono text-[11px] text-ink-mute">{s.tagline}</span>
-            </span>
-            <span aria-hidden="true" className="shrink-0 text-ink-mute">→</span>
-          </Link>
-        ))}
+            ← Photo prints &amp; wall art
+          </button>
+        </aside>
+
+        {/* Centre: the composite editor */}
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          {/* Mobile product switcher */}
+          <div className="mb-4 flex gap-2 lg:hidden">
+            {[COMPOSITE_PRODUCTS.wallet, COMPOSITE_PRODUCTS.mini].map((s) => (
+              <button
+                key={s.slug}
+                type="button"
+                onClick={() => onPickComposite(s.slug as "wallet" | "mini")}
+                className={`flex-1 rounded-full border px-3 py-2 text-xs font-semibold transition-colors duration-200 ${activeSlug === s.slug ? "border-malachite bg-malachite/10 text-ink" : "border-ink/15 text-ink-soft"}`}
+              >
+                {s.displayName}
+              </button>
+            ))}
+          </div>
+          <p className="mb-4 text-sm text-ink-soft">{product.description}</p>
+          {/* key remounts the editor (and resets its reducer) when switching product. */}
+          <CompositeEditor key={product.sizeCode} product={product} />
+        </main>
       </div>
     </div>
   );
