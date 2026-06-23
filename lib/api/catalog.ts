@@ -7,7 +7,8 @@
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
-export type ProductType = 'photo_print' | 'poster';
+// 'composite' = a single photo printed N-up on a sheet (wallet ×4, mini ×8).
+export type ProductType = 'photo_print' | 'poster' | 'composite';
 export type Finish = 'glossy' | 'lustre';
 
 export interface CatalogProduct {
